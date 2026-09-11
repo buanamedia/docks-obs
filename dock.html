@@ -134,7 +134,6 @@
     <div class="bg-cardBg border border-cardBorder rounded-xl p-4 shadow-xl">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-sm font-bold text-gray-200 uppercase tracking-wide">Kontrol Tampilan</h2>
-        <!-- Tombol Sembunyikan Overlay Global -->
         <button onclick="hideOverlay()" class="bg-red-600/90 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition">
           <i class="fa-solid fa-eye-slash"></i> Sembunyikan Overlay
         </button>
@@ -142,9 +141,9 @@
 
       <!-- TAB BUTTONS -->
       <div class="flex items-center gap-1 border-b border-cardBorder pb-2 overflow-x-auto">
-        <button onclick="switchTab('info')" id="tab-info" class="tab-btn px-4 py-1.5 text-xs font-semibold rounded-md transition text-indigo-400 bg-indigo-950/40 border border-indigo-800/50">Info</button>
+        <button onclick="switchTab('info')" id="tab-info" class="tab-btn px-4 py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-200 transition">Info</button>
         <button onclick="switchTab('ticker')" id="tab-ticker" class="tab-btn px-4 py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-200 transition">Ticker</button>
-        <button onclick="switchTab('lowerthird')" id="tab-lowerthird" class="tab-btn px-4 py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-200 transition">Lowerthird</button>
+        <button onclick="switchTab('lowerthird')" id="tab-lowerthird" class="tab-btn px-4 py-1.5 text-xs font-semibold rounded-md transition text-indigo-400 bg-indigo-950/40 border border-indigo-800/50">Lowerthird</button>
         <button onclick="switchTab('presentasi')" id="tab-presentasi" class="tab-btn px-4 py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-200 transition">Presentasi</button>
         <button onclick="switchTab('carousel')" id="tab-carousel" class="tab-btn px-4 py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-200 transition">Carousel</button>
         <button onclick="switchTab('countdown')" id="tab-countdown" class="tab-btn px-4 py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-200 transition">Countdown</button>
@@ -154,7 +153,7 @@
       <div class="mt-4">
 
         <!-- 1. TAB INFO -->
-        <div id="panel-info" class="tab-panel grid grid-cols-1 md:grid-cols-12 gap-4">
+        <div id="panel-info" class="tab-panel hidden grid grid-cols-1 md:grid-cols-12 gap-4">
           <div class="md:col-span-5 space-y-2.5 border-r border-cardBorder/60 pr-0 md:pr-3">
             <div class="flex items-center gap-2">
               <input type="text" id="infoSearch" onkeyup="filterItems('info')" placeholder="Cari Info..." class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none focus:border-indigo-500">
@@ -175,15 +174,6 @@
             <div>
               <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Isi Detail Info</label>
               <textarea id="infoContent" rows="3" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500 resize-none"></textarea>
-            </div>
-
-            <div>
-              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
-              <div class="flex flex-wrap gap-4 text-xs">
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Live Streaming</label>
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Audiens</label>
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Stage</label>
-              </div>
             </div>
 
             <div>
@@ -230,15 +220,6 @@
             </div>
 
             <div>
-              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
-              <div class="flex flex-wrap gap-4 text-xs">
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" checked class="rounded border-gray-700 text-indigo-600"> Live Streaming</label>
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Audiens</label>
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Stage</label>
-              </div>
-            </div>
-
-            <div>
               <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Duration</label>
               <select id="tickerDuration" class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none">
                 <option value="10">10 seconds</option>
@@ -263,7 +244,7 @@
         </div>
 
         <!-- 3. TAB LOWERTHIRD -->
-        <div id="panel-lowerthird" class="tab-panel hidden grid grid-cols-1 md:grid-cols-12 gap-4">
+        <div id="panel-lowerthird" class="tab-panel grid grid-cols-1 md:grid-cols-12 gap-4">
           <div class="md:col-span-5 space-y-2.5 border-r border-cardBorder/60 pr-0 md:pr-3">
             <div class="flex items-center gap-2">
               <input type="text" id="ltSearch" onkeyup="filterItems('lowerthird')" placeholder="Cari Lowerthird..." class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none focus:border-indigo-500">
@@ -286,12 +267,22 @@
               <input type="text" id="ltSub" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
             </div>
 
+            <!-- FITUR UPLOAD LOGO/FOTO PROFIL LOWERTHIRD -->
             <div>
-              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
-              <div class="flex flex-wrap gap-4 text-xs">
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" checked class="rounded border-gray-700 text-indigo-600"> Live Streaming</label>
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Audiens</label>
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Stage</label>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Logo / Foto Profil (Opsional)</label>
+              <div class="flex items-center gap-3">
+                <div id="ltLogoPreview" class="w-12 h-12 bg-inputBg border border-cardBorder rounded-lg flex items-center justify-center overflow-hidden shrink-0">
+                  <i class="fa-solid fa-image text-gray-600 text-lg"></i>
+                </div>
+                <div class="flex-1">
+                  <div onclick="document.getElementById('ltLogoUploader').click()" class="border border-cardBorder bg-inputBg hover:bg-cardBorder/40 cursor-pointer rounded-lg p-2 text-center transition">
+                    <p class="text-xs text-indigo-400 font-medium" id="ltLogoText">Upload Logo / Foto</p>
+                    <input type="file" id="ltLogoUploader" accept="image/*" class="hidden" onchange="handleLtLogoUpload(event)">
+                  </div>
+                </div>
+                <button onclick="clearLtLogo()" class="px-2.5 py-2 bg-red-950/60 hover:bg-red-900 border border-red-800/60 text-red-400 rounded-lg text-xs" title="Hapus Logo">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
               </div>
             </div>
 
@@ -346,15 +337,6 @@
               </button>
             </div>
 
-            <div>
-              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
-              <div class="flex flex-wrap gap-4 text-xs">
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" checked class="rounded border-gray-700 text-indigo-600"> Live Streaming</label>
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Audiens</label>
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Stage</label>
-              </div>
-            </div>
-
             <div class="grid grid-cols-3 gap-2">
               <button onclick="navSlide('prev')" class="bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-semibold py-2.5 rounded-lg transition">
                 &lt; Balik
@@ -400,15 +382,6 @@
               <button onclick="deleteCurrentCarousel()" class="w-9 h-9 bg-red-950/80 hover:bg-red-900 border border-red-700/80 text-red-400 rounded-lg flex items-center justify-center transition" title="Hapus Carousel">
                 <i class="fa-solid fa-trash text-xs"></i>
               </button>
-            </div>
-
-            <div>
-              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
-              <div class="flex flex-wrap gap-4 text-xs">
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" checked class="rounded border-gray-700 text-indigo-600"> Live Streaming</label>
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Audiens</label>
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Stage</label>
-              </div>
             </div>
 
             <div>
@@ -466,15 +439,6 @@
               </div>
             </div>
 
-            <div>
-              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
-              <div class="flex flex-wrap gap-4 text-xs">
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" checked class="rounded border-gray-700 text-indigo-600"> Live Streaming</label>
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Audiens</label>
-                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Stage</label>
-              </div>
-            </div>
-
             <div class="flex items-center gap-2 pt-2">
               <button onclick="deleteCurrentCd()" class="w-10 h-10 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-400 rounded-lg flex items-center justify-center transition">
                 <i class="fa-solid fa-trash text-sm"></i>
@@ -495,11 +459,11 @@
 
   <!-- MODALS SECTION -->
 
-  <!-- 0. MODAL KONFIGURASI SUPABASE -->
+  <!-- MODAL SUPABASE CONFIG -->
   <div id="modalSupabaseConfig" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
     <div class="bg-[#121826] border border-cardBorder w-full max-w-md rounded-xl p-5 shadow-2xl space-y-4">
       <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-cloud text-indigo-400"></i> Pengaturan Supabase Storage</h3>
-      <p class="text-xs text-gray-400">Kredensial Supabase terhubung secara terpusat untuk menyimpan dan menghapus file foto slide secara otomatis.</p>
+      <p class="text-xs text-gray-400">Kredensial Supabase terhubung secara terpusat untuk menyimpan dan menghapus file foto slide & logo secara otomatis.</p>
       <div>
         <label class="text-xs font-medium text-gray-300 block mb-1">Supabase URL</label>
         <input type="text" id="supabaseUrlInput" placeholder="https://xyz.supabase.co" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
@@ -519,7 +483,7 @@
     </div>
   </div>
 
-  <!-- 1. MODAL BUAT PRESENTASI -->
+  <!-- MODAL BUAT PRESENTASI -->
   <div id="modalCreatePresentation" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
     <div class="bg-[#121826] border border-cardBorder w-full max-w-md rounded-xl p-5 shadow-2xl space-y-4">
       <h3 class="text-base font-bold text-white">Buat Presentasi</h3>
@@ -531,17 +495,6 @@
         <label class="text-xs font-medium text-gray-300 block mb-1">Pembicara</label>
         <input type="text" id="newPresSpeaker" placeholder="e.g. Pdt. John Doe" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
       </div>
-      <div>
-        <label class="text-xs font-medium text-gray-300 block mb-1">Tanggal & Waktu</label>
-        <input type="datetime-local" id="newPresDateTime" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none">
-      </div>
-      <div>
-        <label class="text-xs font-medium text-gray-300 block mb-1">Penggunaan</label>
-        <div class="flex items-center gap-4 text-xs text-gray-300 pt-1">
-          <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="presUsage" value="Sekali" checked class="text-indigo-600"> Sekali (Acara Ini Saja)</label>
-          <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="presUsage" value="Berulang" class="text-indigo-600"> Berulang (Lintas Acara)</label>
-        </div>
-      </div>
       <div class="flex items-center justify-end gap-2 pt-2">
         <button onclick="closeModal('modalCreatePresentation')" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs text-gray-200 font-semibold rounded-lg transition">Batal</button>
         <button onclick="saveNewPresentation()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" title="Simpan">
@@ -551,7 +504,7 @@
     </div>
   </div>
 
-  <!-- 2. MODAL BUAT CAROUSEL -->
+  <!-- MODAL BUAT CAROUSEL -->
   <div id="modalCreateCarousel" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
     <div class="bg-[#121826] border border-cardBorder w-full max-w-md rounded-xl p-5 shadow-2xl space-y-4">
       <h3 class="text-base font-bold text-white">Buat Carousel</h3>
@@ -563,17 +516,6 @@
         <label class="text-xs font-medium text-gray-300 block mb-1">Pembuat/Admin</label>
         <input type="text" id="newCarouselAdmin" placeholder="e.g. Media Team" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
       </div>
-      <div>
-        <label class="text-xs font-medium text-gray-300 block mb-1">Tanggal & Waktu</label>
-        <input type="datetime-local" id="newCarouselDateTime" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none">
-      </div>
-      <div>
-        <label class="text-xs font-medium text-gray-300 block mb-1">Penggunaan</label>
-        <div class="flex items-center gap-4 text-xs text-gray-300 pt-1">
-          <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="carouselUsage" value="Sekali" checked class="text-indigo-600"> Sekali (Acara Ini Saja)</label>
-          <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="carouselUsage" value="Berulang" class="text-indigo-600"> Berulang (Lintas Acara)</label>
-        </div>
-      </div>
       <div class="flex items-center justify-end gap-2 pt-2">
         <button onclick="closeModal('modalCreateCarousel')" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs text-gray-200 font-semibold rounded-lg transition">Batal</button>
         <button onclick="saveNewCarousel()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" title="Simpan">
@@ -583,7 +525,7 @@
     </div>
   </div>
 
-  <!-- 3. MODAL PENGATURAN SLIDE -->
+  <!-- MODAL PENGATURAN SLIDE -->
   <div id="modalSlideManager" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
     <div class="bg-[#121826] border border-cardBorder w-full max-w-3xl rounded-xl p-5 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-cardBorder pb-3">
@@ -592,9 +534,8 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
-        <!-- LEFT SLIDE LIST -->
         <div class="md:col-span-5 border-r border-cardBorder/60 pr-0 md:pr-4 space-y-3">
-          <label class="text-xs font-bold text-gray-300 block">Slide (Drag & drop untuk ubah urutan)</label>
+          <label class="text-xs font-bold text-gray-300 block">Slide List</label>
           <div id="slideManagerList" class="grid grid-cols-2 gap-2.5 max-h-[300px] overflow-y-auto pr-1">
           </div>
           <button onclick="prepareNewSlideForm()" class="w-9 h-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center transition mx-auto mt-2 shadow-lg" title="Tambah Slide Baru">
@@ -602,7 +543,6 @@
           </button>
         </div>
 
-        <!-- RIGHT SLIDE FORM -->
         <div class="md:col-span-7 space-y-3">
           <h4 class="text-xs font-bold text-gray-200 uppercase tracking-wider">ADD / EDIT SLIDE</h4>
           <div>
@@ -638,24 +578,18 @@
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
 
-  <!-- FOOTER -->
   <footer class="mt-6 text-center text-[11px] text-gray-500 font-medium">
     Panel Kontrol OBS &copy; By <a href="https://www.buanamedia.my.id/" target="_blank" class="hover:underline hover:text-blue-500 transition-colors">Buana Media</a>
   </footer>
 
   <script>
-    /* ===================================================
-       GLOBAL STATE
-       =================================================== */
     const state = {
       profile: 'DEFAULT',
       event: '',
-      activeTab: 'info',
+      activeTab: 'lowerthird',
       
-      // Supabase credentials
       supabase: {
         url: localStorage.getItem('sb_url') || '',
         key: localStorage.getItem('sb_key') || '',
@@ -663,7 +597,6 @@
         client: null
       },
 
-      // Data Collections
       infoItems: [],
       selectedInfoId: null,
 
@@ -672,6 +605,7 @@
 
       ltItems: [],
       selectedLtId: null,
+      uploadedLtLogoUrl: null,
 
       presentations: [],
       selectedPresId: null,
@@ -683,7 +617,6 @@
       countdowns: [],
       selectedCdId: null,
 
-      // Slide Manager Modal State
       slideManagerType: null,
       editingSlideIdx: null,
       uploadedImgUrl: null,
@@ -691,9 +624,6 @@
       uploadedFilePath: null
     };
 
-    /* ===================================================
-       FIREBASE REALTIME DATABASE SYNC
-       =================================================== */
     function syncStateToFirebase() {
       if (typeof database === 'undefined') return;
 
@@ -792,9 +722,6 @@
       renderCdDetail();
     }
 
-    /* ===================================================
-       SUPABASE STORAGE INTEGRATION
-       =================================================== */
     function initSupabase() {
       if (state.supabase.url && state.supabase.key && window.supabase) {
         try {
@@ -813,10 +740,7 @@
     async function deleteSupabaseFile(filePath) {
       if (!filePath || !state.supabase.client) return;
       try {
-        const { error } = await state.supabase.client.storage
-          .from(state.supabase.bucket)
-          .remove([filePath]);
-        if (error) console.warn('Gagal menghapus file Supabase:', error);
+        await state.supabase.client.storage.from(state.supabase.bucket).remove([filePath]);
       } catch (err) {
         console.warn('Error menghapus file Supabase:', err);
       }
@@ -843,7 +767,6 @@
       showToast('Konfigurasi Supabase berhasil disimpan');
     }
 
-    // TOAST NOTIFICATION UTILITY
     function showToast(message) {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -851,17 +774,13 @@
       toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
       container.appendChild(toast);
       
-      setTimeout(() => {
-        toast.classList.remove('opacity-0', 'translate-y-2');
-      }, 10);
-
+      setTimeout(() => toast.classList.remove('opacity-0', 'translate-y-2'), 10);
       setTimeout(() => {
         toast.classList.add('opacity-0', 'translate-y-2');
         setTimeout(() => toast.remove(), 300);
       }, 2500);
     }
 
-    // TAB SWITCHING
     function switchTab(tabName) {
       state.activeTab = tabName;
       document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -877,7 +796,6 @@
       if (activePanel) activePanel.classList.remove('hidden');
     }
 
-    // INITIAL LOAD
     window.onload = function() {
       initSupabase();
       listenToFirebaseRealtime();
@@ -940,13 +858,8 @@
 
     function deleteCurrentInfo() {
       state.infoItems = state.infoItems.filter(i => i.id !== state.selectedInfoId);
-      if (state.infoItems.length > 0) {
-        selectInfoCard(state.infoItems[0].id);
-      } else {
-        state.selectedInfoId = null;
-        renderInfoList();
-        renderInfoDetail();
-      }
+      if (state.infoItems.length > 0) selectInfoCard(state.infoItems[0].id);
+      else { state.selectedInfoId = null; renderInfoList(); renderInfoDetail(); }
       syncStateToFirebase();
     }
 
@@ -978,11 +891,8 @@
 
     function renderTickerDetail() {
       const item = state.tickerItems.find(i => i.id === state.selectedTickerId);
-      if (item) {
-        document.getElementById('tickerContent').value = item.content;
-      } else {
-        document.getElementById('tickerContent').value = '';
-      }
+      if (item) document.getElementById('tickerContent').value = item.content;
+      else document.getElementById('tickerContent').value = '';
     }
 
     function addTickerItem() {
@@ -1004,13 +914,8 @@
 
     function deleteCurrentTicker() {
       state.tickerItems = state.tickerItems.filter(i => i.id !== state.selectedTickerId);
-      if (state.tickerItems.length > 0) {
-        selectTickerCard(state.tickerItems[0].id);
-      } else {
-        state.selectedTickerId = null;
-        renderTickerList();
-        renderTickerDetail();
-      }
+      if (state.tickerItems.length > 0) selectTickerCard(state.tickerItems[0].id);
+      else { state.selectedTickerId = null; renderTickerList(); renderTickerDetail(); }
       syncStateToFirebase();
     }
 
@@ -1028,8 +933,13 @@
       }
       container.innerHTML = filtered.map(item => `
         <div onclick="selectLtCard('${item.id}')" class="p-3 rounded-lg border cursor-pointer transition ${state.selectedLtId === item.id ? 'bg-indigo-950/40 border-indigo-600' : 'bg-inputBg border-cardBorder hover:border-gray-700'}">
-          <div class="text-xs font-bold text-white">${item.name}</div>
-          <div class="text-[11px] text-gray-400 truncate mt-0.5">${item.subtitle || '-'}</div>
+          <div class="flex items-center gap-2">
+            ${item.logo ? `<img src="${item.logo}" class="w-6 h-6 rounded object-cover shrink-0">` : ''}
+            <div class="truncate">
+              <div class="text-xs font-bold text-white">${item.name}</div>
+              <div class="text-[11px] text-gray-400 truncate mt-0.5">${item.subtitle || '-'}</div>
+            </div>
+          </div>
         </div>
       `).join('');
     }
@@ -1045,15 +955,74 @@
       if (item) {
         document.getElementById('ltName').value = item.name;
         document.getElementById('ltSub').value = item.subtitle;
+        state.uploadedLtLogoUrl = item.logo || null;
+        updateLtLogoPreviewUI(item.logo);
       } else {
         document.getElementById('ltName').value = '';
         document.getElementById('ltSub').value = '';
+        state.uploadedLtLogoUrl = null;
+        updateLtLogoPreviewUI(null);
       }
+    }
+
+    function updateLtLogoPreviewUI(logoUrl) {
+      const preview = document.getElementById('ltLogoPreview');
+      const text = document.getElementById('ltLogoText');
+      if (logoUrl) {
+        preview.innerHTML = `<img src="${logoUrl}" class="w-full h-full object-cover">`;
+        text.innerText = 'Logo Terpasang (Klik ganti)';
+      } else {
+        preview.innerHTML = `<i class="fa-solid fa-image text-gray-600 text-lg"></i>`;
+        text.innerText = 'Upload Logo / Foto';
+      }
+    }
+
+    async function handleLtLogoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const textElement = document.getElementById('ltLogoText');
+
+      if (state.supabase.client) {
+        textElement.innerText = 'Mengunggah ke Cloud...';
+        try {
+          const filePath = `logos/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+          const { error } = await state.supabase.client.storage
+            .from(state.supabase.bucket)
+            .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+          if (error) throw error;
+
+          const { data: publicData } = state.supabase.client.storage
+            .from(state.supabase.bucket)
+            .getPublicUrl(filePath);
+
+          state.uploadedLtLogoUrl = publicData.publicUrl;
+          updateLtLogoPreviewUI(publicData.publicUrl);
+          return;
+        } catch (err) {
+          console.warn('Supabase logo upload error:', err);
+        }
+      }
+
+      // Fallback local reader
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        state.uploadedLtLogoUrl = evt.target.result;
+        updateLtLogoPreviewUI(evt.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearLtLogo() {
+      state.uploadedLtLogoUrl = null;
+      document.getElementById('ltLogoUploader').value = '';
+      updateLtLogoPreviewUI(null);
     }
 
     function addLtItem() {
       const newId = 'l' + Date.now();
-      state.ltItems.push({ id: newId, name: 'Nama Baru', subtitle: '' });
+      state.ltItems.push({ id: newId, name: 'Nama Baru', subtitle: '', logo: null });
       selectLtCard(newId);
       syncStateToFirebase();
     }
@@ -1063,6 +1032,7 @@
       if (item) {
         item.name = document.getElementById('ltName').value;
         item.subtitle = document.getElementById('ltSub').value;
+        item.logo = state.uploadedLtLogoUrl;
         renderLtList(document.getElementById('ltSearch').value);
         syncStateToFirebase();
         showToast('Lowerthird berhasil disimpan');
@@ -1071,13 +1041,8 @@
 
     function deleteCurrentLt() {
       state.ltItems = state.ltItems.filter(i => i.id !== state.selectedLtId);
-      if (state.ltItems.length > 0) {
-        selectLtCard(state.ltItems[0].id);
-      } else {
-        state.selectedLtId = null;
-        renderLtList();
-        renderLtDetail();
-      }
+      if (state.ltItems.length > 0) selectLtCard(state.ltItems[0].id);
+      else { state.selectedLtId = null; renderLtList(); renderLtDetail(); }
       syncStateToFirebase();
     }
 
@@ -1162,19 +1127,12 @@
       const pres = state.presentations.find(p => p.id === state.selectedPresId);
       if (pres && pres.slides) {
         for (const slide of pres.slides) {
-          if (slide.supabaseFilePath) {
-            await deleteSupabaseFile(slide.supabaseFilePath);
-          }
+          if (slide.supabaseFilePath) await deleteSupabaseFile(slide.supabaseFilePath);
         }
       }
       state.presentations = state.presentations.filter(p => p.id !== state.selectedPresId);
-      if (state.presentations.length > 0) {
-        selectPresCard(state.presentations[0].id);
-      } else {
-        state.selectedPresId = null;
-        renderPresList();
-        renderPresDetail();
-      }
+      if (state.presentations.length > 0) selectPresCard(state.presentations[0].id);
+      else { state.selectedPresId = null; renderPresList(); renderPresDetail(); }
       syncStateToFirebase();
     }
 
@@ -1252,19 +1210,12 @@
       const carousel = state.carousels.find(c => c.id === state.selectedCarouselId);
       if (carousel && carousel.slides) {
         for (const slide of carousel.slides) {
-          if (slide.supabaseFilePath) {
-            await deleteSupabaseFile(slide.supabaseFilePath);
-          }
+          if (slide.supabaseFilePath) await deleteSupabaseFile(slide.supabaseFilePath);
         }
       }
       state.carousels = state.carousels.filter(c => c.id !== state.selectedCarouselId);
-      if (state.carousels.length > 0) {
-        selectCarouselCard(state.carousels[0].id);
-      } else {
-        state.selectedCarouselId = null;
-        renderCarouselList();
-        renderCarouselDetail();
-      }
+      if (state.carousels.length > 0) selectCarouselCard(state.carousels[0].id);
+      else { state.selectedCarouselId = null; renderCarouselList(); renderCarouselDetail(); }
       syncStateToFirebase();
     }
 
@@ -1330,23 +1281,15 @@
 
     function deleteCurrentCd() {
       state.countdowns = state.countdowns.filter(cd => cd.id !== state.selectedCdId);
-      if (state.countdowns.length > 0) {
-        selectCdCard(state.countdowns[0].id);
-      } else {
-        state.selectedCdId = null;
-        renderCdList();
-        renderCdDetail();
-      }
+      if (state.countdowns.length > 0) selectCdCard(state.countdowns[0].id);
+      else { state.selectedCdId = null; renderCdList(); renderCdDetail(); }
       syncStateToFirebase();
     }
 
-    // --- SLIDE MANAGER MODAL & SUPABASE UPLOAD/DELETE ---
+    // --- SLIDE MANAGER MODAL ---
     function getTargetSlideObject() {
-      if (state.slideManagerType === 'carousel') {
-        return state.carousels.find(c => c.id === state.selectedCarouselId);
-      } else if (state.slideManagerType === 'presentasi') {
-        return state.presentations.find(p => p.id === state.selectedPresId);
-      }
+      if (state.slideManagerType === 'carousel') return state.carousels.find(c => c.id === state.selectedCarouselId);
+      else if (state.slideManagerType === 'presentasi') return state.presentations.find(p => p.id === state.selectedPresId);
       return null;
     }
 
@@ -1436,7 +1379,7 @@
         substatusElement.innerText = 'Mohon tunggu sebentar';
         try {
           const filePath = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-          const { data, error } = await state.supabase.client.storage
+          const { error } = await state.supabase.client.storage
             .from(state.supabase.bucket)
             .upload(filePath, file, { cacheControl: '3600', upsert: true });
 
@@ -1453,13 +1396,9 @@
           return;
         } catch (err) {
           console.warn('Supabase upload error:', err);
-          statusElement.innerText = 'Gagal upload Supabase: Fallback lokal';
         }
       }
 
-      // Fallback local reader
-      statusElement.innerText = 'Gambar Lokal: ' + file.name;
-      substatusElement.innerText = 'Atur Supabase di ikon Gear';
       const reader = new FileReader();
       reader.onload = function(evt) {
         state.uploadedImgUrl = evt.target.result;
@@ -1477,7 +1416,6 @@
       const imgName = state.uploadedImgName || (state.uploadedImgUrl ? 'Gambar Cloud' : '');
 
       if (state.editingSlideIdx !== null && targetObj.slides[state.editingSlideIdx]) {
-        // Edit Existing Slide
         const currentSlide = targetObj.slides[state.editingSlideIdx];
         if (state.uploadedFilePath && currentSlide.supabaseFilePath && currentSlide.supabaseFilePath !== state.uploadedFilePath) {
           deleteSupabaseFile(currentSlide.supabaseFilePath);
@@ -1485,11 +1423,8 @@
         currentSlide.text = textVal;
         currentSlide.img = state.uploadedImgUrl;
         currentSlide.imgName = imgName;
-        if (state.uploadedFilePath) {
-          currentSlide.supabaseFilePath = state.uploadedFilePath;
-        }
+        if (state.uploadedFilePath) currentSlide.supabaseFilePath = state.uploadedFilePath;
       } else {
-        // Create New Slide
         const newSlideNum = targetObj.slides.length + 1;
         targetObj.slides.push({
           id: 's' + Date.now(),
@@ -1517,15 +1452,10 @@
       if (!targetObj || !targetObj.slides) return;
 
       const slideToDelete = targetObj.slides[idx];
-      if (slideToDelete && slideToDelete.supabaseFilePath) {
-        await deleteSupabaseFile(slideToDelete.supabaseFilePath);
-      }
+      if (slideToDelete && slideToDelete.supabaseFilePath) await deleteSupabaseFile(slideToDelete.supabaseFilePath);
 
       targetObj.slides.splice(idx, 1);
-
-      targetObj.slides.forEach((s, i) => {
-        s.label = 'Slide ' + (i + 1);
-      });
+      targetObj.slides.forEach((s, i) => s.label = 'Slide ' + (i + 1));
 
       prepareNewSlideForm();
 
@@ -1536,8 +1466,7 @@
 
     function updateCharCounter() {
       const val = document.getElementById('slideTextInput').value;
-      const remaining = 420 - val.length;
-      document.getElementById('slideCharCounter').innerText = remaining;
+      document.getElementById('slideCharCounter').innerText = 420 - val.length;
     }
 
     // --- PROFIL & ACARA ACTIONS ---
@@ -1546,11 +1475,9 @@
       if (p) {
         const select = document.getElementById('profileSelect');
         const opt = document.createElement('option');
-        opt.value = p;
-        opt.innerText = p;
+        opt.value = p; opt.innerText = p;
         select.appendChild(opt);
-        select.value = p;
-        state.profile = p;
+        select.value = p; state.profile = p;
         syncStateToFirebase();
       }
     }
@@ -1575,21 +1502,16 @@
       }
     }
 
-    function onProfileChange(val) {
-      state.profile = val;
-      syncStateToFirebase();
-    }
+    function onProfileChange(val) { state.profile = val; syncStateToFirebase(); }
 
     function addEventPrompt() {
       const e = prompt('Masukkan Nama Acara Baru:');
       if (e) {
         const select = document.getElementById('eventSelect');
         const opt = document.createElement('option');
-        opt.value = e;
-        opt.innerText = e;
+        opt.value = e; opt.innerText = e;
         select.appendChild(opt);
-        select.value = e;
-        state.event = e;
+        select.value = e; state.event = e;
         syncStateToFirebase();
       }
     }
@@ -1614,15 +1536,9 @@
       }
     }
 
-    function onEventChange(val) {
-      state.event = val;
-      syncStateToFirebase();
-    }
+    function onEventChange(val) { state.event = val; syncStateToFirebase(); }
 
-    // UTILS & FILTERING
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
-    }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
     function filterItems(type) {
       if (type === 'info') renderInfoList(document.getElementById('infoSearch').value);
@@ -1633,9 +1549,6 @@
       else if (type === 'countdown') renderCdList(document.getElementById('cdSearch').value);
     }
 
-    /* ===================================================
-       HIDE OVERLAY FUNCTION
-       =================================================== */
     function hideOverlay() {
       if (typeof database === 'undefined') return;
       database.ref('activeOverlay').set({ action: 'hide', timestamp: Date.now() })
@@ -1643,19 +1556,13 @@
         .catch(err => console.error(err));
     }
 
-    /* ===================================================
-       TRIGGER DISPLAY (MEMANCARKAN SIARAN KE FIREBASE)
-       =================================================== */
     function triggerDisplay(type) {
       if (typeof database === 'undefined') {
-        alert("Firebase belum terhubung. Periksa file js/firebase-config.js Anda.");
+        alert("Firebase belum terhubung.");
         return;
       }
 
-      let payload = { 
-        type: type,
-        timestamp: Date.now()
-      };
+      let payload = { type: type, timestamp: Date.now() };
 
       if (type === 'info') {
         payload.title = document.getElementById('infoTitle').value;
@@ -1667,6 +1574,7 @@
       } else if (type === 'lowerthird') {
         payload.name = document.getElementById('ltName').value;
         payload.subtitle = document.getElementById('ltSub').value;
+        payload.logo = state.uploadedLtLogoUrl || null;
         payload.duration = parseInt(document.getElementById('ltDuration').value);
       } else if (type === 'presentasi') {
         const pres = state.presentations.find(p => p.id === state.selectedPresId);
@@ -1676,18 +1584,14 @@
           payload.slide = pres.slides[state.currentPresSlideIndex];
           payload.slideIndex = state.currentPresSlideIndex;
           payload.totalSlides = pres.slides.length;
-        } else {
-          return;
-        }
+        } else return;
       } else if (type === 'carousel') {
         const carousel = state.carousels.find(c => c.id === state.selectedCarouselId);
         if (carousel && carousel.slides) {
           payload.title = carousel.title;
           payload.slides = carousel.slides;
           payload.interval = parseInt(document.getElementById('carouselInterval').value);
-        } else {
-          return;
-        }
+        } else return;
       } else if (type === 'countdown') {
         payload.title = document.getElementById('cdTitle').value;
         payload.hours = parseInt(document.getElementById('cdHours').value) || 0;
@@ -1696,24 +1600,16 @@
       }
 
       database.ref('activeOverlay').set(payload)
-        .then(() => {
-          showToast(`Tampilan ${type.toUpperCase()} Dikirim ke Overlay`);
-        })
-        .catch((err) => {
-          console.error("Firebase write error:", err);
-        });
+        .then(() => showToast(`Tampilan ${type.toUpperCase()} Dikirim`))
+        .catch(err => console.error("Firebase write error:", err));
     }
 
-    // NAVIGASI SLIDE PRESENTASI
     function navSlide(dir) {
       const pres = state.presentations.find(p => p.id === state.selectedPresId);
       if (!pres || !pres.slides || pres.slides.length === 0) return;
 
-      if (dir === 'prev' && state.currentPresSlideIndex > 0) {
-        state.currentPresSlideIndex--;
-      } else if (dir === 'next' && state.currentPresSlideIndex < pres.slides.length - 1) {
-        state.currentPresSlideIndex++;
-      }
+      if (dir === 'prev' && state.currentPresSlideIndex > 0) state.currentPresSlideIndex--;
+      else if (dir === 'next' && state.currentPresSlideIndex < pres.slides.length - 1) state.currentPresSlideIndex++;
 
       renderPresDetail();
       triggerDisplay('presentasi');
