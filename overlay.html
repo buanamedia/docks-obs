@@ -1,1 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>OBS Overlay</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: transparent; /* Agar transparan di OBS */
+    }
 
+    .overlay-box {
+      position: absolute;
+      bottom: 40px;
+      left: 40px;
+      background: rgba(17, 17, 27, 0.85);
+      border-left: 5px solid #89b4fa;
+      padding: 15px 25px;
+      border-radius: 0 8px 8px 0;
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #89b4fa;
+      margin: 0;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #bac2de;
+      margin-top: 5px;
+    }
+  </style>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+</head>
+<body>
+
+  <div class="overlay-box">
+    <div class="title" id="displayTitle">Loading...</div>
+    <div class="subtitle" id="displaySubtitle">Waiting for update</div>
+  </div>
+
+  <script>
+    const displayTitle = document.getElementById('displayTitle');
+    const displaySubtitle = document.getElementById('displaySubtitle');
+
+    // Mendengarkan perubahan data secara Realtime
+    database.ref('overlayData').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        displayTitle.innerText = data.title || '';
+        displaySubtitle.innerText = data.subtitle || '';
+      }
+    });
+  </script>
+</body>
+</html>
