@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Overlay OBS - GK RIDC</title>
+  <title>Overlay OBS - By Buana Media</title>
 
   <!-- Google Font Inter & Poppins -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,6 +19,9 @@
   <!-- Firebase SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- File Konfigurasi Firebase External -->
+  <script src="js/firebase-config.js"></script>
 
   <style>
     body {
@@ -81,7 +84,7 @@
     </div>
     <div class="flex-1 overflow-hidden relative h-full flex items-center">
       <div id="ticker-text-display" class="animate-marquee text-white font-semibold text-sm tracking-wide">
-        Selamat Datang di Ibadah GK RIDC. Silakan mengisi warta dan pokok doa secara online melalui website kami.
+        Selamat Datang di Ibadah. Silakan mengisi warta dan pokok doa secara online melalui website kami.
       </div>
     </div>
   </div>
@@ -91,7 +94,7 @@
     <div class="glass-card rounded-2xl max-w-4xl w-full p-8 text-center flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
       <img id="slide-img-display" src="" class="max-h-[500px] w-auto object-contain rounded-lg mb-4 hidden shadow-md" alt="Slide Image">
       <h2 id="slide-text-display" class="text-3xl font-bold text-white leading-relaxed drop-shadow-md">
-        Shalom! Selamat Datang di Ibadah Minggu
+        Shalom! Selamat Datang
       </h2>
     </div>
   </div>
@@ -111,31 +114,13 @@
 
   <!-- 5. COUNTDOWN DISPLAY (TENGAH / ATAS) -->
   <div id="overlay-countdown" class="fade-slide-up absolute top-16 left-1/2 -translate-x-1/2 glass-card rounded-2xl px-10 py-5 text-center shadow-2xl border border-indigo-500/30">
-    <div id="cd-title-display" class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Ibadah Akan Dimulai</div>
+    <div id="cd-title-display" class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Acara Akan Dimulai</div>
     <div id="cd-timer-display" class="text-5xl font-black text-white font-mono tracking-wider drop-shadow-lg">
       00:05:00
     </div>
   </div>
 
   <script>
-    /* ===================================================
-       FIREBASE CONFIGURATION
-       =================================================== */
-    const firebaseConfig = {
-      apiKey: "API_KEY_ANDA",
-      authDomain: "obs-docks-control.firebaseapp.com",
-      databaseURL: "https://obs-docks-control-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "obs-docks-control",
-      storageBucket: "obs-docks-control.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const database = firebase.database();
-
     let cdInterval = null;
     let carouselInterval = null;
     let autoHideTimeout = null;
@@ -149,135 +134,139 @@
     }
 
     // Mendengarkan perubahan Realtime dari Firebase Panel Kontrol
-    database.ref('activeOverlay').on('value', (snapshot) => {
-      const data = snapshot.val();
-      if (!data) return;
+    if (typeof database !== 'undefined') {
+      database.ref('activeOverlay').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
 
-      if (data.action === 'hide') {
-        hideAll();
-        return;
-      }
-
-      // --- 1. LOWERTHIRD ---
-      if (data.type === 'lowerthird') {
-        hideAll();
-        document.getElementById('lt-title-display').innerText = data.name || '';
-        document.getElementById('lt-sub-display').innerText = data.subtitle || '';
-        document.getElementById('overlay-lowerthird').classList.add('active');
-
-        if (data.duration > 0) {
-          autoHideTimeout = setTimeout(() => {
-            document.getElementById('overlay-lowerthird').classList.remove('active');
-          }, data.duration * 1000);
-        }
-      }
-
-      // --- 2. TICKER ---
-      if (data.type === 'ticker') {
-        hideAll();
-        document.getElementById('ticker-text-display').innerHTML = data.content || '';
-        document.getElementById('overlay-ticker').classList.add('active');
-
-        if (data.duration > 0) {
-          autoHideTimeout = setTimeout(() => {
-            document.getElementById('overlay-ticker').classList.remove('active');
-          }, data.duration * 1000);
-        }
-      }
-
-      // --- 3. PRESENTASI ---
-      if (data.type === 'presentasi' && data.slide) {
-        hideAll();
-        const imgEl = document.getElementById('slide-img-display');
-        const textEl = document.getElementById('slide-text-display');
-
-        if (data.slide.img) {
-          imgEl.src = data.slide.img;
-          imgEl.classList.remove('hidden');
-        } else {
-          imgEl.classList.add('hidden');
+        if (data.action === 'hide') {
+          hideAll();
+          return;
         }
 
-        textEl.innerText = data.slide.text || '';
-        document.getElementById('overlay-slide').classList.add('active');
-      }
+        // --- 1. LOWERTHIRD ---
+        if (data.type === 'lowerthird') {
+          hideAll();
+          document.getElementById('lt-title-display').innerText = data.name || '';
+          document.getElementById('lt-sub-display').innerText = data.subtitle || '';
+          document.getElementById('overlay-lowerthird').classList.add('active');
 
-      // --- 4. CAROUSEL (ROTASI AUTOMATIS SLIDE) ---
-      if (data.type === 'carousel' && data.slides && data.slides.length > 0) {
-        hideAll();
-        let currentIndex = 0;
-        const imgEl = document.getElementById('slide-img-display');
-        const textEl = document.getElementById('slide-text-display');
+          if (data.duration > 0) {
+            autoHideTimeout = setTimeout(() => {
+              document.getElementById('overlay-lowerthird').classList.remove('active');
+            }, data.duration * 1000);
+          }
+        }
 
-        function renderCarouselSlide(index) {
-          const slide = data.slides[index];
-          if (!slide) return;
+        // --- 2. TICKER ---
+        if (data.type === 'ticker') {
+          hideAll();
+          document.getElementById('ticker-text-display').innerHTML = data.content || '';
+          document.getElementById('overlay-ticker').classList.add('active');
 
-          if (slide.img) {
-            imgEl.src = slide.img;
+          if (data.duration > 0) {
+            autoHideTimeout = setTimeout(() => {
+              document.getElementById('overlay-ticker').classList.remove('active');
+            }, data.duration * 1000);
+          }
+        }
+
+        // --- 3. PRESENTASI ---
+        if (data.type === 'presentasi' && data.slide) {
+          hideAll();
+          const imgEl = document.getElementById('slide-img-display');
+          const textEl = document.getElementById('slide-text-display');
+
+          if (data.slide.img) {
+            imgEl.src = data.slide.img;
             imgEl.classList.remove('hidden');
           } else {
             imgEl.classList.add('hidden');
           }
-          textEl.innerText = slide.text || '';
+
+          textEl.innerText = data.slide.text || '';
           document.getElementById('overlay-slide').classList.add('active');
         }
 
-        renderCarouselSlide(currentIndex);
+        // --- 4. CAROUSEL (ROTASI AUTOMATIS SLIDE) ---
+        if (data.type === 'carousel' && data.slides && data.slides.length > 0) {
+          hideAll();
+          let currentIndex = 0;
+          const imgEl = document.getElementById('slide-img-display');
+          const textEl = document.getElementById('slide-text-display');
 
-        const intervalTime = (data.interval || 10) * 1000;
-        carouselInterval = setInterval(() => {
-          currentIndex = (currentIndex + 1) % data.slides.length;
+          function renderCarouselSlide(index) {
+            const slide = data.slides[index];
+            if (!slide) return;
+
+            if (slide.img) {
+              imgEl.src = slide.img;
+              imgEl.classList.remove('hidden');
+            } else {
+              imgEl.classList.add('hidden');
+            }
+            textEl.innerText = slide.text || '';
+            document.getElementById('overlay-slide').classList.add('active');
+          }
+
           renderCarouselSlide(currentIndex);
-        }, intervalTime);
-      }
 
-      // --- 5. INFO ---
-      if (data.type === 'info') {
-        hideAll();
-        document.getElementById('info-title-display').innerText = data.title || 'INFO';
-        document.getElementById('info-content-display').innerText = data.content || '';
-        document.getElementById('overlay-info').classList.add('active');
-
-        if (data.duration > 0) {
-          autoHideTimeout = setTimeout(() => {
-            document.getElementById('overlay-info').classList.remove('active');
-          }, data.duration * 1000);
+          const intervalTime = (data.interval || 10) * 1000;
+          carouselInterval = setInterval(() => {
+            currentIndex = (currentIndex + 1) % data.slides.length;
+            renderCarouselSlide(currentIndex);
+          }, intervalTime);
         }
-      }
 
-      // --- 6. COUNTDOWN ---
-      if (data.type === 'countdown') {
-        hideAll();
-        document.getElementById('cd-title-display').innerText = data.title || 'COUNTDOWN';
-        
-        let totalSeconds = (parseInt(data.hours) || 0) * 3600 + (parseInt(data.minutes) || 0) * 60 + (parseInt(data.seconds) || 0);
-        
-        function updateTimerText() {
-          const hours = Math.floor(totalSeconds / 3600);
-          const minutes = Math.floor((totalSeconds % 3600) / 60);
-          const seconds = totalSeconds % 60;
+        // --- 5. INFO ---
+        if (data.type === 'info') {
+          hideAll();
+          document.getElementById('info-title-display').innerText = data.title || 'INFO';
+          document.getElementById('info-content-display').innerText = data.content || '';
+          document.getElementById('overlay-info').classList.add('active');
 
-          const pad = (n) => String(n).padStart(2, '0');
+          if (data.duration > 0) {
+            autoHideTimeout = setTimeout(() => {
+              document.getElementById('overlay-info').classList.remove('active');
+            }, data.duration * 1000);
+          }
+        }
+
+        // --- 6. COUNTDOWN ---
+        if (data.type === 'countdown') {
+          hideAll();
+          document.getElementById('cd-title-display').innerText = data.title || 'COUNTDOWN';
           
-          if (hours > 0) {
-            document.getElementById('cd-timer-display').innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-          } else {
-            document.getElementById('cd-timer-display').innerText = `${pad(minutes)}:${pad(seconds)}`;
+          let totalSeconds = (parseInt(data.hours) || 0) * 3600 + (parseInt(data.minutes) || 0) * 60 + (parseInt(data.seconds) || 0);
+          
+          function updateTimerText() {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const pad = (n) => String(n).padStart(2, '0');
+            
+            if (hours > 0) {
+              document.getElementById('cd-timer-display').innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+            } else {
+              document.getElementById('cd-timer-display').innerText = `${pad(minutes)}:${pad(seconds)}`;
+            }
+
+            if (totalSeconds <= 0) {
+              clearInterval(cdInterval);
+              document.getElementById('cd-timer-display').innerText = "00:00";
+            }
+            totalSeconds--;
           }
 
-          if (totalSeconds <= 0) {
-            clearInterval(cdInterval);
-            document.getElementById('cd-timer-display').innerText = "00:00";
-          }
-          totalSeconds--;
+          updateTimerText();
+          cdInterval = setInterval(updateTimerText, 1000);
+          document.getElementById('overlay-countdown').classList.add('active');
         }
-
-        updateTimerText();
-        cdInterval = setInterval(updateTimerText, 1000);
-        document.getElementById('overlay-countdown').classList.add('active');
-      }
-    });
+      });
+    } else {
+      console.error("Variabel database Firebase tidak ditemukan. Pastikan file js/firebase-config.js diimpor dengan benar.");
+    }
   </script>
 </body>
 </html>
