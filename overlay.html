@@ -68,16 +68,20 @@
 </head>
 <body class="relative w-[1920px] h-[1080px]">
 
-  <!-- 1. LOWERTHIRD DISPLAY (KIRI BAWAH) -->
+  <!-- 1. LOWERTHIRD DISPLAY (DENGAN SUPORT LOGO) -->
   <div id="overlay-lowerthird" class="fade-slide-up absolute bottom-16 left-16 flex items-stretch pointer-events-none">
     <div class="w-2.5 bg-gradient-to-b from-indigo-500 to-indigo-700 rounded-l-xl"></div>
-    <div class="glass-card px-8 py-4 rounded-r-xl border-l-0 min-w-[380px]">
-      <h1 id="lt-title-display" class="text-2xl font-extrabold text-white tracking-wide uppercase">Pdt. Ester Joice P</h1>
-      <p id="lt-sub-display" class="text-base font-medium text-indigo-400 mt-0.5">Gembala Sidang</p>
+    <div class="glass-card px-8 py-4 rounded-r-xl border-l-0 min-w-[380px] flex items-center gap-4">
+      <!-- Container Logo Lowerthird -->
+      <img id="lt-logo-display" src="" class="w-14 h-14 rounded-lg object-cover hidden border border-white/20 shadow-md shrink-0" alt="Logo">
+      <div>
+        <h1 id="lt-title-display" class="text-2xl font-extrabold text-white tracking-wide uppercase">Pdt. Ester Joice P</h1>
+        <p id="lt-sub-display" class="text-base font-medium text-indigo-400 mt-0.5">Gembala Sidang</p>
+      </div>
     </div>
   </div>
 
-  <!-- 2. TICKER DISPLAY (RUNNING TEXT BAWAH) -->
+  <!-- 2. TICKER DISPLAY -->
   <div id="overlay-ticker" class="fade-slide-up absolute bottom-0 left-0 right-0 glass-card border-x-0 border-b-0 h-12 flex items-center overflow-hidden">
     <div class="bg-indigo-600 text-white font-bold text-xs uppercase px-5 h-full flex items-center tracking-wider shrink-0 z-10 shadow-lg">
       <i class="fa-solid fa-bullhorn mr-2"></i> Warta
@@ -89,7 +93,7 @@
     </div>
   </div>
 
-  <!-- 3. CAROUSEL / PRESENTASI DISPLAY (TENGAH / SLIDE SLIDER) -->
+  <!-- 3. CAROUSEL / PRESENTASI DISPLAY -->
   <div id="overlay-slide" class="fade-slide-up absolute inset-0 flex items-center justify-center p-20 pointer-events-none">
     <div class="glass-card rounded-2xl max-w-4xl w-full p-8 text-center flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
       <img id="slide-img-display" src="" class="max-h-[500px] w-auto object-contain rounded-lg mb-4 hidden shadow-md" alt="Slide Image">
@@ -99,7 +103,7 @@
     </div>
   </div>
 
-  <!-- 4. INFO BANNER (KANAN ATAS) -->
+  <!-- 4. INFO BANNER -->
   <div id="overlay-info" class="fade-slide-up absolute top-12 right-12 glass-card rounded-xl p-5 max-w-md border-l-4 border-l-amber-500 shadow-2xl">
     <div class="flex items-start gap-3">
       <div class="text-amber-400 text-xl pt-0.5"><i class="fa-solid fa-circle-info"></i></div>
@@ -112,7 +116,7 @@
     </div>
   </div>
 
-  <!-- 5. COUNTDOWN DISPLAY (TENGAH / ATAS) -->
+  <!-- 5. COUNTDOWN DISPLAY -->
   <div id="overlay-countdown" class="fade-slide-up absolute top-16 left-1/2 -translate-x-1/2 glass-card rounded-2xl px-10 py-5 text-center shadow-2xl border border-indigo-500/30">
     <div id="cd-title-display" class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Acara Akan Dimulai</div>
     <div id="cd-timer-display" class="text-5xl font-black text-white font-mono tracking-wider drop-shadow-lg">
@@ -125,7 +129,6 @@
     let carouselInterval = null;
     let autoHideTimeout = null;
 
-    // Sembunyikan semua overlay di awal
     function hideAll() {
       document.querySelectorAll('.fade-slide-up').forEach(el => el.classList.remove('active'));
       if (cdInterval) clearInterval(cdInterval);
@@ -133,7 +136,6 @@
       if (autoHideTimeout) clearTimeout(autoHideTimeout);
     }
 
-    // Mendengarkan perubahan Realtime dari Firebase Panel Kontrol
     if (typeof database !== 'undefined') {
       database.ref('activeOverlay').on('value', (snapshot) => {
         const data = snapshot.val();
@@ -144,11 +146,20 @@
           return;
         }
 
-        // --- 1. LOWERTHIRD ---
+        // --- 1. LOWERTHIRD (LOGIC DISPLAY LOGO) ---
         if (data.type === 'lowerthird') {
           hideAll();
           document.getElementById('lt-title-display').innerText = data.name || '';
           document.getElementById('lt-sub-display').innerText = data.subtitle || '';
+
+          const logoEl = document.getElementById('lt-logo-display');
+          if (data.logo) {
+            logoEl.src = data.logo;
+            logoEl.classList.remove('hidden');
+          } else {
+            logoEl.classList.add('hidden');
+          }
+
           document.getElementById('overlay-lowerthird').classList.add('active');
 
           if (data.duration > 0) {
@@ -188,7 +199,7 @@
           document.getElementById('overlay-slide').classList.add('active');
         }
 
-        // --- 4. CAROUSEL (ROTASI AUTOMATIS SLIDE) ---
+        // --- 4. CAROUSEL ---
         if (data.type === 'carousel' && data.slides && data.slides.length > 0) {
           hideAll();
           let currentIndex = 0;
@@ -264,8 +275,6 @@
           document.getElementById('overlay-countdown').classList.add('active');
         }
       });
-    } else {
-      console.error("Variabel database Firebase tidak ditemukan. Pastikan file js/firebase-config.js diimpor dengan benar.");
     }
   </script>
 </body>
