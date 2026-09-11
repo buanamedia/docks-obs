@@ -76,7 +76,7 @@
       <img id="lt-logo-display" src="" class="w-14 h-14 rounded-lg object-cover hidden border border-white/20 shadow-md shrink-0" alt="Logo">
       <div>
         <h1 id="lt-title-display" class="text-2xl font-extrabold text-white tracking-wide uppercase">Nama Baru</h1>
-        <p id="lt-sub-display" class="text-base font-medium text-indigo-400 mt-0.5">Panduan Lengkap Setting Chrome Anti-Detect untuk Kejar Jam Tayang YouTube</p>
+        <p id="lt-sub-display" class="text-base font-medium text-indigo-400 mt-0.5">Keterangan Lower Third</p>
       </div>
     </div>
   </div>
@@ -88,7 +88,7 @@
     </div>
     <div class="flex-1 overflow-hidden relative h-full flex items-center">
       <div id="ticker-text-display" class="animate-marquee text-white font-semibold text-sm tracking-wide">
-        Selamat Datang di Ibadah. Silakan mengisi warta dan pokok doa secara online melalui website kami.
+        Selamat Datang. Silakan mengisi warta dan pokok doa secara online melalui website kami.
       </div>
     </div>
   </div>
@@ -98,7 +98,7 @@
     <div class="glass-card rounded-2xl max-w-4xl w-full p-8 text-center flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
       <img id="slide-img-display" src="" class="max-h-[500px] w-auto object-contain rounded-lg mb-4 hidden shadow-md" alt="Slide Image">
       <h2 id="slide-text-display" class="text-3xl font-bold text-white leading-relaxed drop-shadow-md">
-        Shalom! Selamat Datang
+        Selamat Datang
       </h2>
     </div>
   </div>
@@ -129,9 +129,19 @@
     let carouselInterval = null;
     let autoHideTimeout = null;
 
-    // Deteksi Target Layar dari URL (Penggunaan: overlay.html?target=stream / audience / stage)
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentTarget = urlParams.get('target') || 'stream';
+    // Evaluasi Target Layar (Mendukung query parameter & hash)
+    function getCurrentTarget() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryTarget = urlParams.get('target');
+      if (queryTarget) return queryTarget.trim();
+
+      const hash = window.location.hash.replace('#', '').trim();
+      if (hash) return hash;
+
+      return 'stream';
+    }
+
+    const currentTarget = getCurrentTarget();
 
     // Sembunyikan semua overlay
     function hideAll() {
@@ -141,13 +151,13 @@
       if (autoHideTimeout) clearTimeout(autoHideTimeout);
     }
 
-    // Memeriksa apakah target layar diizinkan dari data checkbox panel
+    // Pengecekan Izin Tampil Berdasarkan Centang Target (stream / audience / stage)
     function isAllowedForThisTarget(targets) {
-      if (!targets) return true; // Jika tidak ada batasan target, izinkan tampil
+      if (!targets) return true; // Jika tidak ada batasan target, tampilkan default
       return targets[currentTarget] === true;
     }
 
-    // Mendengarkan perubahan Realtime dari Firebase
+    // Realtime Database Listener
     if (typeof database !== 'undefined') {
       database.ref('activeOverlay').on('value', (snapshot) => {
         const data = snapshot.val();
@@ -158,7 +168,7 @@
           return;
         }
 
-        // Cek apakah target layar saat ini diizinkan
+        // Cek apakah target layar saat ini diizinkan dari centang panel
         if (!isAllowedForThisTarget(data.targets)) {
           hideAll();
           return;
@@ -293,8 +303,6 @@
           document.getElementById('overlay-countdown').classList.add('active');
         }
       });
-    } else {
-      console.error("Database Firebase tidak ditemukan. Pastikan file js/firebase-config.js termuat.");
     }
   </script>
 </body>
