@@ -3,75 +3,1651 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OBS Custom Dock Panel</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #1e1e2e;
-      color: #cdd6f4;
-      padding: 15px;
-      margin: 0;
+  <title>Panel Kontrol OBS - By Buana Media</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            panelBg: '#090d16',
+            cardBg: '#111827',
+            cardBorder: '#1f293d',
+            inputBg: '#0b1120',
+            accentPurple: '#6366f1',
+            accentPurpleHover: '#4f46e5',
+            accentGreen: '#10b981',
+            accentGreenHover: '#059669',
+            accentRed: '#ef4444',
+            accentRedHover: '#dc2626'
+          },
+          fontFamily: {
+            sans: ['Inter', 'Segoe UI', 'sans-serif']
+          }
+        }
+      }
     }
-    h3 { margin-top: 0; color: #89b4fa; }
-    .form-group { margin-bottom: 12px; }
-    label { display: block; margin-bottom: 5px; font-size: 12px; }
-    input[type="text"] {
-      width: 100%;
-      padding: 8px;
-      box-sizing: border-box;
-      border-radius: 4px;
-      border: 1px solid #45475a;
-      background-color: #313244;
-      color: #fff;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background-color: #a6e3a1;
-      color: #11111b;
-      font-weight: bold;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover { background-color: #94e2d5; }
-  </style>
-  <!-- Firebase SDK -->
+  </script>
+
+  <!-- Google Font Inter & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Supabase JS Client v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Firebase SDK (Compat Version) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js"></script>
+
+  <style>
+    body {
+      background-color: #090d16;
+      color: #f3f4f6;
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b1120;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1f293d;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #374151;
+    }
+    .modal-backdrop {
+      background-color: rgba(3, 7, 18, 0.85);
+      backdrop-filter: blur(4px);
+    }
+  </style>
 </head>
-<body>
+<body class="min-h-screen p-3 md:p-5 text-gray-100 flex flex-col justify-between">
 
-  <h3>Control Panel Overlay</h3>
+  <div class="max-w-7xl mx-auto w-full space-y-4">
+    
+    <!-- HEADER TOP ROW: PROFIL & ACARA -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      
+      <!-- PROFIL CARD -->
+      <div class="bg-cardBg border border-cardBorder rounded-xl p-3.5 flex flex-col justify-between shadow-lg">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-gray-300 tracking-wider uppercase">Profil</span>
+          <div class="flex items-center gap-1.5">
+            <button onclick="openSupabaseModal()" class="w-7 h-7 bg-indigo-900/60 hover:bg-indigo-800 text-indigo-300 border border-indigo-700/50 rounded-md flex items-center justify-center transition" title="Pengaturan Supabase Storage">
+              <i class="fa-solid fa-gear text-xs"></i>
+            </button>
+            <button onclick="addProfilePrompt()" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center justify-center transition" title="Tambah Profil">
+              <i class="fa-solid fa-plus text-xs"></i>
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="profileSelect" onchange="onProfileChange(this.value)" class="flex-1 bg-inputBg border border-cardBorder text-white text-xs rounded-lg p-2.5 outline-none focus:border-indigo-500 font-medium">
+            <option value="DEFAULT">DEFAULT PROFIL</option>
+          </select>
+          <button onclick="editProfilePrompt()" class="w-9 h-9 bg-inputBg hover:bg-cardBorder border border-cardBorder text-indigo-400 rounded-lg flex items-center justify-center transition" title="Edit Profil">
+            <i class="fa-solid fa-pen-to-square text-xs"></i>
+          </button>
+          <button onclick="deleteProfilePrompt()" class="w-9 h-9 bg-red-950/70 hover:bg-red-900 border border-red-800/80 text-red-400 rounded-lg flex items-center justify-center transition" title="Hapus Profil">
+            <i class="fa-solid fa-trash text-xs"></i>
+          </button>
+        </div>
+      </div>
 
-  <div class="form-group">
-    <label for="titleInput">Judul / Running Text:</label>
-    <input type="text" id="titleInput" placeholder="Masukkan judul...">
+      <!-- ACARA / IBADAH CARD -->
+      <div class="bg-cardBg border border-cardBorder rounded-xl p-3.5 flex flex-col justify-between shadow-lg">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-gray-300 tracking-wider uppercase">Acara / Ibadah</span>
+          <button onclick="addEventPrompt()" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center justify-center transition" title="Tambah Acara">
+            <i class="fa-solid fa-plus text-xs"></i>
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="eventSelect" onchange="onEventChange(this.value)" class="flex-1 bg-inputBg border border-cardBorder text-white text-xs rounded-lg p-2.5 outline-none focus:border-indigo-500 font-medium truncate">
+            <option value="ACARA_BARU">-- Pilih / Tambah Acara --</option>
+          </select>
+          <button onclick="editEventPrompt()" class="w-9 h-9 bg-inputBg hover:bg-cardBorder border border-cardBorder text-indigo-400 rounded-lg flex items-center justify-center transition" title="Edit Acara/Ibadah">
+            <i class="fa-solid fa-pen-to-square text-xs"></i>
+          </button>
+          <button onclick="deleteEventPrompt()" class="w-9 h-9 bg-red-950/70 hover:bg-red-900 border border-red-800/80 text-red-400 rounded-lg flex items-center justify-center transition" title="Hapus Acara">
+            <i class="fa-solid fa-trash text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MAIN DISPLAY CONTROL PANEL -->
+    <div class="bg-cardBg border border-cardBorder rounded-xl p-4 shadow-xl">
+      <h2 class="text-sm font-bold text-gray-200 uppercase tracking-wide mb-3">Kontrol Tampilan</h2>
+
+      <!-- TAB BUTTONS -->
+      <div class="flex items-center gap-1 border-b border-cardBorder pb-2 overflow-x-auto">
+        <button onclick="switchTab('info')" id="tab-info" class="tab-btn px-4 py-1.5 text-xs font-semibold rounded-md transition text-indigo-400 bg-indigo-950/40 border border-indigo-800/50">Info</button>
+        <button onclick="switchTab('ticker')" id="tab-ticker" class="tab-btn px-4 py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-200 transition">Ticker</button>
+        <button onclick="switchTab('lowerthird')" id="tab-lowerthird" class="tab-btn px-4 py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-200 transition">Lowerthird</button>
+        <button onclick="switchTab('presentasi')" id="tab-presentasi" class="tab-btn px-4 py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-200 transition">Presentasi</button>
+        <button onclick="switchTab('carousel')" id="tab-carousel" class="tab-btn px-4 py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-200 transition">Carousel</button>
+        <button onclick="switchTab('countdown')" id="tab-countdown" class="tab-btn px-4 py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-200 transition">Countdown</button>
+      </div>
+
+      <!-- TAB CONTENT PANELS -->
+      <div class="mt-4">
+
+        <!-- 1. TAB INFO -->
+        <div id="panel-info" class="tab-panel grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-5 space-y-2.5 border-r border-cardBorder/60 pr-0 md:pr-3">
+            <div class="flex items-center gap-2">
+              <input type="text" id="infoSearch" onkeyup="filterItems('info')" placeholder="Cari Info..." class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none focus:border-indigo-500">
+            </div>
+            <button onclick="addInfoItem()" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center justify-center transition mb-2" title="Tambah Info">
+              <i class="fa-solid fa-plus text-xs"></i>
+            </button>
+            <div id="infoList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1"></div>
+          </div>
+          <div class="md:col-span-7 space-y-3.5 pl-0 md:pl-2">
+            <h3 class="text-sm font-bold text-white">Tampilkan <span class="text-indigo-400">Info</span></h3>
+            
+            <div>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Judul / Pengumuman</label>
+              <input type="text" id="infoTitle" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+            </div>
+
+            <div>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Isi Detail Info</label>
+              <textarea id="infoContent" rows="3" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500 resize-none"></textarea>
+            </div>
+
+            <div>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Live Streaming</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Audiens</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Stage</label>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Duration</label>
+              <select id="infoDuration" class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none">
+                <option value="10">10 seconds</option>
+                <option value="15">15 seconds</option>
+                <option value="20">20 seconds</option>
+                <option value="0">Seterusnya (Manual)</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+              <button onclick="deleteCurrentInfo()" class="w-10 h-10 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-400 rounded-lg flex items-center justify-center transition" title="Hapus Info">
+                <i class="fa-solid fa-trash text-sm"></i>
+              </button>
+              <button onclick="saveCurrentInfo()" class="w-10 h-10 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-800 text-indigo-400 rounded-lg flex items-center justify-center transition" title="Simpan Info">
+                <i class="fa-solid fa-floppy-disk text-sm"></i>
+              </button>
+              <button onclick="triggerDisplay('info')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow-lg transition">
+                <i class="fa-solid fa-eye"></i> Tampilkan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. TAB TICKER -->
+        <div id="panel-ticker" class="tab-panel hidden grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-5 space-y-2.5 border-r border-cardBorder/60 pr-0 md:pr-3">
+            <div class="flex items-center gap-2">
+              <input type="text" id="tickerSearch" onkeyup="filterItems('ticker')" placeholder="Cari Ticker..." class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none focus:border-indigo-500">
+            </div>
+            <button onclick="addTickerItem()" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center justify-center transition mb-2">
+              <i class="fa-solid fa-plus text-xs"></i>
+            </button>
+            <div id="tickerList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1"></div>
+          </div>
+          <div class="md:col-span-7 space-y-3.5 pl-0 md:pl-2">
+            <h3 class="text-sm font-bold text-white">Tampilkan <span class="text-indigo-400">Ticker</span></h3>
+            
+            <div>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Isi Ticker (Bisa tag HTML)</label>
+              <textarea id="tickerContent" rows="5" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500 resize-none font-mono"></textarea>
+            </div>
+
+            <div>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" checked class="rounded border-gray-700 text-indigo-600"> Live Streaming</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Audiens</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Stage</label>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Duration</label>
+              <select id="tickerDuration" class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none">
+                <option value="10">10 seconds</option>
+                <option value="20">20 seconds</option>
+                <option value="30">30 seconds</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+              <button onclick="deleteCurrentTicker()" class="w-10 h-10 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-400 rounded-lg flex items-center justify-center transition">
+                <i class="fa-solid fa-trash text-sm"></i>
+              </button>
+              <button onclick="saveCurrentTicker()" class="w-10 h-10 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-800 text-indigo-400 rounded-lg flex items-center justify-center transition">
+                <i class="fa-solid fa-floppy-disk text-sm"></i>
+              </button>
+              <button onclick="triggerDisplay('ticker')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow-lg transition">
+                <i class="fa-solid fa-eye"></i> Tampilkan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. TAB LOWERTHIRD -->
+        <div id="panel-lowerthird" class="tab-panel hidden grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-5 space-y-2.5 border-r border-cardBorder/60 pr-0 md:pr-3">
+            <div class="flex items-center gap-2">
+              <input type="text" id="ltSearch" onkeyup="filterItems('lowerthird')" placeholder="Cari Lowerthird..." class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none focus:border-indigo-500">
+            </div>
+            <button onclick="addLtItem()" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center justify-center transition mb-2">
+              <i class="fa-solid fa-plus text-xs"></i>
+            </button>
+            <div id="ltList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1"></div>
+          </div>
+          <div class="md:col-span-7 space-y-3.5 pl-0 md:pl-2">
+            <h3 class="text-sm font-bold text-white">Tampilkan <span class="text-indigo-400">Lowerthird</span></h3>
+            
+            <div>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Nama</label>
+              <input type="text" id="ltName" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+            </div>
+
+            <div>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Keterangan</label>
+              <input type="text" id="ltSub" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+            </div>
+
+            <div>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" checked class="rounded border-gray-700 text-indigo-600"> Live Streaming</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Audiens</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Stage</label>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Duration</label>
+              <select id="ltDuration" class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none">
+                <option value="10">10 seconds</option>
+                <option value="15">15 seconds</option>
+                <option value="30">30 seconds</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+              <button onclick="deleteCurrentLt()" class="w-10 h-10 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-400 rounded-lg flex items-center justify-center transition">
+                <i class="fa-solid fa-trash text-sm"></i>
+              </button>
+              <button onclick="saveCurrentLt()" class="w-10 h-10 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-800 text-indigo-400 rounded-lg flex items-center justify-center transition">
+                <i class="fa-solid fa-floppy-disk text-sm"></i>
+              </button>
+              <button onclick="triggerDisplay('lowerthird')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow-lg transition">
+                <i class="fa-solid fa-eye"></i> Tampilkan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. TAB PRESENTASI -->
+        <div id="panel-presentasi" class="tab-panel hidden grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-5 space-y-2.5 border-r border-cardBorder/60 pr-0 md:pr-3">
+            <div class="flex items-center gap-2">
+              <input type="text" id="presSearch" onkeyup="filterItems('presentasi')" placeholder="Cari Presentasi..." class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none focus:border-indigo-500">
+            </div>
+            <button onclick="openCreatePresentationModal()" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center justify-center transition mb-2" title="Buat Presentasi Baru">
+              <i class="fa-solid fa-plus text-xs"></i>
+            </button>
+            <div id="presList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1"></div>
+          </div>
+          <div class="md:col-span-7 space-y-3 pl-0 md:pl-2">
+            <div>
+              <h3 class="text-base font-bold text-white">Kontrol Presentasi</h3>
+              <div class="text-xs text-gray-300 font-semibold mt-1">Judul: <span id="presDetailTitle" class="font-normal text-gray-200">-</span></div>
+              <div class="text-xs text-gray-300 font-semibold">Pembicara: <span id="presDetailSpeaker" class="font-normal text-gray-200">-</span></div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button onclick="openSlideManager('presentasi')" class="flex-1 bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-200 text-xs py-2 rounded-lg font-semibold transition">
+                Atur Slide
+              </button>
+              <button onclick="deleteCurrentPresentation()" class="w-9 h-9 bg-red-950/80 hover:bg-red-900 border border-red-700/80 text-red-400 rounded-lg flex items-center justify-center transition" title="Hapus Presentasi">
+                <i class="fa-solid fa-trash text-xs"></i>
+              </button>
+            </div>
+
+            <div>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" checked class="rounded border-gray-700 text-indigo-600"> Live Streaming</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Audiens</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Stage</label>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="navSlide('prev')" class="bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-semibold py-2.5 rounded-lg transition">
+                &lt; Balik
+              </button>
+              <button onclick="triggerDisplay('presentasi')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2.5 rounded-lg transition shadow-lg flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-eye"></i> Tampilkan
+              </button>
+              <button onclick="navSlide('next')" class="bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-semibold py-2.5 rounded-lg transition">
+                Berikut &gt;
+              </button>
+            </div>
+
+            <div>
+              <div class="text-xs font-bold text-gray-300 mb-2">Daftar Slide (Klik untuk menampilkan langsung)</div>
+              <div id="presSlideGrid" class="border border-cardBorder bg-inputBg rounded-lg p-2 flex items-center gap-2 overflow-x-auto min-h-[90px]">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. TAB CAROUSEL -->
+        <div id="panel-carousel" class="tab-panel hidden grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-5 space-y-2.5 border-r border-cardBorder/60 pr-0 md:pr-3">
+            <div class="flex items-center gap-2">
+              <input type="text" id="carouselSearch" onkeyup="filterItems('carousel')" placeholder="Cari Carousel..." class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none focus:border-indigo-500">
+            </div>
+            <button onclick="openCreateCarouselModal()" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center justify-center transition mb-2" title="Buat Carousel Baru">
+              <i class="fa-solid fa-plus text-xs"></i>
+            </button>
+            <div id="carouselList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1"></div>
+          </div>
+          <div class="md:col-span-7 space-y-3 pl-0 md:pl-2">
+            <div>
+              <h3 class="text-base font-bold text-white">Kontrol Carousel</h3>
+              <div class="text-xs text-gray-300 font-semibold mt-1">Judul: <span id="carouselDetailTitle" class="font-normal text-gray-200">-</span></div>
+              <div class="text-xs text-gray-300 font-semibold">Pembuat/Admin: <span id="carouselDetailAdmin" class="font-normal text-gray-200">-</span></div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button onclick="openSlideManager('carousel')" class="flex-1 bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-200 text-xs py-2 rounded-lg font-semibold transition">
+                Atur Slide
+              </button>
+              <button onclick="deleteCurrentCarousel()" class="w-9 h-9 bg-red-950/80 hover:bg-red-900 border border-red-700/80 text-red-400 rounded-lg flex items-center justify-center transition" title="Hapus Carousel">
+                <i class="fa-solid fa-trash text-xs"></i>
+              </button>
+            </div>
+
+            <div>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" checked class="rounded border-gray-700 text-indigo-600"> Live Streaming</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Audiens</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Stage</label>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Penggantian Slide Otomatis (detik)</label>
+              <select id="carouselInterval" class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none">
+                <option value="5">5 detik</option>
+                <option value="10" selected>10 detik</option>
+                <option value="15">15 detik</option>
+              </select>
+            </div>
+
+            <button onclick="triggerDisplay('carousel')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow-lg transition">
+              <i class="fa-solid fa-eye"></i> Tampilkan
+            </button>
+
+            <div>
+              <div class="text-xs font-bold text-gray-300 mb-2">Daftar Slide (Klik untuk menampilkan langsung)</div>
+              <div id="carouselSlideGrid" class="border border-cardBorder bg-inputBg rounded-lg p-2 flex items-center gap-2 overflow-x-auto min-h-[90px]">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. TAB COUNTDOWN -->
+        <div id="panel-countdown" class="tab-panel hidden grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-5 space-y-2.5 border-r border-cardBorder/60 pr-0 md:pr-3">
+            <div class="flex items-center gap-2">
+              <input type="text" id="cdSearch" onkeyup="filterItems('countdown')" placeholder="Cari Countdown..." class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none focus:border-indigo-500">
+            </div>
+            <button onclick="addCdItem()" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center justify-center transition mb-2">
+              <i class="fa-solid fa-plus text-xs"></i>
+            </button>
+            <div id="cdList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1"></div>
+          </div>
+          <div class="md:col-span-7 space-y-3.5 pl-0 md:pl-2">
+            <h3 class="text-sm font-bold text-white">Tampilkan <span class="text-indigo-400">Countdown</span></h3>
+            
+            <div>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Judul Countdown</label>
+              <input type="text" id="cdTitle" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="text-[11px] font-semibold text-gray-400 block mb-1">Jam</label>
+                <input type="number" id="cdHours" value="0" min="0" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 text-center outline-none">
+              </div>
+              <div>
+                <label class="text-[11px] font-semibold text-gray-400 block mb-1">Menit</label>
+                <input type="number" id="cdMinutes" value="0" min="0" max="59" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 text-center outline-none">
+              </div>
+              <div>
+                <label class="text-[11px] font-semibold text-gray-400 block mb-1">Detik</label>
+                <input type="number" id="cdSeconds" value="0" min="0" max="59" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 text-center outline-none">
+              </div>
+            </div>
+
+            <div>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" checked class="rounded border-gray-700 text-indigo-600"> Live Streaming</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Audiens</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" class="rounded border-gray-700 text-indigo-600"> Monitor Stage</label>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+              <button onclick="deleteCurrentCd()" class="w-10 h-10 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-400 rounded-lg flex items-center justify-center transition">
+                <i class="fa-solid fa-trash text-sm"></i>
+              </button>
+              <button onclick="saveCurrentCd()" class="w-10 h-10 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-800 text-indigo-400 rounded-lg flex items-center justify-center transition">
+                <i class="fa-solid fa-floppy-disk text-sm"></i>
+              </button>
+              <button onclick="triggerDisplay('countdown')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow-lg transition">
+                <i class="fa-solid fa-eye"></i> Tampilkan
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 
-  <div class="form-group">
-    <label for="subtitleInput">Sub-judul / Deskripsi:</label>
-    <input type="text" id="subtitleInput" placeholder="Masukkan deskripsi...">
+  <!-- MODALS SECTION -->
+
+  <!-- 0. MODAL KONFIGURASI SUPABASE -->
+  <div id="modalSupabaseConfig" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-[#121826] border border-cardBorder w-full max-w-md rounded-xl p-5 shadow-2xl space-y-4">
+      <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-cloud text-indigo-400"></i> Pengaturan Supabase Storage</h3>
+      <p class="text-xs text-gray-400">Kredensial Supabase terhubung secara terpusat untuk menyimpan dan menghapus file foto slide secara otomatis.</p>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Supabase URL</label>
+        <input type="text" id="supabaseUrlInput" placeholder="https://xyz.supabase.co" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Anon Key</label>
+        <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR..." class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Nama Bucket</label>
+        <input type="text" id="supabaseBucketInput" placeholder="e.g. slides" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="closeModal('modalSupabaseConfig')" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs text-gray-200 font-semibold rounded-lg transition">Batal</button>
+        <button onclick="saveSupabaseConfig()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition">Simpan</button>
+      </div>
+    </div>
   </div>
 
-  <button onclick="updateOverlay()">Update Overlay</button>
+  <!-- 1. MODAL BUAT PRESENTASI -->
+  <div id="modalCreatePresentation" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-[#121826] border border-cardBorder w-full max-w-md rounded-xl p-5 shadow-2xl space-y-4">
+      <h3 class="text-base font-bold text-white">Buat Presentasi</h3>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Judul Presentasi</label>
+        <input type="text" id="newPresTitle" placeholder="e.g. Khotbah Hari Minggu" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Pembicara</label>
+        <input type="text" id="newPresSpeaker" placeholder="e.g. Pdt. John Doe" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Tanggal & Waktu</label>
+        <input type="datetime-local" id="newPresDateTime" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none">
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Penggunaan</label>
+        <div class="flex items-center gap-4 text-xs text-gray-300 pt-1">
+          <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="presUsage" value="Sekali" checked class="text-indigo-600"> Sekali (Acara Ini Saja)</label>
+          <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="presUsage" value="Berulang" class="text-indigo-600"> Berulang (Lintas Acara)</label>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="closeModal('modalCreatePresentation')" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs text-gray-200 font-semibold rounded-lg transition">Batal</button>
+        <button onclick="saveNewPresentation()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" title="Simpan">
+          <i class="fa-solid fa-floppy-disk text-xs"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MODAL BUAT CAROUSEL -->
+  <div id="modalCreateCarousel" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-[#121826] border border-cardBorder w-full max-w-md rounded-xl p-5 shadow-2xl space-y-4">
+      <h3 class="text-base font-bold text-white">Buat Carousel</h3>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Judul Carousel</label>
+        <input type="text" id="newCarouselTitle" placeholder="e.g. Pengumuman Bergilir" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Pembuat/Admin</label>
+        <input type="text" id="newCarouselAdmin" placeholder="e.g. Media Team" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Tanggal & Waktu</label>
+        <input type="datetime-local" id="newCarouselDateTime" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none">
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Penggunaan</label>
+        <div class="flex items-center gap-4 text-xs text-gray-300 pt-1">
+          <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="carouselUsage" value="Sekali" checked class="text-indigo-600"> Sekali (Acara Ini Saja)</label>
+          <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="carouselUsage" value="Berulang" class="text-indigo-600"> Berulang (Lintas Acara)</label>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="closeModal('modalCreateCarousel')" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs text-gray-200 font-semibold rounded-lg transition">Batal</button>
+        <button onclick="saveNewCarousel()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" title="Simpan">
+          <i class="fa-solid fa-floppy-disk text-xs"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. MODAL PENGATURAN SLIDE -->
+  <div id="modalSlideManager" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-[#121826] border border-cardBorder w-full max-w-3xl rounded-xl p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-cardBorder pb-3">
+        <h3 class="text-base font-bold text-white">Pengaturan Slide: <span id="slideManagerHeaderTitle" class="text-indigo-400">-</span></h3>
+        <button onclick="closeModal('modalSlideManager')" class="w-7 h-7 bg-gray-800 hover:bg-gray-700 text-gray-400 rounded-md flex items-center justify-center text-xs font-bold">x</button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <!-- LEFT SLIDE LIST -->
+        <div class="md:col-span-5 border-r border-cardBorder/60 pr-0 md:pr-4 space-y-3">
+          <label class="text-xs font-bold text-gray-300 block">Slide (Drag & drop untuk ubah urutan)</label>
+          <div id="slideManagerList" class="grid grid-cols-2 gap-2.5 max-h-[300px] overflow-y-auto pr-1">
+          </div>
+          <button onclick="prepareNewSlideForm()" class="w-9 h-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center transition mx-auto mt-2 shadow-lg" title="Tambah Slide Baru">
+            <i class="fa-solid fa-plus text-sm"></i>
+          </button>
+        </div>
+
+        <!-- RIGHT SLIDE FORM -->
+        <div class="md:col-span-7 space-y-3">
+          <h4 class="text-xs font-bold text-gray-200 uppercase tracking-wider">ADD / EDIT SLIDE</h4>
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-medium text-gray-400">Isi Slide</label>
+              <span class="text-[10px] text-gray-500"><span id="slideCharCounter">420</span> karakter tersisa</span>
+            </div>
+            <textarea id="slideTextInput" oninput="updateCharCounter()" rows="4" placeholder="Masukkan isi Slide..." class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500 resize-none"></textarea>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-medium text-gray-400 block">Gambar Latar Slide</label>
+              <span id="supabaseBadgeStatus" class="text-[10px] text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-800/60 flex items-center gap-1">
+                <i class="fa-solid fa-cloud text-[9px]"></i> Supabase Storage
+              </span>
+            </div>
+            <div onclick="document.getElementById('slideImageUploader').click()" class="border-2 border-dashed border-cardBorder bg-inputBg hover:bg-cardBorder/40 cursor-pointer rounded-lg p-4 text-center transition flex flex-col items-center justify-center min-h-[90px]">
+              <i class="fa-solid fa-cloud-arrow-up text-lg text-indigo-400 mb-1"></i>
+              <p class="text-xs text-gray-300 font-medium" id="slideImageText">Klik untuk unggah gambar</p>
+              <p class="text-[10px] text-gray-500 mt-0.5" id="slideImageSubtext">Otomatis diunggah ke cloud Supabase Storage</p>
+              <input type="file" id="slideImageUploader" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-2">
+            <button onclick="saveSlideDetails()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center gap-1.5 text-xs font-semibold shadow-md">
+              <i class="fa-solid fa-floppy-disk"></i> Simpan Slide
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+  <!-- FOOTER -->
+  <footer class="mt-6 text-center text-[11px] text-gray-500 font-medium">
+    Panel Kontrol OBS &copy; By <a href="https://www.buanamedia.my.id/" target="_blank" class="hover:underline hover:text-blue-500 transition-colors">Buana Media</a>
+  </footer>
 
   <script>
-    function updateOverlay() {
-      const title = document.getElementById('titleInput').value;
-      const subtitle = document.getElementById('subtitleInput').value;
+    /* ===================================================
+       FIREBASE CONFIGURATION
+       =================================================== */
+    const firebaseConfig = {
+      apiKey: "API_KEY_ANDA",
+      authDomain: "obs-docks-control.firebaseapp.com",
+      databaseURL: "https://obs-docks-control-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "obs-docks-control",
+      storageBucket: "obs-docks-control.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
 
-      // Update data di Firebase Realtime Database
-      database.ref('overlayData').set({
-        title: title,
-        subtitle: subtitle,
+    // Inisialisasi Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+
+    /* ===================================================
+       GLOBAL STATE
+       =================================================== */
+    const state = {
+      profile: 'DEFAULT',
+      event: '',
+      activeTab: 'info',
+      
+      // Supabase credentials
+      supabase: {
+        url: localStorage.getItem('sb_url') || '',
+        key: localStorage.getItem('sb_key') || '',
+        bucket: localStorage.getItem('sb_bucket') || 'slides',
+        client: null
+      },
+
+      // Data Collections
+      infoItems: [],
+      selectedInfoId: null,
+
+      tickerItems: [],
+      selectedTickerId: null,
+
+      ltItems: [],
+      selectedLtId: null,
+
+      presentations: [],
+      selectedPresId: null,
+      currentPresSlideIndex: 0,
+
+      carousels: [],
+      selectedCarouselId: null,
+
+      countdowns: [],
+      selectedCdId: null,
+
+      // Slide Manager Modal State
+      slideManagerType: null,
+      editingSlideIdx: null,
+      uploadedImgUrl: null,
+      uploadedImgName: null,
+      uploadedFilePath: null
+    };
+
+    /* ===================================================
+       FIREBASE REALTIME DATABASE SYNC
+       =================================================== */
+    function syncStateToFirebase() {
+      database.ref('obsState').set({
+        infoItems: state.infoItems,
+        tickerItems: state.tickerItems,
+        ltItems: state.ltItems,
+        presentations: state.presentations,
+        carousels: state.carousels,
+        countdowns: state.countdowns,
+        profile: state.profile,
+        event: state.event,
         updatedAt: Date.now()
-      }).then(() => {
-        alert('Overlay berhasil diupdate!');
-      }).catch((error) => {
-        console.error('Error:', error);
       });
+    }
+
+    function loadStateFromFirebase() {
+      database.ref('obsState').once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          state.infoItems = data.infoItems || [];
+          state.tickerItems = data.tickerItems || [];
+          state.ltItems = data.ltItems || [];
+          state.presentations = data.presentations || [];
+          state.carousels = data.carousels || [];
+          state.countdowns = data.countdowns || [];
+
+          renderAllLists();
+        }
+      });
+    }
+
+    function renderAllLists() {
+      renderInfoList();
+      renderInfoDetail();
+      renderTickerList();
+      renderTickerDetail();
+      renderLtList();
+      renderLtDetail();
+      renderPresList();
+      renderPresDetail();
+      renderCarouselList();
+      renderCarouselDetail();
+      renderCdList();
+      renderCdDetail();
+    }
+
+    /* ===================================================
+       SUPABASE STORAGE INTEGRATION
+       =================================================== */
+    function initSupabase() {
+      if (state.supabase.url && state.supabase.key && window.supabase) {
+        try {
+          state.supabase.client = window.supabase.createClient(state.supabase.url, state.supabase.key);
+          const badge = document.getElementById('supabaseBadgeStatus');
+          if (badge) {
+            badge.className = 'text-[10px] text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/60 flex items-center gap-1';
+            badge.innerHTML = '<i class="fa-solid fa-cloud-check text-[9px]"></i> Supabase Connected';
+          }
+        } catch (e) {
+          console.warn('Supabase initialization failed:', e);
+        }
+      }
+    }
+
+    async function deleteSupabaseFile(filePath) {
+      if (!filePath || !state.supabase.client) return;
+      try {
+        const { error } = await state.supabase.client.storage
+          .from(state.supabase.bucket)
+          .remove([filePath]);
+        if (error) console.warn('Gagal menghapus file Supabase:', error);
+      } catch (err) {
+        console.warn('Error menghapus file Supabase:', err);
+      }
+    }
+
+    function openSupabaseModal() {
+      document.getElementById('supabaseUrlInput').value = state.supabase.url;
+      document.getElementById('supabaseKeyInput').value = state.supabase.key;
+      document.getElementById('supabaseBucketInput').value = state.supabase.bucket;
+      document.getElementById('modalSupabaseConfig').classList.remove('hidden');
+    }
+
+    function saveSupabaseConfig() {
+      state.supabase.url = document.getElementById('supabaseUrlInput').value.trim();
+      state.supabase.key = document.getElementById('supabaseKeyInput').value.trim();
+      state.supabase.bucket = document.getElementById('supabaseBucketInput').value.trim() || 'slides';
+
+      localStorage.setItem('sb_url', state.supabase.url);
+      localStorage.setItem('sb_key', state.supabase.key);
+      localStorage.setItem('sb_bucket', state.supabase.bucket);
+
+      initSupabase();
+      closeModal('modalSupabaseConfig');
+      showToast('Konfigurasi Supabase berhasil disimpan');
+    }
+
+    // TOAST NOTIFICATION UTILITY
+    function showToast(message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'bg-indigo-600 text-white text-xs px-3 py-2 rounded-lg shadow-xl border border-indigo-400 flex items-center gap-2 transition duration-300 opacity-0 transform translate-y-2';
+      toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    // TAB SWITCHING
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = 'tab-btn px-4 py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-200 transition';
+      });
+      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.add('hidden'));
+
+      const activeBtn = document.getElementById('tab-' + tabName);
+      if (activeBtn) {
+        activeBtn.className = 'tab-btn px-4 py-1.5 text-xs font-semibold rounded-md transition text-indigo-400 bg-indigo-950/40 border border-indigo-800/50';
+      }
+      const activePanel = document.getElementById('panel-' + tabName);
+      if (activePanel) activePanel.classList.remove('hidden');
+    }
+
+    // INITIAL LOAD
+    window.onload = function() {
+      initSupabase();
+      loadStateFromFirebase();
+    };
+
+    // --- INFO CONTROLLER ---
+    function renderInfoList(filter = '') {
+      const container = document.getElementById('infoList');
+      const filtered = state.infoItems.filter(item => 
+        item.title.toLowerCase().includes(filter.toLowerCase()) || 
+        item.content.toLowerCase().includes(filter.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="text-xs text-gray-500 italic p-2">Belum ada item Info.</div>';
+        return;
+      }
+      container.innerHTML = filtered.map(item => `
+        <div onclick="selectInfoCard('${item.id}')" class="p-3 rounded-lg border cursor-pointer transition ${state.selectedInfoId === item.id ? 'bg-indigo-950/40 border-indigo-600' : 'bg-inputBg border-cardBorder hover:border-gray-700'}">
+          <div class="text-xs font-bold text-white">${item.title}</div>
+          <div class="text-[11px] text-gray-400 truncate mt-0.5">${item.content || '-'}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectInfoCard(id) {
+      state.selectedInfoId = id;
+      renderInfoList(document.getElementById('infoSearch').value);
+      renderInfoDetail();
+    }
+
+    function renderInfoDetail() {
+      const item = state.infoItems.find(i => i.id === state.selectedInfoId);
+      if (item) {
+        document.getElementById('infoTitle').value = item.title;
+        document.getElementById('infoContent').value = item.content;
+      } else {
+        document.getElementById('infoTitle').value = '';
+        document.getElementById('infoContent').value = '';
+      }
+    }
+
+    function addInfoItem() {
+      const newId = 'i' + Date.now();
+      state.infoItems.push({ id: newId, title: 'Info Baru', content: '' });
+      selectInfoCard(newId);
+      syncStateToFirebase();
+    }
+
+    function saveCurrentInfo() {
+      const item = state.infoItems.find(i => i.id === state.selectedInfoId);
+      if (item) {
+        item.title = document.getElementById('infoTitle').value;
+        item.content = document.getElementById('infoContent').value;
+        renderInfoList(document.getElementById('infoSearch').value);
+        syncStateToFirebase();
+        showToast('Info berhasil disimpan');
+      }
+    }
+
+    function deleteCurrentInfo() {
+      state.infoItems = state.infoItems.filter(i => i.id !== state.selectedInfoId);
+      if (state.infoItems.length > 0) {
+        selectInfoCard(state.infoItems[0].id);
+      } else {
+        state.selectedInfoId = null;
+        renderInfoList();
+        renderInfoDetail();
+      }
+      syncStateToFirebase();
+    }
+
+    // --- TICKER CONTROLLER ---
+    function renderTickerList(filter = '') {
+      const container = document.getElementById('tickerList');
+      const filtered = state.tickerItems.filter(item => 
+        item.title.toLowerCase().includes(filter.toLowerCase()) || 
+        item.content.toLowerCase().includes(filter.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="text-xs text-gray-500 italic p-2">Belum ada item Ticker.</div>';
+        return;
+      }
+      container.innerHTML = filtered.map(item => `
+        <div onclick="selectTickerCard('${item.id}')" class="p-3 rounded-lg border cursor-pointer transition ${state.selectedTickerId === item.id ? 'bg-indigo-950/40 border-indigo-600' : 'bg-inputBg border-cardBorder hover:border-gray-700'}">
+          <div class="text-xs font-bold text-white">${item.title}</div>
+          <div class="text-[11px] text-gray-400 truncate mt-0.5">${item.content || '-'}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectTickerCard(id) {
+      state.selectedTickerId = id;
+      renderTickerList(document.getElementById('tickerSearch').value);
+      renderTickerDetail();
+    }
+
+    function renderTickerDetail() {
+      const item = state.tickerItems.find(i => i.id === state.selectedTickerId);
+      if (item) {
+        document.getElementById('tickerContent').value = item.content;
+      } else {
+        document.getElementById('tickerContent').value = '';
+      }
+    }
+
+    function addTickerItem() {
+      const newId = 't' + Date.now();
+      state.tickerItems.push({ id: newId, title: 'Ticker Baru', content: '' });
+      selectTickerCard(newId);
+      syncStateToFirebase();
+    }
+
+    function saveCurrentTicker() {
+      const item = state.tickerItems.find(i => i.id === state.selectedTickerId);
+      if (item) {
+        item.content = document.getElementById('tickerContent').value;
+        renderTickerList(document.getElementById('tickerSearch').value);
+        syncStateToFirebase();
+        showToast('Ticker berhasil disimpan');
+      }
+    }
+
+    function deleteCurrentTicker() {
+      state.tickerItems = state.tickerItems.filter(i => i.id !== state.selectedTickerId);
+      if (state.tickerItems.length > 0) {
+        selectTickerCard(state.tickerItems[0].id);
+      } else {
+        state.selectedTickerId = null;
+        renderTickerList();
+        renderTickerDetail();
+      }
+      syncStateToFirebase();
+    }
+
+    // --- LOWERTHIRD CONTROLLER ---
+    function renderLtList(filter = '') {
+      const container = document.getElementById('ltList');
+      const filtered = state.ltItems.filter(item => 
+        item.name.toLowerCase().includes(filter.toLowerCase()) || 
+        item.subtitle.toLowerCase().includes(filter.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="text-xs text-gray-500 italic p-2">Belum ada item Lowerthird.</div>';
+        return;
+      }
+      container.innerHTML = filtered.map(item => `
+        <div onclick="selectLtCard('${item.id}')" class="p-3 rounded-lg border cursor-pointer transition ${state.selectedLtId === item.id ? 'bg-indigo-950/40 border-indigo-600' : 'bg-inputBg border-cardBorder hover:border-gray-700'}">
+          <div class="text-xs font-bold text-white">${item.name}</div>
+          <div class="text-[11px] text-gray-400 truncate mt-0.5">${item.subtitle || '-'}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectLtCard(id) {
+      state.selectedLtId = id;
+      renderLtList(document.getElementById('ltSearch').value);
+      renderLtDetail();
+    }
+
+    function renderLtDetail() {
+      const item = state.ltItems.find(i => i.id === state.selectedLtId);
+      if (item) {
+        document.getElementById('ltName').value = item.name;
+        document.getElementById('ltSub').value = item.subtitle;
+      } else {
+        document.getElementById('ltName').value = '';
+        document.getElementById('ltSub').value = '';
+      }
+    }
+
+    function addLtItem() {
+      const newId = 'l' + Date.now();
+      state.ltItems.push({ id: newId, name: 'Nama Baru', subtitle: '' });
+      selectLtCard(newId);
+      syncStateToFirebase();
+    }
+
+    function saveCurrentLt() {
+      const item = state.ltItems.find(i => i.id === state.selectedLtId);
+      if (item) {
+        item.name = document.getElementById('ltName').value;
+        item.subtitle = document.getElementById('ltSub').value;
+        renderLtList(document.getElementById('ltSearch').value);
+        syncStateToFirebase();
+        showToast('Lowerthird berhasil disimpan');
+      }
+    }
+
+    function deleteCurrentLt() {
+      state.ltItems = state.ltItems.filter(i => i.id !== state.selectedLtId);
+      if (state.ltItems.length > 0) {
+        selectLtCard(state.ltItems[0].id);
+      } else {
+        state.selectedLtId = null;
+        renderLtList();
+        renderLtDetail();
+      }
+      syncStateToFirebase();
+    }
+
+    // --- PRESENTASI CONTROLLER ---
+    function renderPresList(filter = '') {
+      const container = document.getElementById('presList');
+      const filtered = state.presentations.filter(item => 
+        item.title.toLowerCase().includes(filter.toLowerCase()) || 
+        item.speaker.toLowerCase().includes(filter.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="text-xs text-gray-500 italic p-2">Belum ada Presentasi.</div>';
+        return;
+      }
+      container.innerHTML = filtered.map(item => `
+        <div onclick="selectPresCard('${item.id}')" class="p-3 rounded-lg border cursor-pointer transition ${state.selectedPresId === item.id ? 'bg-indigo-950/40 border-indigo-600' : 'bg-inputBg border-cardBorder hover:border-gray-700'}">
+          <div class="text-xs font-bold text-white">${item.title}</div>
+          <div class="text-[11px] text-gray-400 mt-0.5">Speaker: ${item.speaker}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectPresCard(id) {
+      state.selectedPresId = id;
+      state.currentPresSlideIndex = 0;
+      renderPresList(document.getElementById('presSearch').value);
+      renderPresDetail();
+    }
+
+    function renderPresDetail() {
+      const item = state.presentations.find(p => p.id === state.selectedPresId);
+      if (item) {
+        document.getElementById('presDetailTitle').innerText = item.title;
+        document.getElementById('presDetailSpeaker').innerText = item.speaker;
+        renderPresSlideGrid(item.slides);
+      } else {
+        document.getElementById('presDetailTitle').innerText = '-';
+        document.getElementById('presDetailSpeaker').innerText = '-';
+        document.getElementById('presSlideGrid').innerHTML = '<span class="text-xs text-gray-500 italic p-2">Belum ada slide. Klik "Atur Slide" untuk menambahkan.</span>';
+      }
+    }
+
+    function renderPresSlideGrid(slides) {
+      const container = document.getElementById('presSlideGrid');
+      if (!slides || slides.length === 0) {
+        container.innerHTML = '<span class="text-xs text-gray-500 italic p-2">Belum ada slide. Klik "Atur Slide" untuk menambahkan.</span>';
+        return;
+      }
+      container.innerHTML = slides.map((slide, idx) => `
+        <div onclick="jumpToPresSlide(${idx})" class="flex-shrink-0 w-24 h-16 bg-cardBg border ${state.currentPresSlideIndex === idx ? 'border-indigo-500 ring-2 ring-indigo-500/50' : 'border-cardBorder hover:border-indigo-500'} rounded-md flex flex-col items-center justify-center p-1 text-center cursor-pointer transition overflow-hidden relative" style="${slide.img ? `background-image: url('${slide.img}'); background-size: cover; background-position: center;` : ''}">
+          <span class="text-[10px] font-bold text-white bg-black/60 px-1 py-0.5 rounded truncate max-w-full">${slide.label || 'Slide ' + (idx + 1)}</span>
+        </div>
+      `).join('');
+    }
+
+    function jumpToPresSlide(idx) {
+      state.currentPresSlideIndex = idx;
+      renderPresDetail();
+      triggerDisplay('presentasi');
+    }
+
+    function openCreatePresentationModal() {
+      document.getElementById('newPresTitle').value = '';
+      document.getElementById('newPresSpeaker').value = '';
+      document.getElementById('modalCreatePresentation').classList.remove('hidden');
+    }
+
+    function saveNewPresentation() {
+      const title = document.getElementById('newPresTitle').value || 'Presentasi Baru';
+      const speaker = document.getElementById('newPresSpeaker').value || '-';
+      const newId = 'p' + Date.now();
+      state.presentations.push({ id: newId, title, speaker, slides: [] });
+      selectPresCard(newId);
+      syncStateToFirebase();
+      closeModal('modalCreatePresentation');
+      showToast('Presentasi baru dibuat');
+    }
+
+    async function deleteCurrentPresentation() {
+      if (!state.selectedPresId) return;
+      const pres = state.presentations.find(p => p.id === state.selectedPresId);
+      if (pres && pres.slides) {
+        for (const slide of pres.slides) {
+          if (slide.supabaseFilePath) {
+            await deleteSupabaseFile(slide.supabaseFilePath);
+          }
+        }
+      }
+      state.presentations = state.presentations.filter(p => p.id !== state.selectedPresId);
+      if (state.presentations.length > 0) {
+        selectPresCard(state.presentations[0].id);
+      } else {
+        state.selectedPresId = null;
+        renderPresList();
+        renderPresDetail();
+      }
+      syncStateToFirebase();
+    }
+
+    // --- CAROUSEL CONTROLLER ---
+    function renderCarouselList(filter = '') {
+      const container = document.getElementById('carouselList');
+      const filtered = state.carousels.filter(item => 
+        item.title.toLowerCase().includes(filter.toLowerCase()) || 
+        item.admin.toLowerCase().includes(filter.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="text-xs text-gray-500 italic p-2">Belum ada Carousel.</div>';
+        return;
+      }
+      container.innerHTML = filtered.map(item => `
+        <div onclick="selectCarouselCard('${item.id}')" class="p-3 rounded-lg border cursor-pointer transition ${state.selectedCarouselId === item.id ? 'bg-indigo-950/40 border-indigo-600' : 'bg-inputBg border-cardBorder hover:border-gray-700'}">
+          <div class="text-xs font-bold text-white">${item.title}</div>
+          <div class="text-[11px] text-gray-400 mt-0.5">Admin: ${item.admin}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectCarouselCard(id) {
+      state.selectedCarouselId = id;
+      renderCarouselList(document.getElementById('carouselSearch').value);
+      renderCarouselDetail();
+    }
+
+    function renderCarouselDetail() {
+      const item = state.carousels.find(c => c.id === state.selectedCarouselId);
+      if (item) {
+        document.getElementById('carouselDetailTitle').innerText = item.title;
+        document.getElementById('carouselDetailAdmin').innerText = item.admin;
+        renderCarouselSlideGrid(item.slides);
+      } else {
+        document.getElementById('carouselDetailTitle').innerText = '-';
+        document.getElementById('carouselDetailAdmin').innerText = '-';
+        document.getElementById('carouselSlideGrid').innerHTML = '<span class="text-xs text-gray-500 italic p-2">Belum ada slide. Klik "Atur Slide" untuk menambahkan.</span>';
+      }
+    }
+
+    function renderCarouselSlideGrid(slides) {
+      const container = document.getElementById('carouselSlideGrid');
+      if (!slides || slides.length === 0) {
+        container.innerHTML = '<span class="text-xs text-gray-500 italic p-2">Belum ada slide. Klik "Atur Slide" untuk menambahkan.</span>';
+        return;
+      }
+      container.innerHTML = slides.map((slide, idx) => `
+        <div class="flex-shrink-0 w-20 h-14 bg-cardBg border border-cardBorder rounded flex flex-col items-center justify-center p-1 text-center cursor-pointer hover:border-indigo-500 transition overflow-hidden relative" style="${slide.img ? `background-image: url('${slide.img}'); background-size: cover; background-position: center;` : ''}">
+          <span class="text-[10px] font-bold text-white bg-black/60 px-1 py-0.5 rounded truncate max-w-full">${slide.label || 'Slide ' + (idx + 1)}</span>
+        </div>
+      `).join('');
+    }
+
+    function openCreateCarouselModal() {
+      document.getElementById('newCarouselTitle').value = '';
+      document.getElementById('newCarouselAdmin').value = '';
+      document.getElementById('modalCreateCarousel').classList.remove('hidden');
+    }
+
+    function saveNewCarousel() {
+      const title = document.getElementById('newCarouselTitle').value || 'Carousel Baru';
+      const admin = document.getElementById('newCarouselAdmin').value || '-';
+      const newId = 'c' + Date.now();
+      state.carousels.push({ id: newId, title, admin, slides: [] });
+      selectCarouselCard(newId);
+      syncStateToFirebase();
+      closeModal('modalCreateCarousel');
+      showToast('Carousel baru dibuat');
+    }
+
+    async function deleteCurrentCarousel() {
+      if (!state.selectedCarouselId) return;
+      const carousel = state.carousels.find(c => c.id === state.selectedCarouselId);
+      if (carousel && carousel.slides) {
+        for (const slide of carousel.slides) {
+          if (slide.supabaseFilePath) {
+            await deleteSupabaseFile(slide.supabaseFilePath);
+          }
+        }
+      }
+      state.carousels = state.carousels.filter(c => c.id !== state.selectedCarouselId);
+      if (state.carousels.length > 0) {
+        selectCarouselCard(state.carousels[0].id);
+      } else {
+        state.selectedCarouselId = null;
+        renderCarouselList();
+        renderCarouselDetail();
+      }
+      syncStateToFirebase();
+    }
+
+    // --- COUNTDOWN CONTROLLER ---
+    function renderCdList(filter = '') {
+      const container = document.getElementById('cdList');
+      const filtered = state.countdowns.filter(item => 
+        item.title.toLowerCase().includes(filter.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="text-xs text-gray-500 italic p-2">Belum ada Countdown.</div>';
+        return;
+      }
+      container.innerHTML = filtered.map(item => `
+        <div onclick="selectCdCard('${item.id}')" class="p-3 rounded-lg border cursor-pointer transition ${state.selectedCdId === item.id ? 'bg-indigo-950/40 border-indigo-600' : 'bg-inputBg border-cardBorder hover:border-gray-700'}">
+          <div class="text-xs font-bold text-white">${item.title}</div>
+          <div class="text-[11px] text-gray-400 mt-0.5">Durasi: ${item.h}j ${item.m}m ${item.s}d</div>
+        </div>
+      `).join('');
+    }
+
+    function selectCdCard(id) {
+      state.selectedCdId = id;
+      renderCdList(document.getElementById('cdSearch').value);
+      renderCdDetail();
+    }
+
+    function renderCdDetail() {
+      const item = state.countdowns.find(cd => cd.id === state.selectedCdId);
+      if (item) {
+        document.getElementById('cdTitle').value = item.title;
+        document.getElementById('cdHours').value = item.h;
+        document.getElementById('cdMinutes').value = item.m;
+        document.getElementById('cdSeconds').value = item.s;
+      } else {
+        document.getElementById('cdTitle').value = '';
+        document.getElementById('cdHours').value = 0;
+        document.getElementById('cdMinutes').value = 0;
+        document.getElementById('cdSeconds').value = 0;
+      }
+    }
+
+    function addCdItem() {
+      const newId = 'cd' + Date.now();
+      state.countdowns.push({ id: newId, title: 'Countdown Baru', h: 0, m: 0, s: 0 });
+      selectCdCard(newId);
+      syncStateToFirebase();
+    }
+
+    function saveCurrentCd() {
+      const item = state.countdowns.find(cd => cd.id === state.selectedCdId);
+      if (item) {
+        item.title = document.getElementById('cdTitle').value;
+        item.h = parseInt(document.getElementById('cdHours').value) || 0;
+        item.m = parseInt(document.getElementById('cdMinutes').value) || 0;
+        item.s = parseInt(document.getElementById('cdSeconds').value) || 0;
+        renderCdList(document.getElementById('cdSearch').value);
+        syncStateToFirebase();
+        showToast('Countdown berhasil disimpan');
+      }
+    }
+
+    function deleteCurrentCd() {
+      state.countdowns = state.countdowns.filter(cd => cd.id !== state.selectedCdId);
+      if (state.countdowns.length > 0) {
+        selectCdCard(state.countdowns[0].id);
+      } else {
+        state.selectedCdId = null;
+        renderCdList();
+        renderCdDetail();
+      }
+      syncStateToFirebase();
+    }
+
+    // --- SLIDE MANAGER MODAL & SUPABASE UPLOAD/DELETE ---
+    function getTargetSlideObject() {
+      if (state.slideManagerType === 'carousel') {
+        return state.carousels.find(c => c.id === state.selectedCarouselId);
+      } else if (state.slideManagerType === 'presentasi') {
+        return state.presentations.find(p => p.id === state.selectedPresId);
+      }
+      return null;
+    }
+
+    function openSlideManager(type) {
+      state.slideManagerType = type;
+      state.editingSlideIdx = null;
+      state.uploadedImgUrl = null;
+      state.uploadedImgName = null;
+      state.uploadedFilePath = null;
+
+      const targetObj = getTargetSlideObject();
+      if (!targetObj) return;
+
+      document.getElementById('slideManagerHeaderTitle').innerText = targetObj.title || 'Slide';
+      renderSlideManagerList(targetObj.slides || []);
+      prepareNewSlideForm();
+      document.getElementById('modalSlideManager').classList.remove('hidden');
+    }
+
+    function renderSlideManagerList(slides) {
+      const container = document.getElementById('slideManagerList');
+      if (!slides || slides.length === 0) {
+        container.innerHTML = '<div class="col-span-2 text-center text-xs text-gray-500 py-6">Belum ada Slide. Klik tambah di bawah ini.</div>';
+        return;
+      }
+
+      container.innerHTML = slides.map((slide, idx) => `
+        <div onclick="selectSlideForEdit(${idx})" class="relative bg-cardBg border ${state.editingSlideIdx === idx ? 'border-indigo-500 bg-indigo-950/40 shadow-indigo-900/30' : 'border-cardBorder hover:border-gray-600'} rounded-lg p-2 flex flex-col items-center justify-between h-20 text-center cursor-pointer transition overflow-hidden" style="${slide.img ? `background-image: linear-gradient(to bottom, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.85)), url('${slide.img}'); background-size: cover; background-position: center;` : ''}">
+          <span class="text-[11px] font-bold text-gray-100 mt-1 truncate w-full px-1 drop-shadow-md">${slide.label || 'Slide ' + (idx + 1)}</span>
+          <button onclick="deleteSlideItem(${idx}, event)" class="absolute top-1 right-1 text-red-400 hover:text-red-300 text-[10px] bg-red-950/80 hover:bg-red-900 p-1 rounded border border-red-800/80 transition" title="Hapus Slide">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function prepareNewSlideForm() {
+      state.editingSlideIdx = null;
+      state.uploadedImgUrl = null;
+      state.uploadedImgName = null;
+      state.uploadedFilePath = null;
+
+      document.getElementById('slideTextInput').value = '';
+      document.getElementById('slideImageText').innerText = 'Klik untuk unggah gambar';
+      document.getElementById('slideImageSubtext').innerText = 'Otomatis diunggah ke cloud Supabase Storage';
+      document.getElementById('slideImageUploader').value = '';
+      updateCharCounter();
+
+      const targetObj = getTargetSlideObject();
+      if (targetObj) renderSlideManagerList(targetObj.slides || []);
+    }
+
+    function selectSlideForEdit(idx) {
+      const targetObj = getTargetSlideObject();
+      if (!targetObj || !targetObj.slides[idx]) return;
+
+      state.editingSlideIdx = idx;
+      const slide = targetObj.slides[idx];
+
+      document.getElementById('slideTextInput').value = slide.text || '';
+      state.uploadedImgUrl = slide.img || null;
+      state.uploadedImgName = slide.imgName || null;
+      state.uploadedFilePath = slide.supabaseFilePath || null;
+      
+      if (slide.imgName) {
+        document.getElementById('slideImageText').innerText = 'Gambar: ' + slide.imgName;
+        document.getElementById('slideImageSubtext').innerText = 'Terhubung di Supabase Cloud Storage';
+      } else {
+        document.getElementById('slideImageText').innerText = 'Klik untuk unggah gambar';
+        document.getElementById('slideImageSubtext').innerText = 'Otomatis diunggah ke cloud Supabase Storage';
+      }
+      
+      updateCharCounter();
+      renderSlideManagerList(targetObj.slides);
+    }
+
+    async function handleImageUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      state.uploadedImgName = file.name;
+      const statusElement = document.getElementById('slideImageText');
+      const substatusElement = document.getElementById('slideImageSubtext');
+
+      if (state.supabase.client) {
+        statusElement.innerText = 'Mengunggah ke Supabase...';
+        substatusElement.innerText = 'Mohon tunggu sebentar';
+        try {
+          const filePath = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+          const { data, error } = await state.supabase.client.storage
+            .from(state.supabase.bucket)
+            .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+          if (error) throw error;
+
+          const { data: publicData } = state.supabase.client.storage
+            .from(state.supabase.bucket)
+            .getPublicUrl(filePath);
+
+          state.uploadedImgUrl = publicData.publicUrl;
+          state.uploadedFilePath = filePath;
+          statusElement.innerText = 'Supabase Cloud: ' + file.name;
+          substatusElement.innerText = 'Gambar berhasil terunggah ke Supabase!';
+          return;
+        } catch (err) {
+          console.warn('Supabase upload error:', err);
+          statusElement.innerText = 'Gagal upload Supabase: Fallback lokal';
+        }
+      }
+
+      // Fallback local reader
+      statusElement.innerText = 'Gambar Lokal: ' + file.name;
+      substatusElement.innerText = 'Atur Supabase di ikon Gear';
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        state.uploadedImgUrl = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveSlideDetails() {
+      const targetObj = getTargetSlideObject();
+      if (!targetObj) return;
+
+      if (!targetObj.slides) targetObj.slides = [];
+
+      const textVal = document.getElementById('slideTextInput').value.trim();
+      const imgName = state.uploadedImgName || (state.uploadedImgUrl ? 'Gambar Cloud' : '');
+
+      if (state.editingSlideIdx !== null && targetObj.slides[state.editingSlideIdx]) {
+        // Edit Existing Slide
+        const currentSlide = targetObj.slides[state.editingSlideIdx];
+        if (state.uploadedFilePath && currentSlide.supabaseFilePath && currentSlide.supabaseFilePath !== state.uploadedFilePath) {
+          deleteSupabaseFile(currentSlide.supabaseFilePath);
+        }
+        currentSlide.text = textVal;
+        currentSlide.img = state.uploadedImgUrl;
+        currentSlide.imgName = imgName;
+        if (state.uploadedFilePath) {
+          currentSlide.supabaseFilePath = state.uploadedFilePath;
+        }
+      } else {
+        // Create New Slide
+        const newSlideNum = targetObj.slides.length + 1;
+        targetObj.slides.push({
+          id: 's' + Date.now(),
+          label: 'Slide ' + newSlideNum,
+          text: textVal,
+          img: state.uploadedImgUrl,
+          imgName: imgName,
+          supabaseFilePath: state.uploadedFilePath || null
+        });
+      }
+
+      renderSlideManagerList(targetObj.slides);
+      if (state.slideManagerType === 'carousel') renderCarouselDetail();
+      if (state.slideManagerType === 'presentasi') renderPresDetail();
+
+      syncStateToFirebase();
+      prepareNewSlideForm();
+      showToast('Detail Slide Tersimpan');
+    }
+
+    async function deleteSlideItem(idx, event) {
+      if (event) event.stopPropagation();
+
+      const targetObj = getTargetSlideObject();
+      if (!targetObj || !targetObj.slides) return;
+
+      const slideToDelete = targetObj.slides[idx];
+      if (slideToDelete && slideToDelete.supabaseFilePath) {
+        await deleteSupabaseFile(slideToDelete.supabaseFilePath);
+      }
+
+      targetObj.slides.splice(idx, 1);
+
+      targetObj.slides.forEach((s, i) => {
+        s.label = 'Slide ' + (i + 1);
+      });
+
+      prepareNewSlideForm();
+
+      if (state.slideManagerType === 'carousel') renderCarouselDetail();
+      if (state.slideManagerType === 'presentasi') renderPresDetail();
+      syncStateToFirebase();
+    }
+
+    function updateCharCounter() {
+      const val = document.getElementById('slideTextInput').value;
+      const remaining = 420 - val.length;
+      document.getElementById('slideCharCounter').innerText = remaining;
+    }
+
+    // --- PROFIL & ACARA ACTIONS ---
+    function addProfilePrompt() {
+      const p = prompt('Masukkan Nama Profil Baru:');
+      if (p) {
+        const select = document.getElementById('profileSelect');
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.innerText = p;
+        select.appendChild(opt);
+        select.value = p;
+        state.profile = p;
+        syncStateToFirebase();
+      }
+    }
+
+    function editProfilePrompt() {
+      const select = document.getElementById('profileSelect');
+      const p = prompt('Edit Nama Profil:', select.value);
+      if (p) {
+        select.options[select.selectedIndex].text = p;
+        select.options[select.selectedIndex].value = p;
+        state.profile = p;
+        syncStateToFirebase();
+      }
+    }
+
+    function deleteProfilePrompt() {
+      const select = document.getElementById('profileSelect');
+      if (select.options.length > 1) {
+        select.remove(select.selectedIndex);
+        state.profile = select.value;
+        syncStateToFirebase();
+      }
+    }
+
+    function addEventPrompt() {
+      const e = prompt('Masukkan Nama Acara Baru:');
+      if (e) {
+        const select = document.getElementById('eventSelect');
+        const opt = document.createElement('option');
+        opt.value = e;
+        opt.innerText = e;
+        select.appendChild(opt);
+        select.value = e;
+        state.event = e;
+        syncStateToFirebase();
+      }
+    }
+
+    function editEventPrompt() {
+      const select = document.getElementById('eventSelect');
+      const e = prompt('Edit Nama Acara/Ibadah:', select.value);
+      if (e) {
+        select.options[select.selectedIndex].text = e;
+        select.options[select.selectedIndex].value = e;
+        state.event = e;
+        syncStateToFirebase();
+      }
+    }
+
+    function deleteEventPrompt() {
+      const select = document.getElementById('eventSelect');
+      if (select.options.length > 1) {
+        select.remove(select.selectedIndex);
+        state.event = select.value;
+        syncStateToFirebase();
+      }
+    }
+
+    // UTILS & FILTERING
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function filterItems(type) {
+      if (type === 'info') renderInfoList(document.getElementById('infoSearch').value);
+      else if (type === 'ticker') renderTickerList(document.getElementById('tickerSearch').value);
+      else if (type === 'lowerthird') renderLtList(document.getElementById('ltSearch').value);
+      else if (type === 'presentasi') renderPresList(document.getElementById('presSearch').value);
+      else if (type === 'carousel') renderCarouselList(document.getElementById('carouselSearch').value);
+      else if (type === 'countdown') renderCdList(document.getElementById('cdSearch').value);
+    }
+
+    /* ===================================================
+       TRIGGER DISPLAY (MEMANCARKAN SIARAN KE FIREBASE)
+       =================================================== */
+    function triggerDisplay(type) {
+      let payload = { 
+        type: type,
+        timestamp: Date.now()
+      };
+
+      if (type === 'info') {
+        payload.title = document.getElementById('infoTitle').value;
+        payload.content = document.getElementById('infoContent').value;
+        payload.duration = parseInt(document.getElementById('infoDuration').value);
+      } else if (type === 'ticker') {
+        payload.content = document.getElementById('tickerContent').value;
+        payload.duration = parseInt(document.getElementById('tickerDuration').value);
+      } else if (type === 'lowerthird') {
+        payload.name = document.getElementById('ltName').value;
+        payload.subtitle = document.getElementById('ltSub').value;
+        payload.duration = parseInt(document.getElementById('ltDuration').value);
+      } else if (type === 'presentasi') {
+        const pres = state.presentations.find(p => p.id === state.selectedPresId);
+        if (pres && pres.slides && pres.slides[state.currentPresSlideIndex]) {
+          payload.title = pres.title;
+          payload.speaker = pres.speaker;
+          payload.slide = pres.slides[state.currentPresSlideIndex];
+          payload.slideIndex = state.currentPresSlideIndex;
+          payload.totalSlides = pres.slides.length;
+        } else {
+          return;
+        }
+      } else if (type === 'carousel') {
+        const carousel = state.carousels.find(c => c.id === state.selectedCarouselId);
+        if (carousel && carousel.slides) {
+          payload.title = carousel.title;
+          payload.slides = carousel.slides;
+          payload.interval = parseInt(document.getElementById('carouselInterval').value);
+        } else {
+          return;
+        }
+      } else if (type === 'countdown') {
+        payload.title = document.getElementById('cdTitle').value;
+        payload.hours = parseInt(document.getElementById('cdHours').value) || 0;
+        payload.minutes = parseInt(document.getElementById('cdMinutes').value) || 0;
+        payload.seconds = parseInt(document.getElementById('cdSeconds').value) || 0;
+      }
+
+      // Kirim perintah tampilan langsung ke Firebase Realtime Database
+      database.ref('activeOverlay').set(payload)
+        .then(() => {
+          showToast(`Tampilan ${type.toUpperCase()} Dikirim ke Overlay`);
+        })
+        .catch((err) => {
+          console.error("Firebase write error:", err);
+        });
+    }
+
+    // NAVIGASI SLIDE PRESENTASI
+    function navSlide(dir) {
+      const pres = state.presentations.find(p => p.id === state.selectedPresId);
+      if (!pres || !pres.slides || pres.slides.length === 0) return;
+
+      if (dir === 'prev' && state.currentPresSlideIndex > 0) {
+        state.currentPresSlideIndex--;
+      } else if (dir === 'next' && state.currentPresSlideIndex < pres.slides.length - 1) {
+        state.currentPresSlideIndex++;
+      }
+
+      renderPresDetail();
+      triggerDisplay('presentasi');
     }
   </script>
 </body>
