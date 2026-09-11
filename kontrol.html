@@ -78,7 +78,7 @@
 
   <div class="max-w-xl mx-auto w-full space-y-4">
 
-    <!-- MAIN DISPLAY CONTROL PANEL (PERSENTASI ONLY) -->
+    <!-- MAIN DISPLAY CONTROL PANEL (PRESENTASI ONLY) -->
     <div class="bg-cardBg border border-cardBorder rounded-xl p-4 shadow-xl">
       <div class="flex items-center justify-between mb-4 border-b border-cardBorder pb-3">
         <h2 class="text-sm font-bold text-gray-200 uppercase tracking-wide">KONTROL TAMPILAN</h2>
@@ -117,7 +117,7 @@
 
           <!-- TAMPIL DI LAYAR -->
           <div>
-            <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+            <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">TAMPIL DI LAYAR:</span>
             <div class="flex flex-wrap gap-4 text-xs">
               <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="presShowStream" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Live Streaming</label>
               <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="presShowAudience" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Audiens</label>
@@ -125,16 +125,18 @@
             </div>
           </div>
 
-          <!-- 4 TOMBOL KONTROL UTAMA INTRUKSI AWAL -->
+          <!-- 4 TOMBOL KONTROL UTAMA (DENGAN POSISI TAMPILKAN DAN SEMBUNYIKAN YANG DITUKAR) -->
           <div class="grid grid-cols-2 gap-2">
             <button onclick="navSlide('prev')" class="bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-semibold py-2.5 rounded-lg transition">
               &lt; Balik
             </button>
-            <button onclick="hideOverlay()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-2.5 rounded-lg transition shadow-lg flex items-center justify-center gap-1.5">
-              <i class="fa-solid fa-eye-slash"></i> Sembunyikan
-            </button>
+            <!-- TAMPILKAN SEKARANG DI ATAS KANAN -->
             <button onclick="triggerDisplay()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2.5 rounded-lg transition shadow-lg flex items-center justify-center gap-1.5">
               <i class="fa-solid fa-eye"></i> Tampilkan
+            </button>
+            <!-- SEMBUNYIKAN SEKARANG DI BAWAH KIRI -->
+            <button onclick="hideOverlay()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-2.5 rounded-lg transition shadow-lg flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-eye-slash"></i> Sembunyikan
             </button>
             <button onclick="navSlide('next')" class="bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-semibold py-2.5 rounded-lg transition">
               Berikut &gt;
