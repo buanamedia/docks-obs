@@ -32,35 +32,35 @@
     }
   </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen flex justify-center items-start">
+<body class="p-3 sm:p-6 min-h-screen flex justify-center items-start">
 
-  <div class="w-full max-w-md bg-[#0f172a] border border-slate-800/80 rounded-3xl p-6 shadow-2xl relative">
+  <div class="w-full max-w-md bg-[#0f172a] border border-slate-800 rounded-3xl p-5 shadow-2xl relative">
     
-    <!-- PENCARIAN & TAMBAH -->
-    <div class="mb-4">
-      <input type="text" id="search-input" onkeyup="filterPresentations()" placeholder="Cari Presentasi..." class="w-full bg-[#1e293b]/60 border border-slate-700/60 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all">
+    <!-- PENCARIAN & TAMBAH PRESENTASI -->
+    <div class="mb-3">
+      <input type="text" id="search-input" onkeyup="filterPresentations()" placeholder="Cari Presentasi..." class="w-full bg-[#1e293b]/80 border border-slate-700/60 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all">
     </div>
 
     <button onclick="bukaModalTambah()" class="w-10 h-10 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex items-center justify-center transition-all shadow-md active:scale-95 mb-4">
       <i class="fa-solid fa-plus text-sm"></i>
     </button>
 
-    <!-- LIST PILIHAN PRESENTASI DARI FIREBASE -->
-    <div id="presentation-list" class="space-y-3 mb-6 max-h-48 overflow-y-auto pr-1">
-      <div class="text-xs text-slate-500 italic text-center py-2">Memuat data presentasi...</div>
+    <!-- LIST PILIHAN PRESENTASI -->
+    <div id="presentation-list" class="space-y-2 mb-5 max-h-48 overflow-y-auto pr-1">
+      <!-- Item presentasi di-render di sini -->
     </div>
 
     <!-- INFORMASI PRESENTASI AKTIF -->
     <div class="bg-[#182238]/80 border border-slate-800 rounded-2xl p-4 mb-5">
-      <h2 class="text-sm font-bold text-white mb-2">Kontrol Presentasi</h2>
+      <h2 class="text-sm font-bold text-white mb-1.5">Kontrol Presentasi</h2>
       <p class="text-xs text-slate-300 font-medium">Judul: <span id="active-title" class="text-white font-bold">-</span></p>
-      <p class="text-xs text-slate-400 font-medium mt-0.5 mb-4">Pembicara: <span id="active-speaker" class="text-slate-300">-</span></p>
+      <p class="text-xs text-slate-400 font-medium mt-0.5 mb-3.5">Pembicara: <span id="active-speaker" class="text-slate-300">-</span></p>
 
       <div class="flex gap-2">
         <button onclick="bukaModalAturSlide()" class="flex-1 bg-[#0b1120] hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-semibold text-xs py-2.5 rounded-xl transition-all shadow">
           Atur Slide
         </button>
-        <button onclick="hapusPresentasiAktif()" class="bg-red-950/60 hover:bg-red-900 border border-red-800/60 text-red-400 px-3 py-2.5 rounded-xl transition-all shadow active:scale-95">
+        <button onclick="hapusPresentasiAktif()" class="bg-red-950/60 hover:bg-red-900 border border-red-800/60 text-red-400 px-3.5 py-2.5 rounded-xl transition-all shadow active:scale-95">
           <i class="fa-solid fa-trash-can text-xs"></i>
         </button>
       </div>
@@ -68,53 +68,53 @@
 
     <!-- TARGET LAYAR -->
     <div class="mb-5">
-      <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">TAMPIL DI LAYAR:</label>
-      <div class="flex flex-wrap gap-4 text-xs font-semibold text-slate-300">
-        <label class="flex items-center gap-2 cursor-pointer">
+      <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">TAMPIL DI LAYAR:</label>
+      <div class="flex flex-wrap gap-3 text-xs font-semibold text-slate-300">
+        <label class="flex items-center gap-1.5 cursor-pointer">
           <input type="checkbox" id="target-stream" checked class="w-4 h-4 rounded accent-indigo-600 cursor-pointer"> Live Streaming
         </label>
-        <label class="flex items-center gap-2 cursor-pointer">
+        <label class="flex items-center gap-1.5 cursor-pointer">
           <input type="checkbox" id="target-audiens" checked class="w-4 h-4 rounded accent-indigo-600 cursor-pointer"> Monitor Audiens
         </label>
-        <label class="flex items-center gap-2 cursor-pointer">
+        <label class="flex items-center gap-1.5 cursor-pointer">
           <input type="checkbox" id="target-stage" checked class="w-4 h-4 rounded accent-indigo-600 cursor-pointer"> Monitor Stage
         </label>
       </div>
     </div>
 
-    <!-- 4 TOMBOL KONTROL UTAMA -->
-    <div class="grid grid-cols-4 gap-2 mb-6">
+    <!-- 4 TOMBOL KONTROL UTAMA (Grid 2 Kolom Agar Rapi di Layar HP) -->
+    <div class="grid grid-cols-2 gap-2.5 mb-5">
       <!-- BALIK -->
-      <button onclick="prevSlide()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md">
-        &lt; Balik
+      <button onclick="prevSlide()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md">
+        <i class="fa-solid fa-chevron-left text-[10px]"></i> Balik
       </button>
 
       <!-- SEMBUNYIKAN -->
-      <button onclick="sembunyikanOverlay()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md">
+      <button onclick="sembunyikanOverlay()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md">
         <i class="fa-solid fa-eye-slash text-[11px]"></i> Sembunyikan
       </button>
 
       <!-- TAMPILKAN -->
-      <button onclick="tampilkanOverlay()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md">
+      <button onclick="tampilkanOverlay()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md">
         <i class="fa-solid fa-eye text-[11px]"></i> Tampilkan
       </button>
 
       <!-- BERIKUT -->
-      <button onclick="nextSlide()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md">
-        Berikut &gt;
+      <button onclick="nextSlide()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md">
+        Berikut <i class="fa-solid fa-chevron-right text-[10px]"></i>
       </button>
     </div>
 
     <!-- DAFTAR SLIDE AKTIF (THUMBNAILS) -->
     <div class="mb-2">
-      <p class="text-xs font-semibold text-slate-400 mb-3">Daftar Slide (Klik untuk menampilkan langsung)</p>
-      <div id="slide-thumbnails" class="flex gap-3 overflow-x-auto pb-2 min-h-[90px]">
-        <!-- Render otomatis via JS -->
+      <p class="text-xs font-semibold text-slate-400 mb-2.5">Daftar Slide (Klik untuk menampilkan langsung)</p>
+      <div id="slide-thumbnails" class="flex gap-2.5 overflow-x-auto pb-2 min-h-[85px]">
+        <!-- Render via JS -->
       </div>
     </div>
 
     <!-- FOOTER -->
-    <div class="mt-6 pt-4 border-t border-slate-800/80 text-center text-[11px] text-slate-500 font-medium">
+    <div class="mt-6 pt-3 border-t border-slate-800 text-center text-[11px] text-slate-500 font-medium">
       Panel Kontrol OBS © By Buana Media
     </div>
 
@@ -162,42 +162,58 @@
   </div>
 
   <script>
-    let presentationsData = {};
-    let activePresId = null;
+    // Data Fallback jika Firebase awal masih kosong
+    let presentationsData = {
+      "pres_default": {
+        title: "Minggu",
+        speaker: "Pdt. John",
+        slides: [
+          { text: "Selamat Datang di Ibadah Minggu", img: "" },
+          { text: "Khotbah: Hidup Diberkati untuk Menjadi Berkat", img: "" }
+        ]
+      }
+    };
+    let activePresId = "pres_default";
     let currentSlideIndex = 0;
 
-    // SINKRONISASI DATABSE FIREBASE REALTIME
+    // KONEKSI REALTIME FIREBASE
     if (typeof database !== 'undefined') {
       
       // 1. Dengar Perubahan Daftar Presentasi
       database.ref('presentations').on('value', (snapshot) => {
-        presentationsData = snapshot.val() || {};
-        renderPresentationList();
-
-        // Pilih presentasi pertama jika belum ada yang terpilih
-        if (!activePresId && Object.keys(presentationsData).length > 0) {
-          activePresId = Object.keys(presentationsData)[0];
+        const val = snapshot.val();
+        if (val && Object.keys(val).length > 0) {
+          presentationsData = val;
+          if (!presentationsData[activePresId]) {
+            activePresId = Object.keys(presentationsData)[0];
+          }
+        } else {
+          // Jika di Firebase kosong, upload preset awal
+          database.ref('presentations').set(presentationsData);
         }
+        renderPresentationList();
         renderActivePresentation();
       });
 
-      // 2. Dengar Perubahan Status Active Overlay dari Utama/OBS
+      // 2. Dengar Sync Overlay
       database.ref('activeOverlay').on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data && data.type === 'presentasi' && data.slide) {
-          // Lacak slide index saat ini jika diubah dari luar
-          if (presentationsData[activePresId] && presentationsData[activePresId].slides) {
-            const idx = presentationsData[activePresId].slides.findIndex(s => s.text === data.slide.text && s.img === data.slide.img);
-            if (idx !== -1) {
-              currentSlideIndex = idx;
-              renderThumbnails();
-            }
+        if (data && data.type === 'presentasi' && data.slide && presentationsData[activePresId]) {
+          const slides = presentationsData[activePresId].slides || [];
+          const idx = slides.findIndex(s => s.text === data.slide.text && s.img === data.slide.img);
+          if (idx !== -1) {
+            currentSlideIndex = idx;
+            renderThumbnails();
           }
         }
       });
+    } else {
+      // Offline / Local Initialization
+      renderPresentationList();
+      renderActivePresentation();
     }
 
-    // RENDER LIST PRESENTASI (PILIHAN)
+    // RENDER LIST PRESENTASI
     function renderPresentationList(filter = '') {
       const container = document.getElementById('presentation-list');
       container.innerHTML = '';
@@ -219,10 +235,10 @@
 
         const isSelected = id === activePresId;
         const card = document.createElement('div');
-        card.className = `p-3 rounded-2xl border transition-all cursor-pointer ${
+        card.className = `p-3 rounded-xl border transition-all cursor-pointer ${
           isSelected 
-            ? 'bg-[#182238] border-indigo-600/80 ring-1 ring-indigo-500/50' 
-            : 'bg-[#131b2e]/60 border-slate-800/80 hover:border-slate-700'
+            ? 'bg-[#182238] border-indigo-500 ring-1 ring-indigo-500/50' 
+            : 'bg-[#131b2e]/60 border-slate-800 hover:border-slate-700'
         }`;
 
         card.onclick = () => pilihPresentasi(id);
@@ -250,7 +266,7 @@
       tampilkanOverlay();
     }
 
-    // RENDER PRESENTASI AKTIF & THUMBNAILS SLIDE
+    // RENDER DETAIL PRESENTASI AKTIF & SLIDES
     function renderActivePresentation() {
       if (!activePresId || !presentationsData[activePresId]) {
         document.getElementById('active-title').innerText = '-';
@@ -297,14 +313,14 @@
 
         thumb.innerHTML = `
           <span class="text-[9px] font-bold uppercase bg-slate-900/80 px-1.5 py-0.5 rounded text-indigo-400 w-fit">Slide ${index + 1}</span>
-          <p class="text-[10px] font-medium text-white truncate">${slide.text || ''}</p>
+          <p class="text-[10px] font-medium text-white truncate">${slide.text || '(Tanpa Teks)'}</p>
         `;
 
         container.appendChild(thumb);
       });
     }
 
-    // KIRIM PERINDAH KE FIREBASE OVERLAY
+    // FIREBASE OVERLAY UPDATER
     function getSelectedTargets() {
       return {
         stream: document.getElementById('target-stream').checked,
@@ -314,27 +330,28 @@
     }
 
     function updateOverlayFirebase(actionType = 'show') {
-      if (typeof database === 'undefined' || !activePresId || !presentationsData[activePresId]) return;
+      if (!activePresId || !presentationsData[activePresId]) return;
 
       const slides = presentationsData[activePresId].slides || [];
       const activeSlide = slides[currentSlideIndex] || { text: '', img: '' };
 
-      database.ref('activeOverlay').set({
-        action: actionType,
-        type: 'presentasi',
-        targets: getSelectedTargets(),
-        slide: {
-          text: activeSlide.text || '',
-          img: activeSlide.img || ''
-        },
-        updatedAt: firebase.database.ServerValue.TIMESTAMP
-      });
+      if (typeof database !== 'undefined') {
+        database.ref('activeOverlay').set({
+          action: actionType,
+          type: 'presentasi',
+          targets: getSelectedTargets(),
+          slide: {
+            text: activeSlide.text || '',
+            img: activeSlide.img || ''
+          },
+          updatedAt: firebase.database.ServerValue.TIMESTAMP
+        });
+      }
     }
 
-    // LOGIKA NAVIGASI TOMBOL (BALIK - TAMPILKAN - SEMBUNYIKAN - BERIKUT)
+    // KONTROL NAVIGASI TOMBOL
     function prevSlide() {
       if (!activePresId || !presentationsData[activePresId]) return;
-      const slides = presentationsData[activePresId].slides || [];
       if (currentSlideIndex > 0) {
         currentSlideIndex--;
         renderThumbnails();
@@ -394,17 +411,36 @@
           activePresId = newRef.key;
           tutupModalTambah();
         });
+      } else {
+        const newId = 'pres_' + Date.now();
+        presentationsData[newId] = {
+          title: title,
+          speaker: speaker,
+          slides: [{ text: title, img: '' }]
+        };
+        activePresId = newId;
+        renderPresentationList();
+        renderActivePresentation();
+        tutupModalTambah();
       }
     }
 
     function hapusPresentasiAktif() {
       if (!activePresId) return;
-      if (confirm('Yakin ingin menghapus presentasi ini dari database?')) {
-        database.ref(`presentations/${activePresId}`).remove().then(() => {
-          activePresId = null;
+      if (confirm('Yakin ingin menghapus presentasi ini?')) {
+        if (typeof database !== 'undefined') {
+          database.ref(`presentations/${activePresId}`).remove().then(() => {
+            activePresId = Object.keys(presentationsData)[0] || null;
+            currentSlideIndex = 0;
+            sembunyikanOverlay();
+          });
+        } else {
+          delete presentationsData[activePresId];
+          activePresId = Object.keys(presentationsData)[0] || null;
           currentSlideIndex = 0;
-          sembunyikanOverlay();
-        });
+          renderPresentationList();
+          renderActivePresentation();
+        }
       }
     }
 
@@ -417,7 +453,7 @@
 
     function tutupModalAturSlide() {
       document.getElementById('modal-slide').classList.add('hidden');
-      if (activePresId) {
+      if (typeof database !== 'undefined' && activePresId) {
         database.ref(`presentations/${activePresId}/slides`).set(presentationsData[activePresId].slides);
       }
       renderThumbnails();
@@ -462,7 +498,7 @@
 
     function hapusSlide(index) {
       if (presentationsData[activePresId].slides.length <= 1) {
-        alert('Minimal harus ada 1 slide!');
+        alert('Minimal harus tersisa 1 slide!');
         return;
       }
       presentationsData[activePresId].slides.splice(index, 1);
