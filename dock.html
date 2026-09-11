@@ -696,6 +696,15 @@
        =================================================== */
     function syncStateToFirebase() {
       if (typeof database === 'undefined') return;
+
+      const profileSelect = document.getElementById('profileSelect');
+      const profiles = Array.from(profileSelect.options).map(o => o.value);
+
+      const eventSelect = document.getElementById('eventSelect');
+      const events = Array.from(eventSelect.options)
+        .map(o => o.value)
+        .filter(val => val !== 'ACARA_BARU');
+
       database.ref('obsState').set({
         infoItems: state.infoItems,
         tickerItems: state.tickerItems,
@@ -703,15 +712,18 @@
         presentations: state.presentations,
         carousels: state.carousels,
         countdowns: state.countdowns,
+        profiles: profiles,
         profile: state.profile,
+        events: events,
         event: state.event,
         updatedAt: Date.now()
       });
     }
 
-    function loadStateFromFirebase() {
+    function listenToFirebaseRealtime() {
       if (typeof database === 'undefined') return;
-      database.ref('obsState').once('value', (snapshot) => {
+
+      database.ref('obsState').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
           state.infoItems = data.infoItems || [];
@@ -721,9 +733,48 @@
           state.carousels = data.carousels || [];
           state.countdowns = data.countdowns || [];
 
+          if (data.profiles && Array.isArray(data.profiles)) {
+            updateProfileDropdownUI(data.profiles, data.profile);
+          }
+          if (data.events && Array.isArray(data.events)) {
+            updateEventDropdownUI(data.events, data.event);
+          }
+
           renderAllLists();
         }
       });
+    }
+
+    function updateProfileDropdownUI(profiles, selectedProfile) {
+      const select = document.getElementById('profileSelect');
+      if (!select) return;
+      
+      const currentSelected = selectedProfile || select.value;
+      select.innerHTML = '';
+      profiles.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.innerText = p;
+        select.appendChild(opt);
+      });
+      if (currentSelected) select.value = currentSelected;
+      state.profile = select.value;
+    }
+
+    function updateEventDropdownUI(events, selectedEvent) {
+      const select = document.getElementById('eventSelect');
+      if (!select) return;
+
+      const currentSelected = selectedEvent || select.value;
+      select.innerHTML = '<option value="ACARA_BARU">-- Pilih / Tambah Acara --</option>';
+      events.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e;
+        opt.innerText = e;
+        select.appendChild(opt);
+      });
+      if (currentSelected) select.value = currentSelected;
+      state.event = select.value;
     }
 
     function renderAllLists() {
@@ -829,7 +880,7 @@
     // INITIAL LOAD
     window.onload = function() {
       initSupabase();
-      loadStateFromFirebase();
+      listenToFirebaseRealtime();
     };
 
     // --- INFO CONTROLLER ---
@@ -1524,6 +1575,11 @@
       }
     }
 
+    function onProfileChange(val) {
+      state.profile = val;
+      syncStateToFirebase();
+    }
+
     function addEventPrompt() {
       const e = prompt('Masukkan Nama Acara Baru:');
       if (e) {
@@ -1556,6 +1612,11 @@
         state.event = select.value;
         syncStateToFirebase();
       }
+    }
+
+    function onEventChange(val) {
+      state.event = val;
+      syncStateToFirebase();
     }
 
     // UTILS & FILTERING
@@ -1634,7 +1695,6 @@
         payload.seconds = parseInt(document.getElementById('cdSeconds').value) || 0;
       }
 
-      // Kirim perintah tampilan langsung ke Firebase Realtime Database
       database.ref('activeOverlay').set(payload)
         .then(() => {
           showToast(`Tampilan ${type.toUpperCase()} Dikirim ke Overlay`);
