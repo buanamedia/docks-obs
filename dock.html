@@ -1,1 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OBS Custom Dock Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e2e;
+      color: #cdd6f4;
+      padding: 15px;
+      margin: 0;
+    }
+    h3 { margin-top: 0; color: #89b4fa; }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; margin-bottom: 5px; font-size: 12px; }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border-radius: 4px;
+      border: 1px solid #45475a;
+      background-color: #313244;
+      color: #fff;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #a6e3a1;
+      color: #11111b;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover { background-color: #94e2d5; }
+  </style>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+</head>
+<body>
 
+  <h3>Control Panel Overlay</h3>
+
+  <div class="form-group">
+    <label for="titleInput">Judul / Running Text:</label>
+    <input type="text" id="titleInput" placeholder="Masukkan judul...">
+  </div>
+
+  <div class="form-group">
+    <label for="subtitleInput">Sub-judul / Deskripsi:</label>
+    <input type="text" id="subtitleInput" placeholder="Masukkan deskripsi...">
+  </div>
+
+  <button onclick="updateOverlay()">Update Overlay</button>
+
+  <script>
+    function updateOverlay() {
+      const title = document.getElementById('titleInput').value;
+      const subtitle = document.getElementById('subtitleInput').value;
+
+      // Update data di Firebase Realtime Database
+      database.ref('overlayData').set({
+        title: title,
+        subtitle: subtitle,
+        updatedAt: Date.now()
+      }).then(() => {
+        alert('Overlay berhasil diupdate!');
+      }).catch((error) => {
+        console.error('Error:', error);
+      });
+    }
+  </script>
+</body>
+</html>
