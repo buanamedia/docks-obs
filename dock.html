@@ -176,6 +176,16 @@
               <textarea id="infoContent" rows="3" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500 resize-none"></textarea>
             </div>
 
+            <!-- TAMPIL DI LAYAR -->
+            <div>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="infoShowStream" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Live Streaming</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="infoShowAudience" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Audiens</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="infoShowStage" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Stage</label>
+              </div>
+            </div>
+
             <div>
               <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Duration</label>
               <select id="infoDuration" class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none">
@@ -217,6 +227,16 @@
             <div>
               <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Isi Ticker (Bisa tag HTML)</label>
               <textarea id="tickerContent" rows="5" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500 resize-none font-mono"></textarea>
+            </div>
+
+            <!-- TAMPIL DI LAYAR -->
+            <div>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="tickerShowStream" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Live Streaming</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="tickerShowAudience" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Audiens</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="tickerShowStage" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Stage</label>
+              </div>
             </div>
 
             <div>
@@ -267,7 +287,7 @@
               <input type="text" id="ltSub" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
             </div>
 
-            <!-- FITUR UPLOAD LOGO/FOTO PROFIL LOWERTHIRD -->
+            <!-- UPLOAD LOGO/FOTO PROFIL -->
             <div>
               <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Logo / Foto Profil (Opsional)</label>
               <div class="flex items-center gap-3">
@@ -283,6 +303,16 @@
                 <button onclick="clearLtLogo()" class="px-2.5 py-2 bg-red-950/60 hover:bg-red-900 border border-red-800/60 text-red-400 rounded-lg text-xs" title="Hapus Logo">
                   <i class="fa-solid fa-xmark"></i>
                 </button>
+              </div>
+            </div>
+
+            <!-- TAMPIL DI LAYAR -->
+            <div>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="ltShowStream" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Live Streaming</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="ltShowAudience" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Audiens</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="ltShowStage" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Stage</label>
               </div>
             </div>
 
@@ -337,6 +367,16 @@
               </button>
             </div>
 
+            <!-- TAMPIL DI LAYAR -->
+            <div>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="presShowStream" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Live Streaming</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="presShowAudience" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Audiens</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="presShowStage" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Stage</label>
+              </div>
+            </div>
+
             <div class="grid grid-cols-3 gap-2">
               <button onclick="navSlide('prev')" class="bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-semibold py-2.5 rounded-lg transition">
                 &lt; Balik
@@ -382,6 +422,16 @@
               <button onclick="deleteCurrentCarousel()" class="w-9 h-9 bg-red-950/80 hover:bg-red-900 border border-red-700/80 text-red-400 rounded-lg flex items-center justify-center transition" title="Hapus Carousel">
                 <i class="fa-solid fa-trash text-xs"></i>
               </button>
+            </div>
+
+            <!-- TAMPIL DI LAYAR -->
+            <div>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="carouselShowStream" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Live Streaming</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="carouselShowAudience" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Audiens</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="carouselShowStage" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Stage</label>
+              </div>
             </div>
 
             <div>
@@ -436,6 +486,16 @@
               <div>
                 <label class="text-[11px] font-semibold text-gray-400 block mb-1">Detik</label>
                 <input type="number" id="cdSeconds" value="0" min="0" max="59" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 text-center outline-none">
+              </div>
+            </div>
+
+            <!-- TAMPIL DI LAYAR -->
+            <div>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="cdShowStream" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Live Streaming</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="cdShowAudience" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Audiens</label>
+                <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="cdShowStage" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Stage</label>
               </div>
             </div>
 
@@ -1005,7 +1065,6 @@
         }
       }
 
-      // Fallback local reader
       const reader = new FileReader();
       reader.onload = function(evt) {
         state.uploadedLtLogoUrl = evt.target.result;
@@ -1568,14 +1627,29 @@
         payload.title = document.getElementById('infoTitle').value;
         payload.content = document.getElementById('infoContent').value;
         payload.duration = parseInt(document.getElementById('infoDuration').value);
+        payload.targets = {
+          stream: document.getElementById('infoShowStream').checked,
+          audience: document.getElementById('infoShowAudience').checked,
+          stage: document.getElementById('infoShowStage').checked
+        };
       } else if (type === 'ticker') {
         payload.content = document.getElementById('tickerContent').value;
         payload.duration = parseInt(document.getElementById('tickerDuration').value);
+        payload.targets = {
+          stream: document.getElementById('tickerShowStream').checked,
+          audience: document.getElementById('tickerShowAudience').checked,
+          stage: document.getElementById('tickerShowStage').checked
+        };
       } else if (type === 'lowerthird') {
         payload.name = document.getElementById('ltName').value;
         payload.subtitle = document.getElementById('ltSub').value;
         payload.logo = state.uploadedLtLogoUrl || null;
         payload.duration = parseInt(document.getElementById('ltDuration').value);
+        payload.targets = {
+          stream: document.getElementById('ltShowStream').checked,
+          audience: document.getElementById('ltShowAudience').checked,
+          stage: document.getElementById('ltShowStage').checked
+        };
       } else if (type === 'presentasi') {
         const pres = state.presentations.find(p => p.id === state.selectedPresId);
         if (pres && pres.slides && pres.slides[state.currentPresSlideIndex]) {
@@ -1584,6 +1658,11 @@
           payload.slide = pres.slides[state.currentPresSlideIndex];
           payload.slideIndex = state.currentPresSlideIndex;
           payload.totalSlides = pres.slides.length;
+          payload.targets = {
+            stream: document.getElementById('presShowStream').checked,
+            audience: document.getElementById('presShowAudience').checked,
+            stage: document.getElementById('presShowStage').checked
+          };
         } else return;
       } else if (type === 'carousel') {
         const carousel = state.carousels.find(c => c.id === state.selectedCarouselId);
@@ -1591,12 +1670,22 @@
           payload.title = carousel.title;
           payload.slides = carousel.slides;
           payload.interval = parseInt(document.getElementById('carouselInterval').value);
+          payload.targets = {
+            stream: document.getElementById('carouselShowStream').checked,
+            audience: document.getElementById('carouselShowAudience').checked,
+            stage: document.getElementById('carouselShowStage').checked
+          };
         } else return;
       } else if (type === 'countdown') {
         payload.title = document.getElementById('cdTitle').value;
         payload.hours = parseInt(document.getElementById('cdHours').value) || 0;
         payload.minutes = parseInt(document.getElementById('cdMinutes').value) || 0;
         payload.seconds = parseInt(document.getElementById('cdSeconds').value) || 0;
+        payload.targets = {
+          stream: document.getElementById('cdShowStream').checked,
+          audience: document.getElementById('cdShowAudience').checked,
+          stage: document.getElementById('cdShowStage').checked
+        };
       }
 
       database.ref('activeOverlay').set(payload)
