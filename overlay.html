@@ -2,64 +2,280 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>OBS Overlay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay OBS - GK RIDC</title>
+
+  <!-- Google Font Inter & Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase SDK (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <style>
     body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: transparent; /* Agar transparan di OBS */
+      font-family: 'Poppins', 'Inter', sans-serif;
+      background: transparent;
+      width: 1920px;
+      height: 1080px;
+      user-select: none;
     }
 
-    .overlay-box {
-      position: absolute;
-      bottom: 40px;
-      left: 40px;
-      background: rgba(17, 17, 27, 0.85);
-      border-left: 5px solid #89b4fa;
-      padding: 15px 25px;
-      border-radius: 0 8px 8px 0;
-      color: #ffffff;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
+    /* ANIMASI LOWERTHIRD & INFO */
+    .fade-slide-up {
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(40px);
+      opacity: 0;
+    }
+    .fade-slide-up.active {
+      transform: translateY(0);
+      opacity: 1;
     }
 
-    .title {
-      font-size: 24px;
-      font-weight: bold;
-      color: #89b4fa;
-      margin: 0;
+    /* TICKER MARQUEE ANIMATION */
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .animate-marquee {
+      display: inline-block;
+      white-space: nowrap;
+      animation: marquee 20s linear infinite;
     }
 
-    .subtitle {
-      font-size: 16px;
-      color: #bac2de;
-      margin-top: 5px;
+    /* GLASSMORPHISM CARDS */
+    .glass-card {
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.6);
     }
   </style>
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js"></script>
 </head>
-<body>
+<body class="relative w-[1920px] h-[1080px]">
 
-  <div class="overlay-box">
-    <div class="title" id="displayTitle">Loading...</div>
-    <div class="subtitle" id="displaySubtitle">Waiting for update</div>
+  <!-- 1. LOWERTHIRD DISPLAY (KIRI BAWAH) -->
+  <div id="overlay-lowerthird" class="fade-slide-up absolute bottom-16 left-16 flex items-stretch pointer-events-none">
+    <div class="w-2.5 bg-gradient-to-b from-indigo-500 to-indigo-700 rounded-l-xl"></div>
+    <div class="glass-card px-8 py-4 rounded-r-xl border-l-0 min-w-[380px]">
+      <h1 id="lt-title-display" class="text-2xl font-extrabold text-white tracking-wide uppercase">Pdt. Ester Joice P</h1>
+      <p id="lt-sub-display" class="text-base font-medium text-indigo-400 mt-0.5">Gembala Sidang</p>
+    </div>
+  </div>
+
+  <!-- 2. TICKER DISPLAY (RUNNING TEXT BAWAH) -->
+  <div id="overlay-ticker" class="fade-slide-up absolute bottom-0 left-0 right-0 glass-card border-x-0 border-b-0 h-12 flex items-center overflow-hidden">
+    <div class="bg-indigo-600 text-white font-bold text-xs uppercase px-5 h-full flex items-center tracking-wider shrink-0 z-10 shadow-lg">
+      <i class="fa-solid fa-bullhorn mr-2"></i> Warta
+    </div>
+    <div class="flex-1 overflow-hidden relative h-full flex items-center">
+      <div id="ticker-text-display" class="animate-marquee text-white font-semibold text-sm tracking-wide">
+        Selamat Datang di Ibadah GK RIDC. Silakan mengisi warta dan pokok doa secara online melalui website kami.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. CAROUSEL / PRESENTASI DISPLAY (TENGAH / SLIDE SLIDER) -->
+  <div id="overlay-slide" class="fade-slide-up absolute inset-0 flex items-center justify-center p-20 pointer-events-none">
+    <div class="glass-card rounded-2xl max-w-4xl w-full p-8 text-center flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
+      <img id="slide-img-display" src="" class="max-h-[500px] w-auto object-contain rounded-lg mb-4 hidden shadow-md" alt="Slide Image">
+      <h2 id="slide-text-display" class="text-3xl font-bold text-white leading-relaxed drop-shadow-md">
+        Shalom! Selamat Datang di Ibadah Minggu
+      </h2>
+    </div>
+  </div>
+
+  <!-- 4. INFO BANNER (KANAN ATAS) -->
+  <div id="overlay-info" class="fade-slide-up absolute top-12 right-12 glass-card rounded-xl p-5 max-w-md border-l-4 border-l-amber-500 shadow-2xl">
+    <div class="flex items-start gap-3">
+      <div class="text-amber-400 text-xl pt-0.5"><i class="fa-solid fa-circle-info"></i></div>
+      <div>
+        <h3 id="info-title-display" class="text-sm font-bold text-amber-300 uppercase tracking-wider">Pengumuman</h3>
+        <p id="info-content-display" class="text-xs text-gray-200 mt-1 font-medium leading-relaxed">
+          Pemberitahuan teknis ibadah hari ini.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. COUNTDOWN DISPLAY (TENGAH / ATAS) -->
+  <div id="overlay-countdown" class="fade-slide-up absolute top-16 left-1/2 -translate-x-1/2 glass-card rounded-2xl px-10 py-5 text-center shadow-2xl border border-indigo-500/30">
+    <div id="cd-title-display" class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Ibadah Akan Dimulai</div>
+    <div id="cd-timer-display" class="text-5xl font-black text-white font-mono tracking-wider drop-shadow-lg">
+      00:05:00
+    </div>
   </div>
 
   <script>
-    const displayTitle = document.getElementById('displayTitle');
-    const displaySubtitle = document.getElementById('displaySubtitle');
+    /* ===================================================
+       FIREBASE CONFIGURATION
+       =================================================== */
+    const firebaseConfig = {
+      apiKey: "API_KEY_ANDA",
+      authDomain: "obs-docks-control.firebaseapp.com",
+      databaseURL: "https://obs-docks-control-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "obs-docks-control",
+      storageBucket: "obs-docks-control.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
 
-    // Mendengarkan perubahan data secara Realtime
-    database.ref('overlayData').on('value', (snapshot) => {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+
+    let cdInterval = null;
+    let carouselInterval = null;
+    let autoHideTimeout = null;
+
+    // Sembunyikan semua overlay di awal
+    function hideAll() {
+      document.querySelectorAll('.fade-slide-up').forEach(el => el.classList.remove('active'));
+      if (cdInterval) clearInterval(cdInterval);
+      if (carouselInterval) clearInterval(carouselInterval);
+      if (autoHideTimeout) clearTimeout(autoHideTimeout);
+    }
+
+    // Mendengarkan perubahan Realtime dari Firebase Panel Kontrol
+    database.ref('activeOverlay').on('value', (snapshot) => {
       const data = snapshot.val();
-      if (data) {
-        displayTitle.innerText = data.title || '';
-        displaySubtitle.innerText = data.subtitle || '';
+      if (!data) return;
+
+      if (data.action === 'hide') {
+        hideAll();
+        return;
+      }
+
+      // --- 1. LOWERTHIRD ---
+      if (data.type === 'lowerthird') {
+        hideAll();
+        document.getElementById('lt-title-display').innerText = data.name || '';
+        document.getElementById('lt-sub-display').innerText = data.subtitle || '';
+        document.getElementById('overlay-lowerthird').classList.add('active');
+
+        if (data.duration > 0) {
+          autoHideTimeout = setTimeout(() => {
+            document.getElementById('overlay-lowerthird').classList.remove('active');
+          }, data.duration * 1000);
+        }
+      }
+
+      // --- 2. TICKER ---
+      if (data.type === 'ticker') {
+        hideAll();
+        document.getElementById('ticker-text-display').innerHTML = data.content || '';
+        document.getElementById('overlay-ticker').classList.add('active');
+
+        if (data.duration > 0) {
+          autoHideTimeout = setTimeout(() => {
+            document.getElementById('overlay-ticker').classList.remove('active');
+          }, data.duration * 1000);
+        }
+      }
+
+      // --- 3. PRESENTASI ---
+      if (data.type === 'presentasi' && data.slide) {
+        hideAll();
+        const imgEl = document.getElementById('slide-img-display');
+        const textEl = document.getElementById('slide-text-display');
+
+        if (data.slide.img) {
+          imgEl.src = data.slide.img;
+          imgEl.classList.remove('hidden');
+        } else {
+          imgEl.classList.add('hidden');
+        }
+
+        textEl.innerText = data.slide.text || '';
+        document.getElementById('overlay-slide').classList.add('active');
+      }
+
+      // --- 4. CAROUSEL (ROTASI AUTOMATIS SLIDE) ---
+      if (data.type === 'carousel' && data.slides && data.slides.length > 0) {
+        hideAll();
+        let currentIndex = 0;
+        const imgEl = document.getElementById('slide-img-display');
+        const textEl = document.getElementById('slide-text-display');
+
+        function renderCarouselSlide(index) {
+          const slide = data.slides[index];
+          if (!slide) return;
+
+          if (slide.img) {
+            imgEl.src = slide.img;
+            imgEl.classList.remove('hidden');
+          } else {
+            imgEl.classList.add('hidden');
+          }
+          textEl.innerText = slide.text || '';
+          document.getElementById('overlay-slide').classList.add('active');
+        }
+
+        renderCarouselSlide(currentIndex);
+
+        const intervalTime = (data.interval || 10) * 1000;
+        carouselInterval = setInterval(() => {
+          currentIndex = (currentIndex + 1) % data.slides.length;
+          renderCarouselSlide(currentIndex);
+        }, intervalTime);
+      }
+
+      // --- 5. INFO ---
+      if (data.type === 'info') {
+        hideAll();
+        document.getElementById('info-title-display').innerText = data.title || 'INFO';
+        document.getElementById('info-content-display').innerText = data.content || '';
+        document.getElementById('overlay-info').classList.add('active');
+
+        if (data.duration > 0) {
+          autoHideTimeout = setTimeout(() => {
+            document.getElementById('overlay-info').classList.remove('active');
+          }, data.duration * 1000);
+        }
+      }
+
+      // --- 6. COUNTDOWN ---
+      if (data.type === 'countdown') {
+        hideAll();
+        document.getElementById('cd-title-display').innerText = data.title || 'COUNTDOWN';
+        
+        let totalSeconds = (parseInt(data.hours) || 0) * 3600 + (parseInt(data.minutes) || 0) * 60 + (parseInt(data.seconds) || 0);
+        
+        function updateTimerText() {
+          const hours = Math.floor(totalSeconds / 3600);
+          const minutes = Math.floor((totalSeconds % 3600) / 60);
+          const seconds = totalSeconds % 60;
+
+          const pad = (n) => String(n).padStart(2, '0');
+          
+          if (hours > 0) {
+            document.getElementById('cd-timer-display').innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+          } else {
+            document.getElementById('cd-timer-display').innerText = `${pad(minutes)}:${pad(seconds)}`;
+          }
+
+          if (totalSeconds <= 0) {
+            clearInterval(cdInterval);
+            document.getElementById('cd-timer-display').innerText = "00:00";
+          }
+          totalSeconds--;
+        }
+
+        updateTimerText();
+        cdInterval = setInterval(updateTimerText, 1000);
+        document.getElementById('overlay-countdown').classList.add('active');
       }
     });
   </script>
