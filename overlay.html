@@ -68,20 +68,20 @@
 </head>
 <body class="relative w-[1920px] h-[1080px]">
 
-  <!-- 1. LOWERTHIRD DISPLAY (DENGAN SUPORT LOGO) -->
+  <!-- 1. LOWERTHIRD DISPLAY (KIRI BAWAH) -->
   <div id="overlay-lowerthird" class="fade-slide-up absolute bottom-16 left-16 flex items-stretch pointer-events-none">
     <div class="w-2.5 bg-gradient-to-b from-indigo-500 to-indigo-700 rounded-l-xl"></div>
     <div class="glass-card px-8 py-4 rounded-r-xl border-l-0 min-w-[380px] flex items-center gap-4">
       <!-- Container Logo Lowerthird -->
       <img id="lt-logo-display" src="" class="w-14 h-14 rounded-lg object-cover hidden border border-white/20 shadow-md shrink-0" alt="Logo">
       <div>
-        <h1 id="lt-title-display" class="text-2xl font-extrabold text-white tracking-wide uppercase">Pdt. Ester Joice P</h1>
-        <p id="lt-sub-display" class="text-base font-medium text-indigo-400 mt-0.5">Gembala Sidang</p>
+        <h1 id="lt-title-display" class="text-2xl font-extrabold text-white tracking-wide uppercase">Nama Baru</h1>
+        <p id="lt-sub-display" class="text-base font-medium text-indigo-400 mt-0.5">Panduan Lengkap Setting Chrome Anti-Detect untuk Kejar Jam Tayang YouTube</p>
       </div>
     </div>
   </div>
 
-  <!-- 2. TICKER DISPLAY -->
+  <!-- 2. TICKER DISPLAY (RUNNING TEXT BAWAH) -->
   <div id="overlay-ticker" class="fade-slide-up absolute bottom-0 left-0 right-0 glass-card border-x-0 border-b-0 h-12 flex items-center overflow-hidden">
     <div class="bg-indigo-600 text-white font-bold text-xs uppercase px-5 h-full flex items-center tracking-wider shrink-0 z-10 shadow-lg">
       <i class="fa-solid fa-bullhorn mr-2"></i> Warta
@@ -93,7 +93,7 @@
     </div>
   </div>
 
-  <!-- 3. CAROUSEL / PRESENTASI DISPLAY -->
+  <!-- 3. CAROUSEL / PRESENTASI DISPLAY (TENGAH / SLIDE SLIDER) -->
   <div id="overlay-slide" class="fade-slide-up absolute inset-0 flex items-center justify-center p-20 pointer-events-none">
     <div class="glass-card rounded-2xl max-w-4xl w-full p-8 text-center flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
       <img id="slide-img-display" src="" class="max-h-[500px] w-auto object-contain rounded-lg mb-4 hidden shadow-md" alt="Slide Image">
@@ -103,7 +103,7 @@
     </div>
   </div>
 
-  <!-- 4. INFO BANNER -->
+  <!-- 4. INFO BANNER (KANAN ATAS) -->
   <div id="overlay-info" class="fade-slide-up absolute top-12 right-12 glass-card rounded-xl p-5 max-w-md border-l-4 border-l-amber-500 shadow-2xl">
     <div class="flex items-start gap-3">
       <div class="text-amber-400 text-xl pt-0.5"><i class="fa-solid fa-circle-info"></i></div>
@@ -116,7 +116,7 @@
     </div>
   </div>
 
-  <!-- 5. COUNTDOWN DISPLAY -->
+  <!-- 5. COUNTDOWN DISPLAY (TENGAH / ATAS) -->
   <div id="overlay-countdown" class="fade-slide-up absolute top-16 left-1/2 -translate-x-1/2 glass-card rounded-2xl px-10 py-5 text-center shadow-2xl border border-indigo-500/30">
     <div id="cd-title-display" class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Acara Akan Dimulai</div>
     <div id="cd-timer-display" class="text-5xl font-black text-white font-mono tracking-wider drop-shadow-lg">
@@ -129,6 +129,11 @@
     let carouselInterval = null;
     let autoHideTimeout = null;
 
+    // Deteksi Target Layar dari URL (Penggunaan: overlay.html?target=stream / audience / stage)
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentTarget = urlParams.get('target') || 'stream';
+
+    // Sembunyikan semua overlay
     function hideAll() {
       document.querySelectorAll('.fade-slide-up').forEach(el => el.classList.remove('active'));
       if (cdInterval) clearInterval(cdInterval);
@@ -136,6 +141,13 @@
       if (autoHideTimeout) clearTimeout(autoHideTimeout);
     }
 
+    // Memeriksa apakah target layar diizinkan dari data checkbox panel
+    function isAllowedForThisTarget(targets) {
+      if (!targets) return true; // Jika tidak ada batasan target, izinkan tampil
+      return targets[currentTarget] === true;
+    }
+
+    // Mendengarkan perubahan Realtime dari Firebase
     if (typeof database !== 'undefined') {
       database.ref('activeOverlay').on('value', (snapshot) => {
         const data = snapshot.val();
@@ -146,7 +158,13 @@
           return;
         }
 
-        // --- 1. LOWERTHIRD (LOGIC DISPLAY LOGO) ---
+        // Cek apakah target layar saat ini diizinkan
+        if (!isAllowedForThisTarget(data.targets)) {
+          hideAll();
+          return;
+        }
+
+        // --- 1. LOWERTHIRD ---
         if (data.type === 'lowerthird') {
           hideAll();
           document.getElementById('lt-title-display').innerText = data.name || '';
@@ -275,6 +293,8 @@
           document.getElementById('overlay-countdown').classList.add('active');
         }
       });
+    } else {
+      console.error("Database Firebase tidak ditemukan. Pastikan file js/firebase-config.js termuat.");
     }
   </script>
 </body>
