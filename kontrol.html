@@ -20,47 +20,62 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  <!-- File Konfigurasi Firebase External -->
+  <!-- Supabase JS Client (Compat/CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- File Konfigurasi External -->
   <script src="js/firebase-config.js"></script>
 
   <style>
     body {
       font-family: 'Poppins', 'Inter', sans-serif;
-      background-color: #0b1120;
+      background-color: #090d16;
       color: #f1f5f9;
       user-select: none;
+    }
+    /* Scrollbar Styling Custom */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body class="p-3 sm:p-6 min-h-screen flex justify-center items-start">
 
-  <div class="w-full max-w-md bg-[#0f172a] border border-slate-800 rounded-3xl p-5 shadow-2xl relative">
+  <div class="w-full max-w-md bg-[#0d1424] border border-slate-800/80 rounded-3xl p-5 shadow-2xl relative">
     
     <!-- PENCARIAN & TAMBAH PRESENTASI -->
     <div class="mb-3">
-      <input type="text" id="search-input" onkeyup="filterPresentations()" placeholder="Cari Presentasi..." class="w-full bg-[#1e293b]/80 border border-slate-700/60 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all">
+      <input type="text" id="search-input" onkeyup="filterPresentations()" placeholder="Cari Presentasi..." class="w-full bg-[#162032] border border-slate-700/50 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all">
     </div>
 
-    <button onclick="bukaModalTambah()" class="w-10 h-10 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex items-center justify-center transition-all shadow-md active:scale-95 mb-4">
+    <button onclick="bukaModalTambahPres()" class="w-10 h-10 bg-[#4f46e5] hover:bg-indigo-500 text-white rounded-xl flex items-center justify-center transition-all shadow-md active:scale-95 mb-4">
       <i class="fa-solid fa-plus text-sm"></i>
     </button>
 
-    <!-- LIST PILIHAN PRESENTASI -->
-    <div id="presentation-list" class="space-y-2 mb-5 max-h-48 overflow-y-auto pr-1">
-      <!-- Item presentasi di-render di sini -->
+    <!-- LIST PRESENTASI DARI DATABASE -->
+    <div id="presentation-list" class="space-y-2 mb-5 max-h-52 overflow-y-auto pr-1">
+      <div class="text-xs text-slate-500 italic text-center py-2">Memuat data presentasi...</div>
     </div>
 
     <!-- INFORMASI PRESENTASI AKTIF -->
-    <div class="bg-[#182238]/80 border border-slate-800 rounded-2xl p-4 mb-5">
-      <h2 class="text-sm font-bold text-white mb-1.5">Kontrol Presentasi</h2>
+    <div class="bg-[#131c2e] border border-slate-800/80 rounded-2xl p-4 mb-5">
+      <h2 class="text-sm font-bold text-white mb-2">Kontrol Presentasi</h2>
       <p class="text-xs text-slate-300 font-medium">Judul: <span id="active-title" class="text-white font-bold">-</span></p>
-      <p class="text-xs text-slate-400 font-medium mt-0.5 mb-3.5">Pembicara: <span id="active-speaker" class="text-slate-300">-</span></p>
+      <p class="text-xs text-slate-400 font-medium mt-0.5 mb-4">Pembicara: <span id="active-speaker" class="text-slate-300">-</span></p>
 
       <div class="flex gap-2">
-        <button onclick="bukaModalAturSlide()" class="flex-1 bg-[#0b1120] hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-semibold text-xs py-2.5 rounded-xl transition-all shadow">
+        <button onclick="bukaModalAturSlide()" class="flex-1 bg-[#090d16] hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-semibold text-xs py-2.5 rounded-xl transition-all shadow">
           Atur Slide
         </button>
-        <button onclick="hapusPresentasiAktif()" class="bg-red-950/60 hover:bg-red-900 border border-red-800/60 text-red-400 px-3.5 py-2.5 rounded-xl transition-all shadow active:scale-95">
+        <button onclick="hapusPresentasiAktif()" class="bg-[#3f1719] hover:bg-red-900 border border-red-800/60 text-red-400 px-3.5 py-2.5 rounded-xl transition-all shadow active:scale-95">
           <i class="fa-solid fa-trash-can text-xs"></i>
         </button>
       </div>
@@ -82,34 +97,29 @@
       </div>
     </div>
 
-    <!-- 4 TOMBOL KONTROL UTAMA (Grid 2 Kolom Agar Rapi di Layar HP) -->
-    <div class="grid grid-cols-2 gap-2.5 mb-5">
+    <!-- 3 TOMBOL KONTROL: BALIK - TAMPILKAN - BERIKUT -->
+    <div class="grid grid-cols-3 gap-2 mb-5">
       <!-- BALIK -->
-      <button onclick="prevSlide()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md">
-        <i class="fa-solid fa-chevron-left text-[10px]"></i> Balik
-      </button>
-
-      <!-- SEMBUNYIKAN -->
-      <button onclick="sembunyikanOverlay()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md">
-        <i class="fa-solid fa-eye-slash text-[11px]"></i> Sembunyikan
+      <button onclick="prevSlide()" class="bg-[#4338ca] hover:bg-indigo-600 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md">
+        &lt; Balik
       </button>
 
       <!-- TAMPILKAN -->
-      <button onclick="tampilkanOverlay()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md">
+      <button onclick="tampilkanOverlay()" class="bg-[#059669] hover:bg-emerald-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md">
         <i class="fa-solid fa-eye text-[11px]"></i> Tampilkan
       </button>
 
       <!-- BERIKUT -->
-      <button onclick="nextSlide()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md">
-        Berikut <i class="fa-solid fa-chevron-right text-[10px]"></i>
+      <button onclick="nextSlide()" class="bg-[#4338ca] hover:bg-indigo-600 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md">
+        Berikut &gt;
       </button>
     </div>
 
-    <!-- DAFTAR SLIDE AKTIF (THUMBNAILS) -->
+    <!-- DAFTAR SLIDE AKTIF (THUMBNAILS CARD PERSIS DOCK.HTML) -->
     <div class="mb-2">
       <p class="text-xs font-semibold text-slate-400 mb-2.5">Daftar Slide (Klik untuk menampilkan langsung)</p>
-      <div id="slide-thumbnails" class="flex gap-2.5 overflow-x-auto pb-2 min-h-[85px]">
-        <!-- Render via JS -->
+      <div id="slide-thumbnails" class="flex gap-3 overflow-x-auto pb-2 min-h-[95px]">
+        <!-- Thumbnail Slide di-render persis seperti Dock.html -->
       </div>
     </div>
 
@@ -120,82 +130,119 @@
 
   </div>
 
-  <!-- MODAL: TAMBAH PRESENTASI BARU -->
-  <div id="modal-tambah" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-[#0f172a] border border-slate-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl">
+  <!-- MODAL 1: TAMBAH PRESENTASI BARU -->
+  <div id="modal-tambah-pres" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-[#0d1424] border border-slate-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl">
       <h3 class="text-sm font-bold text-white mb-4">Tambah Presentasi Baru</h3>
       <div class="space-y-3">
         <div>
           <label class="block text-xs font-semibold text-slate-400 mb-1">Judul Presentasi</label>
-          <input type="text" id="new-title" class="w-full bg-[#1e293b] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          <input type="text" id="new-pres-title" class="w-full bg-[#162032] border border-slate-700/70 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-400 mb-1">Speaker / Pembicara</label>
-          <input type="text" id="new-speaker" class="w-full bg-[#1e293b] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          <input type="text" id="new-pres-speaker" class="w-full bg-[#162032] border border-slate-700/70 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
         </div>
       </div>
       <div class="flex justify-end gap-2 mt-5">
-        <button onclick="tutupModalTambah()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-4 py-2 rounded-xl">Batal</button>
+        <button onclick="tutupModalTambahPres()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-4 py-2 rounded-xl">Batal</button>
         <button onclick="simpanPresentasiBaru()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl">Simpan</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: ATUR SLIDE -->
-  <div id="modal-slide" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-[#0f172a] border border-slate-800 w-full max-w-md rounded-2xl p-5 shadow-2xl max-h-[85vh] flex flex-col">
-      <div class="flex justify-between items-center pb-3 border-b border-slate-800 mb-3">
-        <h3 class="text-sm font-bold text-white">Kelola Slide Presentasi</h3>
-        <button onclick="tambahSlideBaru()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg">
-          + Slide
-        </button>
+  <!-- MODAL 2: PENGATURAN SLIDE (EKSIS / DESAIN SAMA DOCK.HTML) -->
+  <div id="modal-slide" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4">
+    <div class="bg-[#0d1424] border border-slate-800 w-full max-w-lg rounded-2xl p-5 shadow-2xl max-h-[92vh] flex flex-col relative">
+      
+      <!-- HEADER MODAL -->
+      <div class="flex justify-between items-center pb-3 border-b border-slate-800 mb-4">
+        <h3 class="text-sm font-bold text-white">Pengaturan Slide: <span id="modal-slide-title" class="text-indigo-400">Minggu</span></h3>
+        <button onclick="tutupModalAturSlide()" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg flex items-center justify-center text-xs font-bold">x</button>
       </div>
 
-      <div id="modal-slide-list" class="space-y-3 overflow-y-auto pr-1 flex-1">
-        <!-- Render form slide -->
+      <div class="overflow-y-auto pr-1 flex-1 space-y-5">
+        
+        <!-- SECTION 1: SLIDE LIST -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 mb-2">Slide List</label>
+          <div id="modal-slide-thumbnails" class="flex gap-3 overflow-x-auto pb-2 items-center min-h-[95px]">
+            <!-- List thumbnail slide dengan tombol hapus di pojok kanan atas -->
+          </div>
+        </div>
+
+        <!-- SECTION 2: ADD / EDIT SLIDE FORM -->
+        <div class="bg-[#131c2e] border border-slate-800/80 rounded-xl p-4 space-y-4">
+          <div class="flex justify-between items-center">
+            <span id="form-slide-mode" class="text-xs font-bold text-slate-300 uppercase tracking-wider">ADD / EDIT SLIDE</span>
+            <span id="char-counter" class="text-[10px] text-slate-500">420 karakter tersisa</span>
+          </div>
+
+          <!-- ISI SLIDE -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Isi Slide</label>
+            <textarea id="slide-text-input" oninput="updateCharCount()" rows="3" placeholder="Masukkan isi Slide..." class="w-full bg-[#090d16] border border-slate-700/60 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"></textarea>
+          </div>
+
+          <!-- GAMBAR LATAR SLIDE -->
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <label class="block text-xs font-semibold text-slate-400">Gambar Latar Slide</label>
+              <span class="text-[10px] bg-indigo-950 text-indigo-400 border border-indigo-800/50 px-2 py-0.5 rounded-md font-medium"><i class="fa-solid fa-cloud mr-1"></i> Supabase Storage</span>
+            </div>
+
+            <!-- UPLOAD DROPZONE CONTAINER -->
+            <div onclick="triggerImageUpload()" class="border-2 border-dashed border-slate-700/80 hover:border-indigo-500 bg-[#090d16]/70 rounded-xl p-4 text-center cursor-pointer transition-all">
+              <i class="fa-solid fa-cloud-arrow-up text-indigo-400 text-xl mb-1"></i>
+              <p class="text-xs font-semibold text-slate-300">Klik untuk unggah gambar</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">Otomatis diunggah ke cloud Supabase Storage</p>
+              <input type="file" id="slide-img-file" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+            </div>
+
+            <!-- MANUAL INPUT URL GAMBAR -->
+            <input type="text" id="slide-img-url" placeholder="Atau masukkan URL Gambar langsung..." class="w-full bg-[#090d16] border border-slate-700/60 rounded-xl px-3 py-2 text-xs text-white mt-2 focus:outline-none focus:border-indigo-500">
+          </div>
+
+          <!-- TOMBOL SIMPAN SLIDE -->
+          <div class="flex justify-end pt-1">
+            <button onclick="simpanSlideForm()" class="bg-[#4f46e5] hover:bg-indigo-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg flex items-center gap-1.5 transition-all active:scale-95">
+              <i class="fa-solid fa-floppy-disk text-xs"></i> Simpan Slide
+            </button>
+          </div>
+
+        </div>
+
       </div>
 
-      <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-slate-800">
-        <button onclick="tutupModalAturSlide()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-5 py-2 rounded-xl">Selesai</button>
-      </div>
     </div>
   </div>
 
   <script>
-    // Data Fallback jika Firebase awal masih kosong
-    let presentationsData = {
-      "pres_default": {
-        title: "Minggu",
-        speaker: "Pdt. John",
-        slides: [
-          { text: "Selamat Datang di Ibadah Minggu", img: "" },
-          { text: "Khotbah: Hidup Diberkati untuk Menjadi Berkat", img: "" }
-        ]
-      }
-    };
-    let activePresId = "pres_default";
+    let presentationsData = {};
+    let activePresId = null;
     let currentSlideIndex = 0;
+    let editingSlideIndex = -1; // -1 = Mode Tambah Slide, >= 0 = Edit Slide
 
-    // KONEKSI REALTIME FIREBASE
+    // SINKRONISASI DATABASE REALTIME (DOCK.HTML)
     if (typeof database !== 'undefined') {
       
-      // 1. Dengar Perubahan Daftar Presentasi
+      // 1. Dengar Perubahan Node 'presentations'
       database.ref('presentations').on('value', (snapshot) => {
         const val = snapshot.val();
         if (val && Object.keys(val).length > 0) {
           presentationsData = val;
-          if (!presentationsData[activePresId]) {
+          if (!activePresId || !presentationsData[activePresId]) {
             activePresId = Object.keys(presentationsData)[0];
           }
         } else {
-          // Jika di Firebase kosong, upload preset awal
-          database.ref('presentations').set(presentationsData);
+          presentationsData = {};
+          activePresId = null;
         }
         renderPresentationList();
         renderActivePresentation();
       });
 
-      // 2. Dengar Sync Overlay
+      // 2. Dengar Perubahan Node 'activeOverlay'
       database.ref('activeOverlay').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data && data.type === 'presentasi' && data.slide && presentationsData[activePresId]) {
@@ -207,20 +254,16 @@
           }
         }
       });
-    } else {
-      // Offline / Local Initialization
-      renderPresentationList();
-      renderActivePresentation();
     }
 
-    // RENDER LIST PRESENTASI
+    // RENDER DAFTAR PRESENTASI
     function renderPresentationList(filter = '') {
       const container = document.getElementById('presentation-list');
       container.innerHTML = '';
 
       const keys = Object.keys(presentationsData);
       if (keys.length === 0) {
-        container.innerHTML = `<div class="text-xs text-slate-500 italic text-center py-2">Belum ada presentasi. Klik '+' untuk membuat.</div>`;
+        container.innerHTML = `<div class="text-xs text-slate-500 italic text-center py-3">Belum ada data presentasi. Klik '+' untuk menambah.</div>`;
         return;
       }
 
@@ -235,10 +278,10 @@
 
         const isSelected = id === activePresId;
         const card = document.createElement('div');
-        card.className = `p-3 rounded-xl border transition-all cursor-pointer ${
+        card.className = `p-3.5 rounded-xl border transition-all cursor-pointer ${
           isSelected 
-            ? 'bg-[#182238] border-indigo-500 ring-1 ring-indigo-500/50' 
-            : 'bg-[#131b2e]/60 border-slate-800 hover:border-slate-700'
+            ? 'bg-[#18233b] border-indigo-600/90 ring-1 ring-indigo-500/50' 
+            : 'bg-[#121a2b]/70 border-slate-800/80 hover:border-slate-700'
         }`;
 
         card.onclick = () => pilihPresentasi(id);
@@ -266,7 +309,7 @@
       tampilkanOverlay();
     }
 
-    // RENDER DETAIL PRESENTASI AKTIF & SLIDES
+    // RENDER PRESENTASI AKTIF
     function renderActivePresentation() {
       if (!activePresId || !presentationsData[activePresId]) {
         document.getElementById('active-title').innerText = '-';
@@ -282,6 +325,7 @@
       renderThumbnails();
     }
 
+    // RENDER THUMBNAILS SLIDE CARD
     function renderThumbnails() {
       const container = document.getElementById('slide-thumbnails');
       container.innerHTML = '';
@@ -296,7 +340,7 @@
         thumb.className = `shrink-0 w-28 h-20 rounded-xl p-2 border transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden ${
           isActive 
             ? 'bg-indigo-900/60 border-indigo-500 ring-2 ring-indigo-500/50' 
-            : 'bg-slate-800/50 border-slate-700/60 hover:border-slate-500'
+            : 'bg-[#162032] border-slate-700/60 hover:border-slate-500'
         }`;
 
         thumb.onclick = () => {
@@ -306,21 +350,21 @@
         };
 
         if (slide.img) {
-          thumb.style.backgroundImage = `linear-gradient(to bottom, rgba(15,23,42,0.6), rgba(15,23,42,0.9)), url('${slide.img}')`;
+          thumb.style.backgroundImage = `linear-gradient(to bottom, rgba(15,23,42,0.5), rgba(15,23,42,0.9)), url('${slide.img}')`;
           thumb.style.backgroundSize = 'cover';
           thumb.style.backgroundPosition = 'center';
         }
 
         thumb.innerHTML = `
-          <span class="text-[9px] font-bold uppercase bg-slate-900/80 px-1.5 py-0.5 rounded text-indigo-400 w-fit">Slide ${index + 1}</span>
-          <p class="text-[10px] font-medium text-white truncate">${slide.text || '(Tanpa Teks)'}</p>
+          <span class="text-[9px] font-bold uppercase bg-black/60 px-1.5 py-0.5 rounded text-indigo-300 w-fit">Slide ${index + 1}</span>
+          <p class="text-[10px] font-medium text-white truncate drop-shadow">${slide.text || '(Tanpa Teks)'}</p>
         `;
 
         container.appendChild(thumb);
       });
     }
 
-    // FIREBASE OVERLAY UPDATER
+    // UPDATE FIREBASE OVERLAY
     function getSelectedTargets() {
       return {
         stream: document.getElementById('target-stream').checked,
@@ -349,7 +393,7 @@
       }
     }
 
-    // KONTROL NAVIGASI TOMBOL
+    // KONTROL NAVIGASI (BALIK - TAMPILKAN - BERIKUT)
     function prevSlide() {
       if (!activePresId || !presentationsData[activePresId]) return;
       if (currentSlideIndex > 0) {
@@ -373,31 +417,23 @@
       updateOverlayFirebase('show');
     }
 
-    function sembunyikanOverlay() {
-      if (typeof database !== 'undefined') {
-        database.ref('activeOverlay').update({
-          action: 'hide'
-        });
-      }
-    }
-
     // KELOLA PRESENTASI (TAMBAH / HAPUS)
-    function bukaModalTambah() {
-      document.getElementById('new-title').value = '';
-      document.getElementById('new-speaker').value = '';
-      document.getElementById('modal-tambah').classList.remove('hidden');
+    function bukaModalTambahPres() {
+      document.getElementById('new-pres-title').value = '';
+      document.getElementById('new-pres-speaker').value = '';
+      document.getElementById('modal-tambah-pres').classList.remove('hidden');
     }
 
-    function tutupModalTambah() {
-      document.getElementById('modal-tambah').classList.add('hidden');
+    function tutupModalTambahPres() {
+      document.getElementById('modal-tambah-pres').classList.add('hidden');
     }
 
     function simpanPresentasiBaru() {
-      const title = document.getElementById('new-title').value.trim();
-      const speaker = document.getElementById('new-speaker').value.trim();
+      const title = document.getElementById('new-pres-title').value.trim();
+      const speaker = document.getElementById('new-pres-speaker').value.trim();
 
       if (!title) {
-        alert('Judul tidak boleh kosong!');
+        alert('Judul presentasi harus diisi!');
         return;
       }
 
@@ -409,19 +445,8 @@
           slides: [{ text: title, img: '' }]
         }).then(() => {
           activePresId = newRef.key;
-          tutupModalTambah();
+          tutupModalTambahPres();
         });
-      } else {
-        const newId = 'pres_' + Date.now();
-        presentationsData[newId] = {
-          title: title,
-          speaker: speaker,
-          slides: [{ text: title, img: '' }]
-        };
-        activePresId = newId;
-        renderPresentationList();
-        renderActivePresentation();
-        tutupModalTambah();
       }
     }
 
@@ -430,82 +455,182 @@
       if (confirm('Yakin ingin menghapus presentasi ini?')) {
         if (typeof database !== 'undefined') {
           database.ref(`presentations/${activePresId}`).remove().then(() => {
-            activePresId = Object.keys(presentationsData)[0] || null;
+            activePresId = null;
             currentSlideIndex = 0;
-            sembunyikanOverlay();
+            database.ref('activeOverlay').update({ action: 'hide' });
           });
-        } else {
-          delete presentationsData[activePresId];
-          activePresId = Object.keys(presentationsData)[0] || null;
-          currentSlideIndex = 0;
-          renderPresentationList();
-          renderActivePresentation();
         }
       }
     }
 
-    // KELOLA SLIDE PRESENTASI
+    // KELOLA SLIDE MODAL (SAMA PERSIS DOCK.HTML)
     function bukaModalAturSlide() {
       if (!activePresId || !presentationsData[activePresId]) return;
+      
+      const pres = presentationsData[activePresId];
+      document.getElementById('modal-slide-title').innerText = pres.title || pres.judul || '';
+      
+      resetSlideForm();
       renderModalSlideList();
       document.getElementById('modal-slide').classList.remove('hidden');
     }
 
     function tutupModalAturSlide() {
       document.getElementById('modal-slide').classList.add('hidden');
-      if (typeof database !== 'undefined' && activePresId) {
-        database.ref(`presentations/${activePresId}/slides`).set(presentationsData[activePresId].slides);
-      }
-      renderThumbnails();
     }
 
     function renderModalSlideList() {
-      const listContainer = document.getElementById('modal-slide-list');
-      listContainer.innerHTML = '';
+      const container = document.getElementById('modal-slide-thumbnails');
+      container.innerHTML = '';
 
       const slides = presentationsData[activePresId].slides || [];
 
       slides.forEach((slide, index) => {
-        const item = document.createElement('div');
-        item.className = "bg-[#182238] border border-slate-800 p-3 rounded-xl flex flex-col gap-2 relative";
-        item.innerHTML = `
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-indigo-400">Slide ${index + 1}</span>
-            <button onclick="hapusSlide(${index})" class="text-red-400 hover:text-red-300 text-xs">
+        const isEditing = index === editingSlideIndex;
+        const card = document.createElement('div');
+        card.className = `shrink-0 w-28 h-20 rounded-xl p-2 border transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden ${
+          isEditing 
+            ? 'bg-indigo-900/80 border-indigo-500 ring-2 ring-indigo-500' 
+            : 'bg-[#162032] border-slate-700/60 hover:border-slate-500'
+        }`;
+
+        card.onclick = () => muatSlideKeForm(index);
+
+        if (slide.img) {
+          card.style.backgroundImage = `linear-gradient(to bottom, rgba(15,23,42,0.5), rgba(15,23,42,0.9)), url('${slide.img}')`;
+          card.style.backgroundSize = 'cover';
+          card.style.backgroundPosition = 'center';
+        }
+
+        card.innerHTML = `
+          <div class="flex justify-between items-center w-full">
+            <span class="text-[9px] font-bold uppercase bg-black/60 px-1.5 py-0.5 rounded text-indigo-300">Slide ${index + 1}</span>
+            <button onclick="event.stopPropagation(); hapusSlideModal(${index});" class="w-5 h-5 bg-red-800/80 hover:bg-red-700 text-white rounded flex items-center justify-center text-[10px]">
               <i class="fa-solid fa-trash-can"></i>
             </button>
           </div>
-          <input type="text" placeholder="Teks Slide..." value="${slide.text || ''}" onchange="updateSlideInMemory(${index}, 'text', this.value)" class="bg-[#0b1120] border border-slate-700/70 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500">
-          <input type="text" placeholder="URL Gambar (Opsional)..." value="${slide.img || ''}" onchange="updateSlideInMemory(${index}, 'img', this.value)" class="bg-[#0b1120] border border-slate-700/70 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
+          <p class="text-[10px] font-medium text-white truncate drop-shadow">${slide.text || '(Tanpa Teks)'}</p>
         `;
-        listContainer.appendChild(item);
+
+        container.appendChild(card);
       });
+
+      // TOMBOL + SLIDE BARU
+      const addBtn = document.createElement('button');
+      addBtn.className = "shrink-0 w-10 h-10 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex items-center justify-center font-bold shadow-md transition-all active:scale-95";
+      addBtn.onclick = resetSlideForm;
+      addBtn.innerHTML = `<i class="fa-solid fa-plus text-sm"></i>`;
+      container.appendChild(addBtn);
     }
 
-    function updateSlideInMemory(index, key, val) {
-      if (presentationsData[activePresId].slides[index]) {
-        presentationsData[activePresId].slides[index][key] = val;
-      }
+    function muatSlideKeForm(index) {
+      editingSlideIndex = index;
+      const slides = presentationsData[activePresId].slides || [];
+      const slide = slides[index];
+
+      document.getElementById('slide-text-input').value = slide.text || '';
+      document.getElementById('slide-img-url').value = slide.img || '';
+      document.getElementById('form-slide-mode').innerText = `EDIT SLIDE ${index + 1}`;
+      updateCharCount();
+      renderModalSlideList();
     }
 
-    function tambahSlideBaru() {
+    function resetSlideForm() {
+      editingSlideIndex = -1; // Tambah Slide Baru
+      document.getElementById('slide-text-input').value = '';
+      document.getElementById('slide-img-url').value = '';
+      document.getElementById('form-slide-mode').innerText = 'TAMBAH SLIDE BARU';
+      updateCharCount();
+      renderModalSlideList();
+    }
+
+    function updateCharCount() {
+      const len = document.getElementById('slide-text-input').value.length;
+      document.getElementById('char-counter').innerText = `${420 - len} karakter tersisa`;
+    }
+
+    function simpanSlideForm() {
+      if (!activePresId || !presentationsData[activePresId]) return;
+
+      const textVal = document.getElementById('slide-text-input').value.trim();
+      const imgVal = document.getElementById('slide-img-url').value.trim();
+
       if (!presentationsData[activePresId].slides) {
         presentationsData[activePresId].slides = [];
       }
-      presentationsData[activePresId].slides.push({ text: '', img: '' });
-      renderModalSlideList();
+
+      const slides = presentationsData[activePresId].slides;
+
+      if (editingSlideIndex >= 0 && editingSlideIndex < slides.length) {
+        // Edit Slide
+        slides[editingSlideIndex] = { text: textVal, img: imgVal };
+      } else {
+        // Tambah Slide Baru
+        slides.push({ text: textVal, img: imgVal });
+        editingSlideIndex = slides.length - 1;
+      }
+
+      // Simpan ke Realtime Database Firebase
+      if (typeof database !== 'undefined') {
+        database.ref(`presentations/${activePresId}/slides`).set(slides).then(() => {
+          renderModalSlideList();
+          renderThumbnails();
+          tampilkanOverlay();
+        });
+      }
     }
 
-    function hapusSlide(index) {
-      if (presentationsData[activePresId].slides.length <= 1) {
+    function hapusSlideModal(index) {
+      const slides = presentationsData[activePresId].slides || [];
+      if (slides.length <= 1) {
         alert('Minimal harus tersisa 1 slide!');
         return;
       }
-      presentationsData[activePresId].slides.splice(index, 1);
-      if (currentSlideIndex >= presentationsData[activePresId].slides.length) {
-        currentSlideIndex = presentationsData[activePresId].slides.length - 1;
+
+      slides.splice(index, 1);
+      if (typeof database !== 'undefined') {
+        database.ref(`presentations/${activePresId}/slides`).set(slides).then(() => {
+          resetSlideForm();
+          renderThumbnails();
+        });
       }
-      renderModalSlideList();
+    }
+
+    // SUPABASE / LOCAL IMAGE UPLOADER
+    function triggerImageUpload() {
+      document.getElementById('slide-img-file').click();
+    }
+
+    function handleImageUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (typeof supabase !== 'undefined' && window.supabaseClient) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `slides/${fileName}`;
+
+        window.supabaseClient.storage.from('overlays').upload(filePath, file)
+          .then(({ data, error }) => {
+            if (error) throw error;
+            const { data: publicData } = window.supabaseClient.storage.from('overlays').getPublicUrl(filePath);
+            document.getElementById('slide-img-url').value = publicData.publicUrl;
+          })
+          .catch(err => {
+            console.error('Upload Supabase gagal, fallback ke reader base64:', err);
+            readLocalFileAsUrl(file);
+          });
+      } else {
+        readLocalFileAsUrl(file);
+      }
+    }
+
+    function readLocalFileAsUrl(file) {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        document.getElementById('slide-img-url').value = evt.target.result;
+      };
+      reader.readAsDataURL(file);
     }
   </script>
 </body>
