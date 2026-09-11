@@ -36,19 +36,36 @@
 
   <div class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative">
     
-    <!-- HEADER -->
-    <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
+    <!-- HEADER (Tombol Sembunyikan Atas Dihapus) -->
+    <div class="pb-4 border-b border-slate-800 mb-6">
       <h1 class="text-lg font-extrabold tracking-wider uppercase text-slate-100">Kontrol Tampilan</h1>
-      <button onclick="sembunyikanOverlay()" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-lg active:scale-95">
-        <i class="fa-solid fa-eye-slash"></i> Sembunyikan Overlay
+    </div>
+
+    <!-- PENCARIAN & TAMBAH PRESENTASI BARU -->
+    <div class="mb-5 flex gap-2">
+      <input type="text" id="search-input" placeholder="Cari Presentasi..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+      <button onclick="bukaModalPresentasi()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-plus text-xs"></i>
       </button>
     </div>
 
-    <!-- INFORMASI PRESENTASI AKTIFF -->
+    <!-- INFORMASI PRESENTASI AKTIF & KONTROL -->
     <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 mb-6">
-      <h2 class="text-base font-bold text-white mb-1">Kontrol Presentasi</h2>
-      <p id="info-judul" class="text-sm font-semibold text-indigo-400">Judul: <span class="text-slate-200">Minggu</span></p>
-      <p id="info-pembicara" class="text-xs text-slate-400 mt-0.5">Pembicara: Pdt. John</p>
+      <h2 class="text-base font-bold text-white mb-2">Kontrol Presentasi</h2>
+      
+      <div class="mb-4">
+        <p class="text-xs font-medium text-slate-400">Judul: <span id="info-judul" class="text-slate-200 font-bold">Minggu</span></p>
+        <p class="text-xs font-medium text-slate-400 mt-0.5">Pembicara: <span id="info-pembicara" class="text-slate-300 font-semibold">Pdt. John</span></p>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="bukaModalSlide()" class="flex-1 bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-xs py-2.5 rounded-xl transition-all shadow">
+          Atur Slide
+        </button>
+        <button onclick="hapusPresentasiAktif()" class="bg-red-900/60 hover:bg-red-800 border border-red-700/50 text-red-200 px-4 py-2.5 rounded-xl transition-all shadow">
+          <i class="fa-solid fa-trash-can text-xs"></i>
+        </button>
+      </div>
     </div>
 
     <!-- TARGET LAYAR -->
@@ -94,7 +111,7 @@
     <div class="mb-2">
       <p class="text-xs font-semibold text-slate-400 mb-3">Daftar Slide (Klik untuk menampilkan langsung)</p>
       <div id="slide-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <!-- Generasi slide via Javascript -->
+        <!-- Slide di-render via JavaScript -->
       </div>
     </div>
 
@@ -105,23 +122,71 @@
 
   </div>
 
+  <!-- MODAL 1: EDIT/TAMBAH PRESENTASI -->
+  <div id="modal-presentasi" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl">
+      <h3 class="text-base font-bold text-white mb-4">Buat / Edit Presentasi</h3>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Judul Presentasi</label>
+          <input type="text" id="input-judul" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Nama Pembicara / Speaker</label>
+          <input type="text" id="input-pembicara" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-6">
+        <button onclick="tutupModalPresentasi()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-4 py-2 rounded-xl">Batal</button>
+        <button onclick="simpanPresentasi()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: ATUR SLIDE -->
+  <div id="modal-slide" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-800 mb-4">
+        <h3 class="text-base font-bold text-white">Kelola Slide</h3>
+        <button onclick="tambahSlideBaru()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg">
+          + Tambah Slide
+        </button>
+      </div>
+
+      <div id="modal-slide-list" class="space-y-3 overflow-y-auto pr-1 flex-1">
+        <!-- List Form Slide di-render JS -->
+      </div>
+
+      <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-slate-800">
+        <button onclick="tutupModalSlide()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-5 py-2 rounded-xl">Selesai</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Data Slide Presentasi
-    const slidesData = [
-      { id: 0, text: "Selamat Datang di Ibadah Minggu", img: "https://images.unsplash.com/photo-1510519138161-584410ef2b8e?w=500&q=80" },
-      { id: 1, text: "Khotbah: Hidup Diberkati untuk Menjadi Berkat", img: "" },
-      { id: 2, text: "Ayat Utama: Filipi 4:13", img: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=500&q=80" },
-      { id: 3, text: "Pengumuman & Warta Jemaat Hari Ini", img: "" }
-    ];
+    // Data Presentasi Aktif
+    let presentasiAktif = {
+      judul: "Minggu",
+      pembicara: "Pdt. John",
+      slides: [
+        { text: "Selamat Datang di Ibadah Minggu", img: "https://images.unsplash.com/photo-1510519138161-584410ef2b8e?w=500&q=80" },
+        { text: "Khotbah: Hidup Diberkati untuk Menjadi Berkat", img: "" },
+        { text: "Ayat Utama: Filipi 4:13", img: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=500&q=80" },
+        { text: "Pengumuman & Warta Jemaat Hari Ini", img: "" }
+      ]
+    };
 
     let currentSlideIndex = 0;
 
-    // Render daftar slide di UI
+    // RENDER UTAMA SLIDE
     function renderSlides() {
+      document.getElementById('info-judul').innerText = presentasiAktif.judul || '-';
+      document.getElementById('info-pembicara').innerText = presentasiAktif.pembicara || '-';
+
       const container = document.getElementById('slide-container');
       container.innerHTML = '';
 
-      slidesData.forEach((slide, index) => {
+      presentasiAktif.slides.forEach((slide, index) => {
         const isActive = index === currentSlideIndex;
         const card = document.createElement('div');
         card.className = `cursor-pointer rounded-xl p-3 border transition-all flex flex-col justify-between h-24 relative overflow-hidden ${
@@ -140,14 +205,14 @@
 
         card.innerHTML = `
           <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-900/80 px-2 py-0.5 rounded text-indigo-400 w-fit">Slide ${index + 1}</span>
-          <p class="text-xs font-medium text-white truncate mt-1">${slide.text}</p>
+          <p class="text-xs font-medium text-white truncate mt-1">${slide.text || '(Tanpa Teks)'}</p>
         `;
 
         container.appendChild(card);
       });
     }
 
-    // Ambil Target Layar Centang
+    // TARGET LAYAR CHECKBOX
     function getSelectedTargets() {
       return {
         stream: document.getElementById('target-stream').checked,
@@ -156,28 +221,28 @@
       };
     }
 
-    // Mengirim Perintah & Data Ke Firebase Realtime Database
+    // UPDATE FIREBASE
     function updateOverlayFirebase(actionType = 'show') {
       if (typeof database === 'undefined') {
-        console.warn('Firebase belum terkonfigurasi pada js/firebase-config.js');
+        console.warn('Firebase belum terkonfigurasi.');
         return;
       }
 
-      const activeSlide = slidesData[currentSlideIndex];
+      const activeSlide = presentasiAktif.slides[currentSlideIndex] || { text: '', img: '' };
 
       database.ref('activeOverlay').set({
         action: actionType,
         type: 'presentasi',
         targets: getSelectedTargets(),
         slide: {
-          text: activeSlide.text,
-          img: activeSlide.img
+          text: activeSlide.text || '',
+          img: activeSlide.img || ''
         },
         updatedAt: firebase.database.ServerValue.TIMESTAMP
       });
     }
 
-    // Fungsi Kontrol Tombol
+    // KONTROL NAVIGASI
     function selectSlide(index) {
       currentSlideIndex = index;
       renderSlides();
@@ -193,7 +258,7 @@
     }
 
     function nextSlide() {
-      if (currentSlideIndex < slidesData.length - 1) {
+      if (currentSlideIndex < presentasiAktif.slides.length - 1) {
         currentSlideIndex++;
         renderSlides();
         tampilkanOverlay();
@@ -212,7 +277,89 @@
       }
     }
 
-    // Jalankan render awal
+    // MANAGEMEN MODAL PRESENTASI
+    function bukaModalPresentasi() {
+      document.getElementById('input-judul').value = presentasiAktif.judul;
+      document.getElementById('input-pembicara').value = presentasiAktif.pembicara;
+      document.getElementById('modal-presentasi').classList.remove('hidden');
+    }
+
+    function tutupModalPresentasi() {
+      document.getElementById('modal-presentasi').classList.add('hidden');
+    }
+
+    function simpanPresentasi() {
+      presentasiAktif.judul = document.getElementById('input-judul').value;
+      presentasiAktif.pembicara = document.getElementById('input-pembicara').value;
+      renderSlides();
+      tutupModalPresentasi();
+    }
+
+    function hapusPresentasiAktif() {
+      if (confirm('Yakin ingin mengosongkan presentasi aktif ini?')) {
+        presentasiAktif.judul = 'Tanpa Judul';
+        presentasiAktif.pembicara = '-';
+        presentasiAktif.slides = [{ text: '', img: '' }];
+        currentSlideIndex = 0;
+        renderSlides();
+        sembunyikanOverlay();
+      }
+    }
+
+    // MANAGEMEN MODAL SLIDE
+    function bukaModalSlide() {
+      renderModalSlideList();
+      document.getElementById('modal-slide').classList.remove('hidden');
+    }
+
+    function tutupModalSlide() {
+      document.getElementById('modal-slide').classList.add('hidden');
+      renderSlides();
+    }
+
+    function renderModalSlideList() {
+      const listContainer = document.getElementById('modal-slide-list');
+      listContainer.innerHTML = '';
+
+      presentasiAktif.slides.forEach((slide, index) => {
+        const item = document.createElement('div');
+        item.className = "bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-col gap-2 relative";
+        item.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-bold text-indigo-400">Slide ${index + 1}</span>
+            <button onclick="hapusSlide(${index})" class="text-red-400 hover:text-red-300 text-xs">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+          <input type="text" placeholder="Teks Slide..." value="${slide.text || ''}" onchange="updateSlideData(${index}, 'text', this.value)" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+          <input type="text" placeholder="URL Gambar (Opsional)..." value="${slide.img || ''}" onchange="updateSlideData(${index}, 'img', this.value)" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
+        `;
+        listContainer.appendChild(item);
+      });
+    }
+
+    function updateSlideData(index, key, val) {
+      presentasiAktif.slides[index][key] = val;
+    }
+
+    function tambahSlideBaru() {
+      presentasiAktif.slides.push({ text: '', img: '' });
+      renderModalSlideList();
+    }
+
+    function hapusSlide(index) {
+      if (presentasiAktif.slides.length <= 1) {
+        alert('Minimal harus tersisa 1 slide!');
+        return;
+      }
+      presentasiAktif.slides.splice(index, 1);
+      if (currentSlideIndex >= presentasiAktif.slides.length) {
+        currentSlideIndex = presentasiAktif.slides.length - 1;
+      }
+      renderModalSlideList();
+    }
+
+    // Inisialisasi awal
     renderSlides();
   </script>
 </body>
