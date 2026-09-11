@@ -43,6 +43,9 @@
   <!-- Firebase SDK (Compat Version) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <!-- File Konfigurasi Firebase External -->
+  <script src="js/firebase-config.js"></script>
 
   <style>
     body {
@@ -129,7 +132,13 @@
 
     <!-- MAIN DISPLAY CONTROL PANEL -->
     <div class="bg-cardBg border border-cardBorder rounded-xl p-4 shadow-xl">
-      <h2 class="text-sm font-bold text-gray-200 uppercase tracking-wide mb-3">Kontrol Tampilan</h2>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-bold text-gray-200 uppercase tracking-wide">Kontrol Tampilan</h2>
+        <!-- Tombol Sembunyikan Overlay Global -->
+        <button onclick="hideOverlay()" class="bg-red-600/90 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition">
+          <i class="fa-solid fa-eye-slash"></i> Sembunyikan Overlay
+        </button>
+      </div>
 
       <!-- TAB BUTTONS -->
       <div class="flex items-center gap-1 border-b border-cardBorder pb-2 overflow-x-auto">
@@ -235,6 +244,7 @@
                 <option value="10">10 seconds</option>
                 <option value="20">20 seconds</option>
                 <option value="30">30 seconds</option>
+                <option value="0">Seterusnya (Manual)</option>
               </select>
             </div>
 
@@ -291,6 +301,7 @@
                 <option value="10">10 seconds</option>
                 <option value="15">15 seconds</option>
                 <option value="30">30 seconds</option>
+                <option value="0">Seterusnya (Manual)</option>
               </select>
             </div>
 
@@ -637,25 +648,6 @@
 
   <script>
     /* ===================================================
-       FIREBASE CONFIGURATION
-       =================================================== */
-    const firebaseConfig = {
-      apiKey: "API_KEY_ANDA",
-      authDomain: "obs-docks-control.firebaseapp.com",
-      databaseURL: "https://obs-docks-control-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "obs-docks-control",
-      storageBucket: "obs-docks-control.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
-    };
-
-    // Inisialisasi Firebase
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const database = firebase.database();
-
-    /* ===================================================
        GLOBAL STATE
        =================================================== */
     const state = {
@@ -703,6 +695,7 @@
        FIREBASE REALTIME DATABASE SYNC
        =================================================== */
     function syncStateToFirebase() {
+      if (typeof database === 'undefined') return;
       database.ref('obsState').set({
         infoItems: state.infoItems,
         tickerItems: state.tickerItems,
@@ -717,6 +710,7 @@
     }
 
     function loadStateFromFirebase() {
+      if (typeof database === 'undefined') return;
       database.ref('obsState').once('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -1579,9 +1573,24 @@
     }
 
     /* ===================================================
+       HIDE OVERLAY FUNCTION
+       =================================================== */
+    function hideOverlay() {
+      if (typeof database === 'undefined') return;
+      database.ref('activeOverlay').set({ action: 'hide', timestamp: Date.now() })
+        .then(() => showToast('Overlay Disembunyikan'))
+        .catch(err => console.error(err));
+    }
+
+    /* ===================================================
        TRIGGER DISPLAY (MEMANCARKAN SIARAN KE FIREBASE)
        =================================================== */
     function triggerDisplay(type) {
+      if (typeof database === 'undefined') {
+        alert("Firebase belum terhubung. Periksa file js/firebase-config.js Anda.");
+        return;
+      }
+
       let payload = { 
         type: type,
         timestamp: Date.now()
