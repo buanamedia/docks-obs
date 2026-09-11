@@ -5,665 +5,642 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kontrol Presentasi - By Buana Media</title>
 
-  <!-- Google Font Inter & Poppins -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            panelBg: '#090d16',
+            cardBg: '#111827',
+            cardBorder: '#1f293d',
+            inputBg: '#0b1120',
+            accentPurple: '#6366f1',
+            accentPurpleHover: '#4f46e5',
+            accentGreen: '#10b981',
+            accentGreenHover: '#059669',
+            accentRed: '#ef4444',
+            accentRedHover: '#dc2626'
+          },
+          fontFamily: {
+            sans: ['Inter', 'Segoe UI', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
 
-  <!-- Firebase SDK (Compat) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <!-- Google Font Inter & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Supabase JS Client (Compat/CDN) -->
+  <!-- Supabase JS Client v2 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <!-- Firebase SDK (Compat Version) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
   <!-- File Konfigurasi External -->
   <script src="js/firebase-config.js"></script>
 
   <style>
     body {
-      font-family: 'Poppins', 'Inter', sans-serif;
-      background-color: #0b1120;
-      color: #f1f5f9;
+      background-color: #090d16;
+      color: #f3f4f6;
+      font-family: 'Inter', sans-serif;
       user-select: none;
     }
     ::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
+      width: 6px;
+      height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
+      background: #0b1120;
     }
     ::-webkit-scrollbar-thumb {
-      background: #334155;
-      border-radius: 4px;
+      background: #1f293d;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #374151;
+    }
+    .modal-backdrop {
+      background-color: rgba(3, 7, 18, 0.85);
+      backdrop-filter: blur(4px);
     }
   </style>
 </head>
-<body class="p-3 sm:p-6 min-h-screen flex justify-center items-start">
+<body class="min-h-screen p-3 md:p-5 text-gray-100 flex flex-col justify-between">
 
-  <div class="w-full max-w-md bg-[#0f172a] border border-slate-800 rounded-3xl p-5 shadow-2xl relative">
-    
-    <!-- PENCARIAN & TAMBAH PRESENTASI -->
-    <div class="mb-3">
-      <input type="text" id="search-input" onkeyup="filterPresentations()" placeholder="Cari Presentasi..." class="w-full bg-[#1e293b]/80 border border-slate-700/60 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all">
-    </div>
+  <div class="max-w-xl mx-auto w-full space-y-4">
 
-    <button onclick="bukaModalTambahPres()" class="w-10 h-10 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex items-center justify-center transition-all shadow-md active:scale-95 mb-4">
-      <i class="fa-solid fa-plus text-sm"></i>
-    </button>
-
-    <!-- LIST PRESENTASI DARI DATABASE DOCK -->
-    <div id="presentation-list" class="space-y-2 mb-5 max-h-52 overflow-y-auto pr-1">
-      <div class="text-xs text-slate-500 italic text-center py-2">Memuat data presentasi...</div>
-    </div>
-
-    <!-- INFORMASI PRESENTASI AKTIF -->
-    <div class="bg-[#182238]/80 border border-slate-800 rounded-2xl p-4 mb-5">
-      <h2 class="text-sm font-bold text-white mb-2">Kontrol Presentasi</h2>
-      <p class="text-xs text-slate-300 font-medium">Judul: <span id="active-title" class="text-white font-bold">-</span></p>
-      <p class="text-xs text-slate-400 font-medium mt-0.5 mb-4">Pembicara: <span id="active-speaker" class="text-slate-300">-</span></p>
-
-      <div class="flex gap-2">
-        <button onclick="bukaModalAturSlide()" class="flex-1 bg-[#0b1120] hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-semibold text-xs py-2.5 rounded-xl transition-all shadow">
-          Atur Slide
-        </button>
-        <button onclick="hapusPresentasiAktif()" class="bg-red-950/60 hover:bg-red-900 border border-red-800/60 text-red-400 px-3.5 py-2.5 rounded-xl transition-all shadow active:scale-95">
-          <i class="fa-solid fa-trash-can text-xs"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- TARGET LAYAR -->
-    <div class="mb-5">
-      <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">TAMPIL DI LAYAR:</label>
-      <div class="flex flex-wrap gap-3 text-xs font-semibold text-slate-300">
-        <label class="flex items-center gap-1.5 cursor-pointer">
-          <input type="checkbox" id="target-stream" checked class="w-4 h-4 rounded accent-indigo-600 cursor-pointer"> Live Streaming
-        </label>
-        <label class="flex items-center gap-1.5 cursor-pointer">
-          <input type="checkbox" id="target-audiens" checked class="w-4 h-4 rounded accent-indigo-600 cursor-pointer"> Monitor Audiens
-        </label>
-        <label class="flex items-center gap-1.5 cursor-pointer">
-          <input type="checkbox" id="target-stage" checked class="w-4 h-4 rounded accent-indigo-600 cursor-pointer"> Monitor Stage
-        </label>
-      </div>
-    </div>
-
-    <!-- 4 TOMBOL KONTROL UTAMA -->
-    <div class="grid grid-cols-2 gap-2.5 mb-5">
-      <!-- BALIK -->
-      <button onclick="prevSlide()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md">
-        &lt; Balik
-      </button>
-
-      <!-- SEMBUNYIKAN -->
-      <button onclick="sembunyikanOverlay()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md">
-        <i class="fa-solid fa-eye-slash text-[11px]"></i> Sembunyikan
-      </button>
-
-      <!-- TAMPILKAN -->
-      <button onclick="tampilkanOverlay()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md">
-        <i class="fa-solid fa-eye text-[11px]"></i> Tampilkan
-      </button>
-
-      <!-- BERIKUT -->
-      <button onclick="nextSlide()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md">
-        Berikut &gt;
-      </button>
-    </div>
-
-    <!-- DAFTAR SLIDE AKTIF -->
-    <div class="mb-2">
-      <p class="text-xs font-semibold text-slate-400 mb-2.5">Daftar Slide (Klik untuk menampilkan langsung)</p>
-      <div id="slide-thumbnails" class="flex gap-2.5 overflow-x-auto pb-2 min-h-[85px]">
-        <!-- Thumbnail Slide -->
-      </div>
-    </div>
-
-    <!-- FOOTER -->
-    <div class="mt-6 pt-3 border-t border-slate-800 text-center text-[11px] text-slate-500 font-medium">
-      Panel Kontrol OBS © By Buana Media
-    </div>
-
-  </div>
-
-  <!-- MODAL 1: TAMBAH PRESENTASI BARU -->
-  <div id="modal-tambah-pres" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-[#0f172a] border border-slate-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl">
-      <h3 class="text-sm font-bold text-white mb-4">Tambah Presentasi Baru</h3>
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Judul Presentasi</label>
-          <input type="text" id="new-pres-title" class="w-full bg-[#1e293b] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Speaker / Pembicara</label>
-          <input type="text" id="new-pres-speaker" class="w-full bg-[#1e293b] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
-        </div>
-      </div>
-      <div class="flex justify-end gap-2 mt-5">
-        <button onclick="tutupModalTambahPres()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-4 py-2 rounded-xl">Batal</button>
-        <button onclick="simpanPresentasiBaru()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl">Simpan</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 2: PENGATURAN SLIDE (EKSIS / DESAIN DOCK) -->
-  <div id="modal-slide" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4">
-    <div class="bg-[#0f172a] border border-slate-800 w-full max-w-md rounded-2xl p-5 shadow-2xl max-h-[92vh] flex flex-col relative">
-      
-      <!-- HEADER MODAL -->
-      <div class="flex justify-between items-center pb-3 border-b border-slate-800 mb-4">
-        <h3 class="text-sm font-bold text-white">Pengaturan Slide: <span id="modal-slide-title" class="text-indigo-400">Minggu</span></h3>
-        <button onclick="tutupModalAturSlide()" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg flex items-center justify-center text-xs font-bold">x</button>
+    <!-- MAIN DISPLAY CONTROL PANEL (PERSENTASI ONLY) -->
+    <div class="bg-cardBg border border-cardBorder rounded-xl p-4 shadow-xl">
+      <div class="flex items-center justify-between mb-4 border-b border-cardBorder pb-3">
+        <h2 class="text-sm font-bold text-gray-200 uppercase tracking-wide">KONTROL TAMPILAN</h2>
       </div>
 
-      <div class="overflow-y-auto pr-1 flex-1 space-y-5">
+      <!-- TAB PANEL PRESENTASI -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
         
-        <!-- SECTION 1: SLIDE LIST -->
-        <div>
-          <label class="block text-xs font-bold text-slate-400 mb-2">Slide List</label>
-          <div id="modal-slide-thumbnails" class="flex gap-3 overflow-x-auto pb-2 items-center min-h-[95px]">
-            <!-- List thumbnail slide -->
+        <!-- SIDEBAR PENCARIAN & DAFTAR PRESENTASI -->
+        <div class="md:col-span-5 space-y-2.5 border-r border-cardBorder/60 pr-0 md:pr-3">
+          <div class="flex items-center gap-2">
+            <input type="text" id="presSearch" onkeyup="filterPresList()" placeholder="Cari Presentasi..." class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none focus:border-indigo-500">
           </div>
+          <button onclick="openCreatePresentationModal()" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center justify-center transition mb-2" title="Buat Presentasi Baru">
+            <i class="fa-solid fa-plus text-xs"></i>
+          </button>
+          <div id="presList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- SECTION 2: ADD / EDIT SLIDE FORM -->
-        <div class="bg-[#182238]/80 border border-slate-800 rounded-xl p-4 space-y-4">
-          <div class="flex justify-between items-center">
-            <span id="form-slide-mode" class="text-xs font-bold text-slate-300 uppercase tracking-wider">ADD / EDIT SLIDE</span>
-            <span id="char-counter" class="text-[10px] text-slate-500">420 karakter tersisa</span>
-          </div>
-
-          <!-- ISI SLIDE -->
+        <!-- PANEL DETAIL PRESENTASI & KONTROL -->
+        <div class="md:col-span-7 space-y-3.5 pl-0 md:pl-2">
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Isi Slide</label>
-            <textarea id="slide-text-input" oninput="updateCharCount()" rows="3" placeholder="Masukkan isi Slide..." class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"></textarea>
+            <h3 class="text-base font-bold text-white">Kontrol Presentasi</h3>
+            <div class="text-xs text-gray-300 font-semibold mt-1">Judul: <span id="presDetailTitle" class="font-normal text-gray-200">-</span></div>
+            <div class="text-xs text-gray-300 font-semibold">Pembicara: <span id="presDetailSpeaker" class="font-normal text-gray-200">-</span></div>
           </div>
 
-          <!-- GAMBAR LATAR SLIDE -->
-          <div>
-            <div class="flex justify-between items-center mb-1.5">
-              <label class="block text-xs font-semibold text-slate-400">Gambar Latar Slide</label>
-              <span class="text-[10px] bg-indigo-950 text-indigo-400 border border-indigo-800/50 px-2 py-0.5 rounded-md font-medium"><i class="fa-solid fa-cloud mr-1"></i> Supabase Storage</span>
-            </div>
-
-            <div onclick="triggerImageUpload()" class="border-2 border-dashed border-slate-700 hover:border-indigo-500 bg-[#0f172a] rounded-xl p-4 text-center cursor-pointer transition-all">
-              <i class="fa-solid fa-cloud-arrow-up text-indigo-400 text-xl mb-1"></i>
-              <p class="text-xs font-semibold text-slate-300">Klik untuk unggah gambar</p>
-              <p class="text-[10px] text-slate-500 mt-0.5">Otomatis diunggah ke cloud Supabase Storage</p>
-              <input type="file" id="slide-img-file" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
-            </div>
-
-            <input type="text" id="slide-img-url" placeholder="Atau masukkan URL Gambar langsung..." class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white mt-2 focus:outline-none focus:border-indigo-500">
-          </div>
-
-          <!-- TOMBOL SIMPAN SLIDE -->
-          <div class="flex justify-end pt-1">
-            <button onclick="simpanSlideForm()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg flex items-center gap-1.5 transition-all active:scale-95">
-              <i class="fa-solid fa-floppy-disk text-xs"></i> Simpan Slide
+          <div class="flex items-center gap-2">
+            <button onclick="openSlideManager()" class="flex-1 bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-200 text-xs py-2 rounded-lg font-semibold transition">
+              Atur Slide
+            </button>
+            <button onclick="deleteCurrentPresentation()" class="w-9 h-9 bg-red-950/80 hover:bg-red-900 border border-red-700/80 text-red-400 rounded-lg flex items-center justify-center transition" title="Hapus Presentasi">
+              <i class="fa-solid fa-trash text-xs"></i>
             </button>
           </div>
 
+          <!-- TAMPIL DI LAYAR -->
+          <div>
+            <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Tampil di Layar:</span>
+            <div class="flex flex-wrap gap-4 text-xs">
+              <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="presShowStream" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Live Streaming</label>
+              <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="presShowAudience" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Audiens</label>
+              <label class="flex items-center gap-2 cursor-pointer text-gray-300"><input type="checkbox" id="presShowStage" checked class="rounded border-gray-700 text-indigo-600 focus:ring-0"> Monitor Stage</label>
+            </div>
+          </div>
+
+          <!-- 4 TOMBOL KONTROL UTAMA INTRUKSI AWAL -->
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="navSlide('prev')" class="bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-semibold py-2.5 rounded-lg transition">
+              &lt; Balik
+            </button>
+            <button onclick="hideOverlay()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-2.5 rounded-lg transition shadow-lg flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-eye-slash"></i> Sembunyikan
+            </button>
+            <button onclick="triggerDisplay()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2.5 rounded-lg transition shadow-lg flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-eye"></i> Tampilkan
+            </button>
+            <button onclick="navSlide('next')" class="bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-semibold py-2.5 rounded-lg transition">
+              Berikut &gt;
+            </button>
+          </div>
+
+          <!-- DAFTAR SLIDE (GRID THUMBNAILS) -->
+          <div>
+            <div class="text-xs font-bold text-gray-300 mb-2">Daftar Slide (Klik untuk menampilkan langsung)</div>
+            <div id="presSlideGrid" class="border border-cardBorder bg-inputBg rounded-lg p-2 flex items-center gap-2 overflow-x-auto min-h-[90px]">
+            </div>
+          </div>
         </div>
 
       </div>
-
     </div>
   </div>
+
+  <!-- MODALS SECTION -->
+
+  <!-- MODAL BUAT PRESENTASI -->
+  <div id="modalCreatePresentation" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-[#121826] border border-cardBorder w-full max-w-md rounded-xl p-5 shadow-2xl space-y-4">
+      <h3 class="text-base font-bold text-white">Buat Presentasi</h3>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Judul Presentasi</label>
+        <input type="text" id="newPresTitle" placeholder="e.g. Khotbah Hari Minggu" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-300 block mb-1">Pembicara</label>
+        <input type="text" id="newPresSpeaker" placeholder="e.g. Pdt. John Doe" class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500">
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="closeModal('modalCreatePresentation')" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs text-gray-200 font-semibold rounded-lg transition">Batal</button>
+        <button onclick="saveNewPresentation()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" title="Simpan">
+          <i class="fa-solid fa-floppy-disk text-xs"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PENGATURAN SLIDE -->
+  <div id="modalSlideManager" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-[#121826] border border-cardBorder w-full max-w-3xl rounded-xl p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-cardBorder pb-3">
+        <h3 class="text-base font-bold text-white">Pengaturan Slide: <span id="slideManagerHeaderTitle" class="text-indigo-400">-</span></h3>
+        <button onclick="closeModal('modalSlideManager')" class="w-7 h-7 bg-gray-800 hover:bg-gray-700 text-gray-400 rounded-md flex items-center justify-center text-xs font-bold">x</button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <div class="md:col-span-5 border-r border-cardBorder/60 pr-0 md:pr-4 space-y-3">
+          <label class="text-xs font-bold text-gray-300 block">Slide List</label>
+          <div id="slideManagerList" class="grid grid-cols-2 gap-2.5 max-h-[300px] overflow-y-auto pr-1">
+          </div>
+          <button onclick="prepareNewSlideForm()" class="w-9 h-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center transition mx-auto mt-2 shadow-lg" title="Tambah Slide Baru">
+            <i class="fa-solid fa-plus text-sm"></i>
+          </button>
+        </div>
+
+        <div class="md:col-span-7 space-y-3">
+          <h4 class="text-xs font-bold text-gray-200 uppercase tracking-wider">ADD / EDIT SLIDE</h4>
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-medium text-gray-400">Isi Slide</label>
+              <span class="text-[10px] text-gray-500"><span id="slideCharCounter">420</span> karakter tersisa</span>
+            </div>
+            <textarea id="slideTextInput" oninput="updateCharCounter()" rows="4" placeholder="Masukkan isi Slide..." class="w-full bg-inputBg border border-cardBorder text-xs text-white rounded-lg p-2.5 outline-none focus:border-indigo-500 resize-none"></textarea>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-medium text-gray-400 block">Gambar Latar Slide</label>
+              <span id="supabaseBadgeStatus" class="text-[10px] text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-800/60 flex items-center gap-1">
+                <i class="fa-solid fa-cloud text-[9px]"></i> Supabase Storage
+              </span>
+            </div>
+            <div onclick="document.getElementById('slideImageUploader').click()" class="border-2 border-dashed border-cardBorder bg-inputBg hover:bg-cardBorder/40 cursor-pointer rounded-lg p-4 text-center transition flex flex-col items-center justify-center min-h-[90px]">
+              <i class="fa-solid fa-cloud-arrow-up text-lg text-indigo-400 mb-1"></i>
+              <p class="text-xs text-gray-300 font-medium" id="slideImageText">Klik untuk unggah gambar</p>
+              <p class="text-[10px] text-gray-500 mt-0.5" id="slideImageSubtext">Otomatis diunggah ke cloud Supabase Storage</p>
+              <input type="file" id="slideImageUploader" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-2">
+            <button onclick="saveSlideDetails()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center gap-1.5 text-xs font-semibold shadow-md">
+              <i class="fa-solid fa-floppy-disk"></i> Simpan Slide
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+  <footer class="mt-6 text-center text-[11px] text-gray-500 font-medium">
+    Panel Kontrol OBS &copy; By <a href="https://www.buanamedia.my.id/" target="_blank" class="hover:underline hover:text-blue-500 transition-colors">Buana Media</a>
+  </footer>
 
   <script>
-    let presentationsData = {};
-    let activePresId = null;
-    let currentSlideIndex = 0;
-    let editingSlideKey = null;
+    const state = {
+      supabase: {
+        url: localStorage.getItem('sb_url') || '',
+        key: localStorage.getItem('sb_key') || '',
+        bucket: localStorage.getItem('sb_bucket') || 'slides',
+        client: null
+      },
 
-    // FUNGSI KONVERSI DATA SLIDE DOCK TERLENGKAP (BAIK ARRAY ATAU OBJEK KEY-VALUE)
-    function parseSlidesFromPres(presObj) {
-      if (!presObj) return [];
-      
-      let rawSlides = presObj.slides || presObj.slideList || presObj.slide;
-      if (!rawSlides) return [];
+      presentations: [],
+      selectedPresId: null,
+      currentPresSlideIndex: 0,
 
-      if (Array.isArray(rawSlides)) {
-        return rawSlides.map((s, idx) => ({
-          _key: idx,
-          text: s.text || s.isi || s.content || '',
-          img: s.img || s.gambar || s.image || ''
-        }));
-      }
+      editingSlideIdx: null,
+      uploadedImgUrl: null,
+      uploadedImgName: null,
+      uploadedFilePath: null
+    };
 
-      if (typeof rawSlides === 'object') {
-        return Object.keys(rawSlides).map(key => ({
-          _key: key,
-          text: rawSlides[key].text || rawSlides[key].isi || rawSlides[key].content || '',
-          img: rawSlides[key].img || rawSlides[key].gambar || rawSlides[key].image || ''
-        }));
-      }
+    function syncStateToFirebase() {
+      if (typeof database === 'undefined') return;
 
-      return [];
+      database.ref('obsState/presentations').set(state.presentations);
+      database.ref('obsState/updatedAt').set(Date.now());
     }
 
-    // FIREBASE SYNC REALTIME
-    if (typeof database !== 'undefined') {
+    function listenToFirebaseRealtime() {
+      if (typeof database === 'undefined') return;
 
-      // 1. Dengar Node 'presentations' atau 'presentasi'
-      database.ref().on('value', (snapshot) => {
-        const root = snapshot.val() || {};
-        const val = root.presentations || root.presentasi || {};
-
-        if (Object.keys(val).length > 0) {
-          presentationsData = val;
-          if (!activePresId || !presentationsData[activePresId]) {
-            activePresId = Object.keys(presentationsData)[0];
-          }
-        } else {
-          presentationsData = {};
-          activePresId = null;
-        }
-
-        renderPresentationList();
-        renderActivePresentation();
-      });
-
-      // 2. Dengar Node 'activeOverlay'
-      database.ref('activeOverlay').on('value', (snapshot) => {
+      database.ref('obsState').on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data && data.type === 'presentasi' && data.slide && presentationsData[activePresId]) {
-          const slides = parseSlidesFromPres(presentationsData[activePresId]);
-          const idx = slides.findIndex(s => s.text === data.slide.text && s.img === data.slide.img);
-          if (idx !== -1) {
-            currentSlideIndex = idx;
-            renderThumbnails();
+        if (data) {
+          state.presentations = data.presentations || [];
+
+          if (state.presentations.length > 0) {
+            if (!state.selectedPresId || !state.presentations.find(p => p.id === state.selectedPresId)) {
+              state.selectedPresId = state.presentations[0].id;
+            }
+          } else {
+            state.selectedPresId = null;
           }
+
+          renderPresList(document.getElementById('presSearch').value);
+          renderPresDetail();
         }
       });
     }
 
-    // RENDER LIST PRESENTASI
-    function renderPresentationList(filter = '') {
-      const container = document.getElementById('presentation-list');
-      container.innerHTML = '';
-
-      const keys = Object.keys(presentationsData);
-      if (keys.length === 0) {
-        container.innerHTML = `<div class="text-xs text-slate-500 italic text-center py-3">Belum ada data presentasi. Klik '+' untuk menambah.</div>`;
-        return;
-      }
-
-      keys.forEach(id => {
-        const item = presentationsData[id];
-        const judul = item.title || item.judul || item.name || 'Tanpa Judul';
-        const speaker = item.speaker || item.pembicara || item.subTitle || '-';
-
-        if (filter && !judul.toLowerCase().includes(filter.toLowerCase()) && !speaker.toLowerCase().includes(filter.toLowerCase())) {
-          return;
-        }
-
-        const isSelected = id === activePresId;
-        const card = document.createElement('div');
-        card.className = `p-3 rounded-xl border transition-all cursor-pointer ${
-          isSelected 
-            ? 'bg-[#182238] border-indigo-500 ring-1 ring-indigo-500/50' 
-            : 'bg-[#131b2e]/60 border-slate-800 hover:border-slate-700'
-        }`;
-
-        card.onclick = () => pilihPresentasi(id);
-
-        card.innerHTML = `
-          <h4 class="text-xs font-bold text-white truncate">${judul}</h4>
-          <p class="text-[11px] text-slate-400 font-medium mt-0.5">Speaker: ${speaker}</p>
-        `;
-
-        container.appendChild(card);
-      });
-    }
-
-    function filterPresentations() {
-      const query = document.getElementById('search-input').value;
-      renderPresentationList(query);
-    }
-
-    function pilihPresentasi(id) {
-      activePresId = id;
-      currentSlideIndex = 0;
-      renderPresentationList(document.getElementById('search-input').value);
-      renderActivePresentation();
-      tampilkanOverlay();
-    }
-
-    function renderActivePresentation() {
-      if (!activePresId || !presentationsData[activePresId]) {
-        document.getElementById('active-title').innerText = '-';
-        document.getElementById('active-speaker').innerText = '-';
-        document.getElementById('slide-thumbnails').innerHTML = '';
-        return;
-      }
-
-      const activeObj = presentationsData[activePresId];
-      document.getElementById('active-title').innerText = activeObj.title || activeObj.judul || activeObj.name || '-';
-      document.getElementById('active-speaker').innerText = activeObj.speaker || activeObj.pembicara || activeObj.subTitle || '-';
-
-      renderThumbnails();
-    }
-
-    // RENDER THUMBNAIL SLIDE CARD
-    function renderThumbnails() {
-      const container = document.getElementById('slide-thumbnails');
-      container.innerHTML = '';
-
-      if (!activePresId || !presentationsData[activePresId]) return;
-
-      const slides = parseSlidesFromPres(presentationsData[activePresId]);
-
-      slides.forEach((slide, index) => {
-        const isActive = index === currentSlideIndex;
-        const thumb = document.createElement('div');
-        thumb.className = `shrink-0 w-28 h-20 rounded-xl p-2 border transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden ${
-          isActive 
-            ? 'bg-indigo-900/60 border-indigo-500 ring-2 ring-indigo-500/50' 
-            : 'bg-slate-800/50 border-slate-700/60 hover:border-slate-500'
-        }`;
-
-        thumb.onclick = () => {
-          currentSlideIndex = index;
-          renderThumbnails();
-          tampilkanOverlay();
-        };
-
-        if (slide.img) {
-          thumb.style.backgroundImage = `linear-gradient(to bottom, rgba(15,23,42,0.5), rgba(15,23,42,0.9)), url('${slide.img}')`;
-          thumb.style.backgroundSize = 'cover';
-          thumb.style.backgroundPosition = 'center';
-        }
-
-        thumb.innerHTML = `
-          <span class="text-[9px] font-bold uppercase bg-black/60 px-1.5 py-0.5 rounded text-indigo-300 w-fit">Slide ${index + 1}</span>
-          <p class="text-[10px] font-medium text-white truncate drop-shadow">${slide.text || '(Tanpa Teks)'}</p>
-        `;
-
-        container.appendChild(thumb);
-      });
-    }
-
-    function getSelectedTargets() {
-      return {
-        stream: document.getElementById('target-stream').checked,
-        audiens: document.getElementById('target-audiens').checked,
-        stage: document.getElementById('target-stage').checked
-      };
-    }
-
-    function updateOverlayFirebase(actionType = 'show') {
-      if (!activePresId || !presentationsData[activePresId]) return;
-
-      const slides = parseSlidesFromPres(presentationsData[activePresId]);
-      const activeSlide = slides[currentSlideIndex] || { text: '', img: '' };
-
-      if (typeof database !== 'undefined') {
-        database.ref('activeOverlay').set({
-          action: actionType,
-          type: 'presentasi',
-          targets: getSelectedTargets(),
-          slide: {
-            text: activeSlide.text || '',
-            img: activeSlide.img || ''
-          },
-          updatedAt: firebase.database.ServerValue.TIMESTAMP
-        });
-      }
-    }
-
-    // TOMBOL NAVIGASI
-    function prevSlide() {
-      if (!activePresId || !presentationsData[activePresId]) return;
-      if (currentSlideIndex > 0) {
-        currentSlideIndex--;
-        renderThumbnails();
-        tampilkanOverlay();
-      }
-    }
-
-    function nextSlide() {
-      if (!activePresId || !presentationsData[activePresId]) return;
-      const slides = parseSlidesFromPres(presentationsData[activePresId]);
-      if (currentSlideIndex < slides.length - 1) {
-        currentSlideIndex++;
-        renderThumbnails();
-        tampilkanOverlay();
-      }
-    }
-
-    function tampilkanOverlay() {
-      updateOverlayFirebase('show');
-    }
-
-    function sembunyikanOverlay() {
-      if (typeof database !== 'undefined') {
-        database.ref('activeOverlay').update({
-          action: 'hide'
-        });
-      }
-    }
-
-    // MANAJEMEN PRESENTASI
-    function bukaModalTambahPres() {
-      document.getElementById('new-pres-title').value = '';
-      document.getElementById('new-pres-speaker').value = '';
-      document.getElementById('modal-tambah-pres').classList.remove('hidden');
-    }
-
-    function tutupModalTambahPres() {
-      document.getElementById('modal-tambah-pres').classList.add('hidden');
-    }
-
-    function simpanPresentasiBaru() {
-      const title = document.getElementById('new-pres-title').value.trim();
-      const speaker = document.getElementById('new-pres-speaker').value.trim();
-
-      if (!title) {
-        alert('Judul presentasi harus diisi!');
-        return;
-      }
-
-      if (typeof database !== 'undefined') {
-        const newRef = database.ref('presentations').push();
-        newRef.set({
-          title: title,
-          speaker: speaker,
-          slides: {
-            "slide_1": { text: title, img: '' }
+    function initSupabase() {
+      if (state.supabase.url && state.supabase.key && window.supabase) {
+        try {
+          state.supabase.client = window.supabase.createClient(state.supabase.url, state.supabase.key);
+          const badge = document.getElementById('supabaseBadgeStatus');
+          if (badge) {
+            badge.className = 'text-[10px] text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/60 flex items-center gap-1';
+            badge.innerHTML = '<i class="fa-solid fa-cloud-check text-[9px]"></i> Supabase Connected';
           }
-        }).then(() => {
-          activePresId = newRef.key;
-          tutupModalTambahPres();
-        });
-      }
-    }
-
-    function hapusPresentasiAktif() {
-      if (!activePresId) return;
-      if (confirm('Yakin ingin menghapus presentasi ini?')) {
-        if (typeof database !== 'undefined') {
-          database.ref(`presentations/${activePresId}`).remove().then(() => {
-            activePresId = null;
-            currentSlideIndex = 0;
-            sembunyikanOverlay();
-          });
+        } catch (e) {
+          console.warn('Supabase initialization failed:', e);
         }
       }
     }
 
-    // MANAJEMEN SLIDE MODAL
-    function bukaModalAturSlide() {
-      if (!activePresId || !presentationsData[activePresId]) return;
+    async function deleteSupabaseFile(filePath) {
+      if (!filePath || !state.supabase.client) return;
+      try {
+        await state.supabase.client.storage.from(state.supabase.bucket).remove([filePath]);
+      } catch (err) {
+        console.warn('Error menghapus file Supabase:', err);
+      }
+    }
+
+    function showToast(message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'bg-indigo-600 text-white text-xs px-3 py-2 rounded-lg shadow-xl border border-indigo-400 flex items-center gap-2 transition duration-300 opacity-0 transform translate-y-2';
+      toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+      container.appendChild(toast);
       
-      const pres = presentationsData[activePresId];
-      document.getElementById('modal-slide-title').innerText = pres.title || pres.judul || pres.name || '';
-      
-      resetSlideForm();
-      renderModalSlideList();
-      document.getElementById('modal-slide').classList.remove('hidden');
+      setTimeout(() => toast.classList.remove('opacity-0', 'translate-y-2'), 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
     }
 
-    function tutupModalAturSlide() {
-      document.getElementById('modal-slide').classList.add('hidden');
+    window.onload = function() {
+      initSupabase();
+      listenToFirebaseRealtime();
+    };
+
+    // --- PRESENTASI CONTROLLER ---
+    function renderPresList(filter = '') {
+      const container = document.getElementById('presList');
+      const filtered = state.presentations.filter(item => 
+        item.title.toLowerCase().includes(filter.toLowerCase()) || 
+        item.speaker.toLowerCase().includes(filter.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="text-xs text-gray-500 italic p-2">Belum ada Presentasi.</div>';
+        return;
+      }
+      container.innerHTML = filtered.map(item => `
+        <div onclick="selectPresCard('${item.id}')" class="p-3 rounded-lg border cursor-pointer transition ${state.selectedPresId === item.id ? 'bg-indigo-950/40 border-indigo-600' : 'bg-inputBg border-cardBorder hover:border-gray-700'}">
+          <div class="text-xs font-bold text-white">${item.title}</div>
+          <div class="text-[11px] text-gray-400 mt-0.5">Speaker: ${item.speaker}</div>
+        </div>
+      `).join('');
     }
 
-    function renderModalSlideList() {
-      const container = document.getElementById('modal-slide-thumbnails');
-      container.innerHTML = '';
-
-      const slides = parseSlidesFromPres(presentationsData[activePresId]);
-
-      slides.forEach((slide, index) => {
-        const isEditing = slide._key === editingSlideKey;
-        const card = document.createElement('div');
-        card.className = `shrink-0 w-28 h-20 rounded-xl p-2 border transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden ${
-          isEditing 
-            ? 'bg-indigo-900/80 border-indigo-500 ring-2 ring-indigo-500' 
-            : 'bg-slate-800/50 border-slate-700/60 hover:border-slate-500'
-        }`;
-
-        card.onclick = () => muatSlideKeForm(slide._key);
-
-        if (slide.img) {
-          card.style.backgroundImage = `linear-gradient(to bottom, rgba(15,23,42,0.5), rgba(15,23,42,0.9)), url('${slide.img}')`;
-          card.style.backgroundSize = 'cover';
-          card.style.backgroundPosition = 'center';
-        }
-
-        card.innerHTML = `
-          <div class="flex justify-between items-center w-full">
-            <span class="text-[9px] font-bold uppercase bg-black/60 px-1.5 py-0.5 rounded text-indigo-300">Slide ${index + 1}</span>
-            <button onclick="event.stopPropagation(); hapusSlideModal('${slide._key}');" class="w-5 h-5 bg-red-800/80 hover:bg-red-700 text-white rounded flex items-center justify-center text-[10px]">
-              <i class="fa-solid fa-trash-can"></i>
-            </button>
-          </div>
-          <p class="text-[10px] font-medium text-white truncate drop-shadow">${slide.text || '(Tanpa Teks)'}</p>
-        `;
-
-        container.appendChild(card);
-      });
-
-      const addBtn = document.createElement('button');
-      addBtn.className = "shrink-0 w-10 h-10 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex items-center justify-center font-bold shadow-md transition-all active:scale-95";
-      addBtn.onclick = resetSlideForm;
-      addBtn.innerHTML = `<i class="fa-solid fa-plus text-sm"></i>`;
-      container.appendChild(addBtn);
+    function filterPresList() {
+      renderPresList(document.getElementById('presSearch').value);
     }
 
-    function muatSlideKeForm(key) {
-      editingSlideKey = key;
-      const slides = parseSlidesFromPres(presentationsData[activePresId]);
-      const slide = slides.find(s => s._key === key);
+    function selectPresCard(id) {
+      state.selectedPresId = id;
+      state.currentPresSlideIndex = 0;
+      renderPresList(document.getElementById('presSearch').value);
+      renderPresDetail();
+    }
 
-      if (slide) {
-        document.getElementById('slide-text-input').value = slide.text || '';
-        document.getElementById('slide-img-url').value = slide.img || '';
-        document.getElementById('form-slide-mode').innerText = `EDIT SLIDE`;
-        updateCharCount();
-        renderModalSlideList();
+    function renderPresDetail() {
+      const item = state.presentations.find(p => p.id === state.selectedPresId);
+      if (item) {
+        document.getElementById('presDetailTitle').innerText = item.title;
+        document.getElementById('presDetailSpeaker').innerText = item.speaker;
+        renderPresSlideGrid(item.slides);
+      } else {
+        document.getElementById('presDetailTitle').innerText = '-';
+        document.getElementById('presDetailSpeaker').innerText = '-';
+        document.getElementById('presSlideGrid').innerHTML = '<span class="text-xs text-gray-500 italic p-2">Belum ada slide. Klik "Atur Slide" untuk menambahkan.</span>';
       }
     }
 
-    function resetSlideForm() {
-      editingSlideKey = null;
-      document.getElementById('slide-text-input').value = '';
-      document.getElementById('slide-img-url').value = '';
-      document.getElementById('form-slide-mode').innerText = 'ADD / EDIT SLIDE';
-      updateCharCount();
-      renderModalSlideList();
+    function renderPresSlideGrid(slides) {
+      const container = document.getElementById('presSlideGrid');
+      if (!slides || slides.length === 0) {
+        container.innerHTML = '<span class="text-xs text-gray-500 italic p-2">Belum ada slide. Klik "Atur Slide" untuk menambahkan.</span>';
+        return;
+      }
+      container.innerHTML = slides.map((slide, idx) => `
+        <div onclick="jumpToPresSlide(${idx})" class="flex-shrink-0 w-24 h-16 bg-cardBg border ${state.currentPresSlideIndex === idx ? 'border-indigo-500 ring-2 ring-indigo-500/50' : 'border-cardBorder hover:border-indigo-500'} rounded-md flex flex-col items-center justify-center p-1 text-center cursor-pointer transition overflow-hidden relative" style="${slide.img ? `background-image: url('${slide.img}'); background-size: cover; background-position: center;` : ''}">
+          <span class="text-[10px] font-bold text-white bg-black/60 px-1 py-0.5 rounded truncate max-w-full">${slide.label || 'Slide ' + (idx + 1)}</span>
+        </div>
+      `).join('');
     }
 
-    function updateCharCount() {
-      const len = document.getElementById('slide-text-input').value.length;
-      document.getElementById('char-counter').innerText = `${420 - len} karakter tersisa`;
+    function jumpToPresSlide(idx) {
+      state.currentPresSlideIndex = idx;
+      renderPresDetail();
+      triggerDisplay();
     }
 
-    function simpanSlideForm() {
-      if (!activePresId || !presentationsData[activePresId]) return;
+    function openCreatePresentationModal() {
+      document.getElementById('newPresTitle').value = '';
+      document.getElementById('newPresSpeaker').value = '';
+      document.getElementById('modalCreatePresentation').classList.remove('hidden');
+    }
 
-      const textVal = document.getElementById('slide-text-input').value.trim();
-      const imgVal = document.getElementById('slide-img-url').value.trim();
+    function saveNewPresentation() {
+      const title = document.getElementById('newPresTitle').value || 'Presentasi Baru';
+      const speaker = document.getElementById('newPresSpeaker').value || '-';
+      const newId = 'p' + Date.now();
+      state.presentations.push({ id: newId, title, speaker, slides: [] });
+      selectPresCard(newId);
+      syncStateToFirebase();
+      closeModal('modalCreatePresentation');
+      showToast('Presentasi baru dibuat');
+    }
 
-      if (typeof database !== 'undefined') {
-        const slidesRef = database.ref(`presentations/${activePresId}/slides`);
-
-        if (editingSlideKey !== null) {
-          slidesRef.child(editingSlideKey).set({ text: textVal, img: imgVal }).then(() => {
-            renderModalSlideList();
-            renderThumbnails();
-            tampilkanOverlay();
-          });
-        } else {
-          const newSlideRef = slidesRef.push();
-          newSlideRef.set({ text: textVal, img: imgVal }).then(() => {
-            editingSlideKey = newSlideRef.key;
-            renderModalSlideList();
-            renderThumbnails();
-            tampilkanOverlay();
-          });
+    async function deleteCurrentPresentation() {
+      if (!state.selectedPresId) return;
+      const pres = state.presentations.find(p => p.id === state.selectedPresId);
+      if (pres && pres.slides) {
+        for (const slide of pres.slides) {
+          if (slide.supabaseFilePath) await deleteSupabaseFile(slide.supabaseFilePath);
         }
       }
+      state.presentations = state.presentations.filter(p => p.id !== state.selectedPresId);
+      if (state.presentations.length > 0) selectPresCard(state.presentations[0].id);
+      else { state.selectedPresId = null; renderPresList(); renderPresDetail(); }
+      syncStateToFirebase();
     }
 
-    function hapusSlideModal(key) {
-      const slides = parseSlidesFromPres(presentationsData[activePresId]);
-      if (slides.length <= 1) {
-        alert('Minimal harus tersisa 1 slide!');
+    // --- SLIDE MANAGER MODAL ---
+    function openSlideManager() {
+      state.editingSlideIdx = null;
+      state.uploadedImgUrl = null;
+      state.uploadedImgName = null;
+      state.uploadedFilePath = null;
+
+      const pres = state.presentations.find(p => p.id === state.selectedPresId);
+      if (!pres) return;
+
+      document.getElementById('slideManagerHeaderTitle').innerText = pres.title || 'Slide';
+      renderSlideManagerList(pres.slides || []);
+      prepareNewSlideForm();
+      document.getElementById('modalSlideManager').classList.remove('hidden');
+    }
+
+    function renderSlideManagerList(slides) {
+      const container = document.getElementById('slideManagerList');
+      if (!slides || slides.length === 0) {
+        container.innerHTML = '<div class="col-span-2 text-center text-xs text-gray-500 py-6">Belum ada Slide. Klik tambah di bawah ini.</div>';
         return;
       }
 
-      if (typeof database !== 'undefined') {
-        database.ref(`presentations/${activePresId}/slides`).child(key).remove().then(() => {
-          resetSlideForm();
-          renderThumbnails();
-        });
+      container.innerHTML = slides.map((slide, idx) => `
+        <div onclick="selectSlideForEdit(${idx})" class="relative bg-cardBg border ${state.editingSlideIdx === idx ? 'border-indigo-500 bg-indigo-950/40 shadow-indigo-900/30' : 'border-cardBorder hover:border-gray-600'} rounded-lg p-2 flex flex-col items-center justify-between h-20 text-center cursor-pointer transition overflow-hidden" style="${slide.img ? `background-image: linear-gradient(to bottom, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.85)), url('${slide.img}'); background-size: cover; background-position: center;` : ''}">
+          <span class="text-[11px] font-bold text-gray-100 mt-1 truncate w-full px-1 drop-shadow-md">${slide.label || 'Slide ' + (idx + 1)}</span>
+          <button onclick="deleteSlideItem(${idx}, event)" class="absolute top-1 right-1 text-red-400 hover:text-red-300 text-[10px] bg-red-950/80 hover:bg-red-900 p-1 rounded border border-red-800/80 transition" title="Hapus Slide">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function prepareNewSlideForm() {
+      state.editingSlideIdx = null;
+      state.uploadedImgUrl = null;
+      state.uploadedImgName = null;
+      state.uploadedFilePath = null;
+
+      document.getElementById('slideTextInput').value = '';
+      document.getElementById('slideImageText').innerText = 'Klik untuk unggah gambar';
+      document.getElementById('slideImageSubtext').innerText = 'Otomatis diunggah ke cloud Supabase Storage';
+      document.getElementById('slideImageUploader').value = '';
+      updateCharCounter();
+
+      const pres = state.presentations.find(p => p.id === state.selectedPresId);
+      if (pres) renderSlideManagerList(pres.slides || []);
+    }
+
+    function selectSlideForEdit(idx) {
+      const pres = state.presentations.find(p => p.id === state.selectedPresId);
+      if (!pres || !pres.slides[idx]) return;
+
+      state.editingSlideIdx = idx;
+      const slide = pres.slides[idx];
+
+      document.getElementById('slideTextInput').value = slide.text || '';
+      state.uploadedImgUrl = slide.img || null;
+      state.uploadedImgName = slide.imgName || null;
+      state.uploadedFilePath = slide.supabaseFilePath || null;
+      
+      if (slide.imgName) {
+        document.getElementById('slideImageText').innerText = 'Gambar: ' + slide.imgName;
+        document.getElementById('slideImageSubtext').innerText = 'Terhubung di Supabase Cloud Storage';
+      } else {
+        document.getElementById('slideImageText').innerText = 'Klik untuk unggah gambar';
+        document.getElementById('slideImageSubtext').innerText = 'Otomatis diunggah ke cloud Supabase Storage';
       }
+      
+      updateCharCounter();
+      renderSlideManagerList(pres.slides);
     }
 
-    function triggerImageUpload() {
-      document.getElementById('slide-img-file').click();
-    }
-
-    function handleImageUpload(e) {
+    async function handleImageUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      if (typeof supabase !== 'undefined' && window.supabaseClient) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `slides/${fileName}`;
+      state.uploadedImgName = file.name;
+      const statusElement = document.getElementById('slideImageText');
+      const substatusElement = document.getElementById('slideImageSubtext');
 
-        window.supabaseClient.storage.from('overlays').upload(filePath, file)
-          .then(({ data, error }) => {
-            if (error) throw error;
-            const { data: publicData } = window.supabaseClient.storage.from('overlays').getPublicUrl(filePath);
-            document.getElementById('slide-img-url').value = publicData.publicUrl;
-          })
-          .catch(err => {
-            console.error('Upload Supabase gagal, fallback base64:', err);
-            readLocalFileAsUrl(file);
-          });
+      if (state.supabase.client) {
+        statusElement.innerText = 'Mengunggah ke Supabase...';
+        substatusElement.innerText = 'Mohon tunggu sebentar';
+        try {
+          const filePath = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+          const { error } = await state.supabase.client.storage
+            .from(state.supabase.bucket)
+            .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+          if (error) throw error;
+
+          const { data: publicData } = state.supabase.client.storage
+            .from(state.supabase.bucket)
+            .getPublicUrl(filePath);
+
+          state.uploadedImgUrl = publicData.publicUrl;
+          state.uploadedFilePath = filePath;
+          statusElement.innerText = 'Supabase Cloud: ' + file.name;
+          substatusElement.innerText = 'Gambar berhasil terunggah ke Supabase!';
+          return;
+        } catch (err) {
+          console.warn('Supabase upload error:', err);
+        }
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        state.uploadedImgUrl = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveSlideDetails() {
+      const pres = state.presentations.find(p => p.id === state.selectedPresId);
+      if (!pres) return;
+
+      if (!pres.slides) pres.slides = [];
+
+      const textVal = document.getElementById('slideTextInput').value.trim();
+      const imgName = state.uploadedImgName || (state.uploadedImgUrl ? 'Gambar Cloud' : '');
+
+      if (state.editingSlideIdx !== null && pres.slides[state.editingSlideIdx]) {
+        const currentSlide = pres.slides[state.editingSlideIdx];
+        if (state.uploadedFilePath && currentSlide.supabaseFilePath && currentSlide.supabaseFilePath !== state.uploadedFilePath) {
+          deleteSupabaseFile(currentSlide.supabaseFilePath);
+        }
+        currentSlide.text = textVal;
+        currentSlide.img = state.uploadedImgUrl;
+        currentSlide.imgName = imgName;
+        if (state.uploadedFilePath) currentSlide.supabaseFilePath = state.uploadedFilePath;
       } else {
-        readLocalFileAsUrl(file);
+        const newSlideNum = pres.slides.length + 1;
+        pres.slides.push({
+          id: 's' + Date.now(),
+          label: 'Slide ' + newSlideNum,
+          text: textVal,
+          img: state.uploadedImgUrl,
+          imgName: imgName,
+          supabaseFilePath: state.uploadedFilePath || null
+        });
+      }
+
+      renderSlideManagerList(pres.slides);
+      renderPresDetail();
+
+      syncStateToFirebase();
+      prepareNewSlideForm();
+      showToast('Detail Slide Tersimpan');
+    }
+
+    async function deleteSlideItem(idx, event) {
+      if (event) event.stopPropagation();
+
+      const pres = state.presentations.find(p => p.id === state.selectedPresId);
+      if (!pres || !pres.slides) return;
+
+      const slideToDelete = pres.slides[idx];
+      if (slideToDelete && slideToDelete.supabaseFilePath) await deleteSupabaseFile(slideToDelete.supabaseFilePath);
+
+      pres.slides.splice(idx, 1);
+      pres.slides.forEach((s, i) => s.label = 'Slide ' + (i + 1));
+
+      prepareNewSlideForm();
+
+      renderPresDetail();
+      syncStateToFirebase();
+    }
+
+    function updateCharCounter() {
+      const val = document.getElementById('slideTextInput').value;
+      document.getElementById('slideCharCounter').innerText = 420 - val.length;
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function hideOverlay() {
+      if (typeof database === 'undefined') return;
+      database.ref('activeOverlay').set({ action: 'hide', timestamp: Date.now() })
+        .then(() => showToast('Overlay Disembunyikan'))
+        .catch(err => console.error(err));
+    }
+
+    function triggerDisplay() {
+      if (typeof database === 'undefined') {
+        alert("Firebase belum terhubung.");
+        return;
+      }
+
+      const pres = state.presentations.find(p => p.id === state.selectedPresId);
+      if (pres && pres.slides && pres.slides[state.currentPresSlideIndex]) {
+        let payload = {
+          type: 'presentasi',
+          timestamp: Date.now(),
+          title: pres.title,
+          speaker: pres.speaker,
+          slide: pres.slides[state.currentPresSlideIndex],
+          slideIndex: state.currentPresSlideIndex,
+          totalSlides: pres.slides.length,
+          targets: {
+            stream: document.getElementById('presShowStream').checked,
+            audience: document.getElementById('presShowAudience').checked,
+            stage: document.getElementById('presShowStage').checked
+          }
+        };
+
+        database.ref('activeOverlay').set(payload)
+          .then(() => showToast('Tampilan PRESENTASI Dikirim'))
+          .catch(err => console.error("Firebase write error:", err));
       }
     }
 
-    function readLocalFileAsUrl(file) {
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        document.getElementById('slide-img-url').value = evt.target.result;
-      };
-      reader.readAsDataURL(file);
+    function navSlide(dir) {
+      const pres = state.presentations.find(p => p.id === state.selectedPresId);
+      if (!pres || !pres.slides || pres.slides.length === 0) return;
+
+      if (dir === 'prev' && state.currentPresSlideIndex > 0) state.currentPresSlideIndex--;
+      else if (dir === 'next' && state.currentPresSlideIndex < pres.slides.length - 1) state.currentPresSlideIndex++;
+
+      renderPresDetail();
+      triggerDisplay();
     }
   </script>
 </body>
