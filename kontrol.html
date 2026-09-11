@@ -28,6 +28,7 @@
       font-family: 'Poppins', 'Inter', sans-serif;
       background-color: #0b1120;
       color: #f1f5f9;
+      user-select: none;
     }
   </style>
 </head>
@@ -37,63 +38,63 @@
     
     <!-- HEADER -->
     <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
-      <h1 class="text-xl font-bold tracking-wide uppercase text-slate-100">Kontrol Tampilan</h1>
-      <button onclick="sembunyikanOverlay()" class="bg-red-600 hover:bg-red-700 text-white font-semibold text-xs px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-lg active:scale-95">
+      <h1 class="text-lg font-extrabold tracking-wider uppercase text-slate-100">Kontrol Tampilan</h1>
+      <button onclick="sembunyikanOverlay()" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-lg active:scale-95">
         <i class="fa-solid fa-eye-slash"></i> Sembunyikan Overlay
       </button>
     </div>
 
-    <!-- DATA PRESENTASI SAAT INI -->
+    <!-- INFORMASI PRESENTASI AKTIFF -->
     <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 mb-6">
-      <h2 class="text-lg font-bold text-white mb-1">Kontrol Presentasi</h2>
+      <h2 class="text-base font-bold text-white mb-1">Kontrol Presentasi</h2>
       <p id="info-judul" class="text-sm font-semibold text-indigo-400">Judul: <span class="text-slate-200">Minggu</span></p>
       <p id="info-pembicara" class="text-xs text-slate-400 mt-0.5">Pembicara: Pdt. John</p>
     </div>
 
-    <!-- TARGET LAYAR (CHECKBOX) -->
+    <!-- TARGET LAYAR -->
     <div class="mb-6">
-      <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Tampil di Layar:</label>
-      <div class="flex flex-wrap gap-4 text-xs font-medium text-slate-300">
+      <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">TAMPIL DI LAYAR:</label>
+      <div class="flex flex-wrap gap-4 text-xs font-semibold text-slate-300">
         <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" id="target-stream" checked class="w-4 h-4 rounded accent-indigo-600"> Live Streaming
+          <input type="checkbox" id="target-stream" checked class="w-4 h-4 rounded accent-indigo-600 cursor-pointer"> Live Streaming
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" id="target-audiens" checked class="w-4 h-4 rounded accent-indigo-600"> Monitor Audiens
+          <input type="checkbox" id="target-audiens" checked class="w-4 h-4 rounded accent-indigo-600 cursor-pointer"> Monitor Audiens
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" id="target-stage" checked class="w-4 h-4 rounded accent-indigo-600"> Monitor Stage
+          <input type="checkbox" id="target-stage" checked class="w-4 h-4 rounded accent-indigo-600 cursor-pointer"> Monitor Stage
         </label>
       </div>
     </div>
 
-    <!-- TOMBOL KONTROL UTAMA (BALIK - TAMPILKAN - SEMBUNYIKAN - BERIKUT) -->
+    <!-- TOMBOL KONTROL UTAMA -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
       <!-- BALIK -->
-      <button onclick="prevSlide()" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md">
-        <i class="fa-solid fa-chevron-left text-xs"></i> Balik
+      <button onclick="prevSlide()" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md">
+        <i class="fa-solid fa-chevron-left"></i> Balik
       </button>
 
       <!-- TAMPILKAN -->
-      <button onclick="tampilkanOverlay()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md">
-        <i class="fa-solid fa-eye text-xs"></i> Tampilkan
+      <button onclick="tampilkanOverlay()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md">
+        <i class="fa-solid fa-eye"></i> Tampilkan
       </button>
 
       <!-- SEMBUNYIKAN -->
-      <button onclick="sembunyikanOverlay()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md">
-        <i class="fa-solid fa-eye-slash text-xs"></i> Sembunyikan
+      <button onclick="sembunyikanOverlay()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md">
+        <i class="fa-solid fa-eye-slash"></i> Sembunyikan
       </button>
 
       <!-- BERIKUT -->
-      <button onclick="nextSlide()" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md">
-        Berikut <i class="fa-solid fa-chevron-right text-xs"></i>
+      <button onclick="nextSlide()" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-xs py-3 px-2 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md">
+        Berikut <i class="fa-solid fa-chevron-right"></i>
       </button>
     </div>
 
-    <!-- DAFTAR SLIDE (THUMBNAIL / SLIDE SELECTOR) -->
+    <!-- DAFTAR SLIDE (THUMBNAIL) -->
     <div class="mb-2">
       <p class="text-xs font-semibold text-slate-400 mb-3">Daftar Slide (Klik untuk menampilkan langsung)</p>
       <div id="slide-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <!-- Render otomatis via JavaScript -->
+        <!-- Generasi slide via Javascript -->
       </div>
     </div>
 
@@ -105,17 +106,17 @@
   </div>
 
   <script>
-    // Data Dummy Slide (Bisa disesuaikan atau diambil dari Firebase)
+    // Data Slide Presentasi
     const slidesData = [
       { id: 0, text: "Selamat Datang di Ibadah Minggu", img: "https://images.unsplash.com/photo-1510519138161-584410ef2b8e?w=500&q=80" },
       { id: 1, text: "Khotbah: Hidup Diberkati untuk Menjadi Berkat", img: "" },
       { id: 2, text: "Ayat Utama: Filipi 4:13", img: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=500&q=80" },
-      { id: 3, text: "Pengumuman & Warta Jemaat", img: "" }
+      { id: 3, text: "Pengumuman & Warta Jemaat Hari Ini", img: "" }
     ];
 
     let currentSlideIndex = 0;
 
-    // Render daftar slide ke UI
+    // Render daftar slide di UI
     function renderSlides() {
       const container = document.getElementById('slide-container');
       container.innerHTML = '';
@@ -125,8 +126,8 @@
         const card = document.createElement('div');
         card.className = `cursor-pointer rounded-xl p-3 border transition-all flex flex-col justify-between h-24 relative overflow-hidden ${
           isActive 
-            ? 'bg-indigo-900/40 border-indigo-500 ring-2 ring-indigo-500/50' 
-            : 'bg-slate-800/40 border-slate-700 hover:border-slate-500'
+            ? 'bg-indigo-900/50 border-indigo-500 ring-2 ring-indigo-500/50' 
+            : 'bg-slate-800/40 border-slate-700/80 hover:border-slate-500'
         }`;
 
         card.onclick = () => selectSlide(index);
@@ -146,7 +147,7 @@
       });
     }
 
-    // Ambil Target Centang
+    // Ambil Target Layar Centang
     function getSelectedTargets() {
       return {
         stream: document.getElementById('target-stream').checked,
@@ -155,10 +156,10 @@
       };
     }
 
-    // Mengirim Perintah Tampil ke Firebase
+    // Mengirim Perintah & Data Ke Firebase Realtime Database
     function updateOverlayFirebase(actionType = 'show') {
       if (typeof database === 'undefined') {
-        console.warn('Firebase tidak terhubung.');
+        console.warn('Firebase belum terkonfigurasi pada js/firebase-config.js');
         return;
       }
 
@@ -176,7 +177,7 @@
       });
     }
 
-    // KONTROL NAVIGASI
+    // Fungsi Kontrol Tombol
     function selectSlide(index) {
       currentSlideIndex = index;
       renderSlides();
@@ -211,7 +212,7 @@
       }
     }
 
-    // Inisialisasi awal
+    // Jalankan render awal
     renderSlides();
   </script>
 </body>
