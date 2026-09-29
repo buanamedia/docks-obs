@@ -605,9 +605,17 @@
         return;
       }
 
-      database.ref('overlayLayout').set(layoutState)
-        .then(() => showToast('Tata letak layout Monitor Ke-2 berhasil disimpan!'))
-        .catch(err => console.error('Gagal menyimpan layout:', err));
+      // Salin data secara bersih
+      const cleanData = JSON.parse(JSON.stringify(layoutState));
+
+      database.ref('overlayLayout').set(cleanData)
+        .then(() => {
+          showToast('Tata letak layout Monitor Ke-2 berhasil disimpan!');
+        })
+        .catch(err => {
+          console.error('Gagal menyimpan layout:', err);
+          alert('Gagal menyimpan ke Firebase: ' + err.message);
+        });
     }
 
     function resetLayoutSettings() {
