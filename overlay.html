@@ -159,6 +159,8 @@
     }
 
     if (typeof database !== 'undefined') {
+      
+      // --- 1. LISTENER KONTROL DISPLAY OVERLAY ---
       database.ref('activeOverlay').on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
@@ -173,7 +175,7 @@
           return;
         }
 
-        // --- 1. LOWERTHIRD ---
+        // --- LOWERTHIRD ---
         if (data.type === 'lowerthird') {
           hideAll();
           document.getElementById('lt-title-display').innerText = data.name || '';
@@ -196,7 +198,7 @@
           }
         }
 
-        // --- 2. TICKER ---
+        // --- TICKER ---
         if (data.type === 'ticker') {
           hideAll();
           document.getElementById('ticker-text-display').innerHTML = data.content || '';
@@ -209,7 +211,7 @@
           }
         }
 
-        // --- 3. PRESENTASI ---
+        // --- PRESENTASI ---
         if (data.type === 'presentasi' && data.slide) {
           hideAll();
           const imgEl = document.getElementById('slide-img-display');
@@ -226,7 +228,7 @@
           document.getElementById('overlay-slide').classList.add('active');
         }
 
-        // --- 4. CAROUSEL ---
+        // --- CAROUSEL ---
         if (data.type === 'carousel' && data.slides && data.slides.length > 0) {
           hideAll();
           let currentIndex = 0;
@@ -256,7 +258,7 @@
           }, intervalTime);
         }
 
-        // --- 5. INFO ---
+        // --- INFO ---
         if (data.type === 'info') {
           hideAll();
           document.getElementById('info-title-display').innerText = data.title || 'INFO';
@@ -270,7 +272,7 @@
           }
         }
 
-        // --- 6. COUNTDOWN ---
+        // --- COUNTDOWN ---
         if (data.type === 'countdown') {
           hideAll();
           document.getElementById('cd-title-display').innerText = data.title || 'COUNTDOWN';
@@ -302,6 +304,40 @@
           document.getElementById('overlay-countdown').classList.add('active');
         }
       });
+
+      // --- 2. LISTENER REALTIME UPDATE POSISI & UKURAN LAYOUT DARI FIREBASE ---
+      database.ref('overlayLayout').on('value', (snapshot) => {
+        const layout = snapshot.val();
+        if (!layout) return;
+
+        const moduleMap = {
+          lowerthird: 'overlay-lowerthird',
+          ticker: 'overlay-ticker',
+          slide: 'overlay-slide',
+          info: 'overlay-info',
+          countdown: 'overlay-countdown'
+        };
+
+        Object.keys(moduleMap).forEach(key => {
+          const el = document.getElementById(moduleMap[key]);
+          const config = layout[key];
+          if (el && config) {
+            el.style.position = 'absolute';
+            el.style.left = config.posX + 'px';
+            el.style.top = config.posY + 'px';
+            el.style.transform = `scale(${config.scale})`;
+            el.style.transformOrigin = 'top left';
+            el.style.opacity = config.opacity;
+            el.style.fontSize = config.fontSize + 'em';
+
+            const card = el.querySelector('.glass-card') || el;
+            if (card) {
+              card.style.borderRadius = config.borderRadius + 'px';
+            }
+          }
+        });
+      });
+
     }
   </script>
 </body>
