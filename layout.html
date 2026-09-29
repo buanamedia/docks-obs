@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pengaturan Layout Overlay - By Buana Media</title>
+  <title>Pengaturan Layout & Monitor Ke-2 - By Buana Media</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -56,26 +56,62 @@
       background: #1f293d;
       border-radius: 3px;
     }
-    /* Simulated 16:9 Canvas Preview */
-    .canvas-container {
+    
+    /* SIMULATOR MONITOR KE-2 CONTAINER */
+    .monitor-viewport {
       position: relative;
       width: 100%;
-      padding-top: 56.25%; /* 16:9 Aspect Ratio */
       background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    /* BORDER FRAME MONITOR KE-2 */
+    .monitor-frame {
+      position: relative;
+      background: #050811;
+      border: 3px dashed #6366f1; /* Garis Pinggir Penanda Monitor Ke-2 */
+      box-shadow: 0 0 25px rgba(99, 102, 241, 0.25);
+      transform-origin: center center;
+      overflow: hidden;
       background-size: 20px 20px;
       background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
     }
-    .canvas-content {
+
+    .monitor-screen-label {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 1920px;
-      height: 1080px;
-      transform-origin: top left;
-      overflow: hidden;
+      top: 10px;
+      left: 10px;
+      background: rgba(99, 102, 241, 0.85);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      z-index: 50;
       pointer-events: none;
+    }
+
+    /* ELEMENT OVERLAY ITEM ON PREVIEW */
+    .overlay-item {
+      position: absolute;
+      cursor: move;
+      transition: outline 0.15s ease, opacity 0.2s ease;
+    }
+    .overlay-item.selected {
+      outline: 2px dashed #10b981 !important;
+      outline-offset: 4px;
+      z-index: 40 !important;
+    }
+    .overlay-item.hidden-preview {
+      display: none !important;
     }
   </style>
 </head>
@@ -84,22 +120,23 @@
   <div class="max-w-7xl mx-auto w-full space-y-4">
     
     <!-- HEADER -->
-    <div class="bg-cardBg border border-cardBorder rounded-xl p-4 shadow-lg flex items-center justify-between">
+    <div class="bg-cardBg border border-cardBorder rounded-xl p-4 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg flex items-center justify-center">
-          <i class="fa-solid fa-up-right-and-down-left-from-center text-sm"></i>
+        <div class="w-10 h-10 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-display text-base"></i>
         </div>
         <div>
-          <h1 class="text-sm font-bold text-white uppercase tracking-wider">Pengaturan Ukuran & Posisi Overlay</h1>
-          <p class="text-xs text-gray-400">Atur tata letak setiap modul overlay secara real-time</p>
+          <h1 class="text-sm font-bold text-white uppercase tracking-wider">Simulasi Layout Monitor Ke-2</h1>
+          <p class="text-xs text-gray-400">Sesuaikan garis pinggir resolusi monitor & tata letak elemen secara visual</p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+
+      <div class="flex flex-wrap items-center gap-2">
         <a href="dock.html" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5">
-          <i class="fa-solid fa-arrow-left"></i> Kembali ke Dock
+          <i class="fa-solid fa-arrow-left"></i> Dock
         </a>
         <button onclick="resetLayoutSettings()" class="bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-400 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5">
-          <i class="fa-solid fa-rotate-left"></i> Reset Default
+          <i class="fa-solid fa-rotate-left"></i> Reset
         </button>
         <button onclick="saveLayoutSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow-lg flex items-center gap-1.5">
           <i class="fa-solid fa-floppy-disk"></i> Simpan Layout
@@ -109,13 +146,45 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
       
-      <!-- LEFT CONTROL PANEL (SELECT & CONTROLS) -->
-      <div class="lg:col-span-5 bg-cardBg border border-cardBorder rounded-xl p-4 shadow-xl space-y-4">
+      <!-- LEFT CONTROL PANEL -->
+      <div class="lg:col-span-4 bg-cardBg border border-cardBorder rounded-xl p-4 shadow-xl space-y-4">
         
-        <!-- MODULE SELECTOR -->
+        <!-- UKURAN MONITOR / CANVAS RESOLUTION -->
         <div>
-          <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Pilih Modul Overlay</label>
-          <select id="moduleSelect" onchange="onModuleChange(this.value)" class="w-full bg-inputBg border border-cardBorder text-white text-xs rounded-lg p-2.5 outline-none focus:border-indigo-500 font-semibold">
+          <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Ukuran Monitor / Canvas</label>
+          <select id="canvasResSelect" onchange="changeCanvasResolution(this.value)" class="w-full bg-inputBg border border-cardBorder text-white text-xs rounded-lg p-2.5 outline-none focus:border-indigo-500 font-semibold mb-2">
+            <option value="1920x1080" selected>FHD (1920 x 1080) - Standard 16:9</option>
+            <option value="1280x720">HD (1280 x 720) - 16:9</option>
+            <option value="2560x1440">2K QHD (2560 x 1440)</option>
+            <option value="custom">Custom Ukuran...</option>
+          </select>
+
+          <!-- INPUT CUSTOM RESOLUTION -->
+          <div id="customResBox" class="hidden grid grid-cols-2 gap-2 mt-2">
+            <div>
+              <span class="text-[10px] text-gray-400 block mb-0.5">Lebar (px)</span>
+              <input type="number" id="customWidth" value="1920" onchange="applyCustomRes()" class="w-full bg-inputBg border border-cardBorder text-xs text-white p-2 rounded outline-none">
+            </div>
+            <div>
+              <span class="text-[10px] text-gray-400 block mb-0.5">Tinggi (px)</span>
+              <input type="number" id="customHeight" value="1080" onchange="applyCustomRes()" class="w-full bg-inputBg border border-cardBorder text-xs text-white p-2 rounded outline-none">
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-cardBorder">
+
+        <!-- TOMBOL TOGGLE VIEW ALL MODULES -->
+        <div>
+          <button id="toggleShowAllBtn" onclick="toggleShowAllModules()" class="w-full bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-300 font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2 shadow">
+            <i id="toggleShowAllIcon" class="fa-solid fa-eye"></i> <span id="toggleShowAllText">Tampilkan Semua Modul</span>
+          </button>
+        </div>
+
+        <!-- PILIH MODUL OVERLAY -->
+        <div>
+          <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Pilih Modul Ditata</label>
+          <select id="moduleSelect" onchange="onModuleChange(this.value)" class="w-full bg-inputBg border border-cardBorder text-indigo-300 font-bold text-xs rounded-lg p-2.5 outline-none focus:border-indigo-500">
             <option value="lowerthird">Lowerthird</option>
             <option value="ticker">Ticker (Warta)</option>
             <option value="slide">Presentasi & Carousel</option>
@@ -124,10 +193,8 @@
           </select>
         </div>
 
-        <hr class="border-cardBorder">
-
-        <!-- TRANSFORM CONTROLS -->
-        <div id="controlsContainer" class="space-y-4">
+        <!-- CONTROL TRANSFORM -->
+        <div class="space-y-3.5">
           
           <!-- POSISI X & Y -->
           <div class="grid grid-cols-2 gap-3">
@@ -136,32 +203,32 @@
                 <label class="text-xs font-medium text-gray-300">Posisi X (px)</label>
                 <span id="posXVal" class="text-xs font-mono text-indigo-400">0</span>
               </div>
-              <input type="range" id="posX" min="0" max="1920" step="5" oninput="updateLayoutPreview()" class="w-full accent-indigo-500 bg-inputBg rounded-lg cursor-pointer">
+              <input type="range" id="posX" min="0" max="1920" step="2" oninput="updateFromSliders()" class="w-full accent-indigo-500 bg-inputBg rounded cursor-pointer">
             </div>
             <div>
               <div class="flex justify-between items-center mb-1">
                 <label class="text-xs font-medium text-gray-300">Posisi Y (px)</label>
                 <span id="posYVal" class="text-xs font-mono text-indigo-400">0</span>
               </div>
-              <input type="range" id="posY" min="0" max="1080" step="5" oninput="updateLayoutPreview()" class="w-full accent-indigo-500 bg-inputBg rounded-lg cursor-pointer">
+              <input type="range" id="posY" min="0" max="1080" step="2" oninput="updateFromSliders()" class="w-full accent-indigo-500 bg-inputBg rounded cursor-pointer">
             </div>
           </div>
 
-          <!-- SKALA (UKURAN) & OPASITAS -->
+          <!-- SKALA & OPASITAS -->
           <div class="grid grid-cols-2 gap-3">
             <div>
               <div class="flex justify-between items-center mb-1">
-                <label class="text-xs font-medium text-gray-300">Skala / Ukuran</label>
+                <label class="text-xs font-medium text-gray-300">Skala Ukuran</label>
                 <span id="scaleVal" class="text-xs font-mono text-indigo-400">100%</span>
               </div>
-              <input type="range" id="scale" min="0.3" max="2" step="0.05" value="1" oninput="updateLayoutPreview()" class="w-full accent-indigo-500 bg-inputBg rounded-lg cursor-pointer">
+              <input type="range" id="scale" min="0.3" max="2" step="0.05" value="1" oninput="updateFromSliders()" class="w-full accent-indigo-500 bg-inputBg rounded cursor-pointer">
             </div>
             <div>
               <div class="flex justify-between items-center mb-1">
-                <label class="text-xs font-medium text-gray-300">Opasitas (Transparansi)</label>
+                <label class="text-xs font-medium text-gray-300">Opasitas</label>
                 <span id="opacityVal" class="text-xs font-mono text-indigo-400">100%</span>
               </div>
-              <input type="range" id="opacity" min="0.1" max="1" step="0.05" value="1" oninput="updateLayoutPreview()" class="w-full accent-indigo-500 bg-inputBg rounded-lg cursor-pointer">
+              <input type="range" id="opacity" min="0.1" max="1" step="0.05" value="1" oninput="updateFromSliders()" class="w-full accent-indigo-500 bg-inputBg rounded cursor-pointer">
             </div>
           </div>
 
@@ -169,30 +236,30 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <div class="flex justify-between items-center mb-1">
-                <label class="text-xs font-medium text-gray-300">Ukuran Font (em)</label>
+                <label class="text-xs font-medium text-gray-300">Font Size (em)</label>
                 <span id="fontSizeVal" class="text-xs font-mono text-indigo-400">1.0</span>
               </div>
-              <input type="range" id="fontSize" min="0.6" max="2.5" step="0.1" value="1" oninput="updateLayoutPreview()" class="w-full accent-indigo-500 bg-inputBg rounded-lg cursor-pointer">
+              <input type="range" id="fontSize" min="0.6" max="2.5" step="0.1" value="1" oninput="updateFromSliders()" class="w-full accent-indigo-500 bg-inputBg rounded cursor-pointer">
             </div>
             <div>
               <div class="flex justify-between items-center mb-1">
-                <label class="text-xs font-medium text-gray-300">Sudut Kelengkungan (px)</label>
+                <label class="text-xs font-medium text-gray-300">Sudut (px)</label>
                 <span id="borderRadiusVal" class="text-xs font-mono text-indigo-400">12px</span>
               </div>
-              <input type="range" id="borderRadius" min="0" max="40" step="2" value="12" oninput="updateLayoutPreview()" class="w-full accent-indigo-500 bg-inputBg rounded-lg cursor-pointer">
+              <input type="range" id="borderRadius" min="0" max="40" step="2" value="12" oninput="updateFromSliders()" class="w-full accent-indigo-500 bg-inputBg rounded cursor-pointer">
             </div>
           </div>
 
-          <!-- PRESET POSISI CEPAT -->
+          <!-- PRESET POSISI -->
           <div>
-            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Preset Posisi Cepat</label>
-            <div class="grid grid-cols-3 gap-2">
-              <button onclick="setPresetPos('top-left')" class="bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-300 text-xs py-1.5 rounded transition">Kiri Atas</button>
-              <button onclick="setPresetPos('top-center')" class="bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-300 text-xs py-1.5 rounded transition">Tengah Atas</button>
-              <button onclick="setPresetPos('top-right')" class="bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-300 text-xs py-1.5 rounded transition">Kanan Atas</button>
-              <button onclick="setPresetPos('bottom-left')" class="bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-300 text-xs py-1.5 rounded transition">Kiri Bawah</button>
-              <button onclick="setPresetPos('bottom-center')" class="bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-300 text-xs py-1.5 rounded transition">Tengah Bawah</button>
-              <button onclick="setPresetPos('bottom-right')" class="bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-300 text-xs py-1.5 rounded transition">Kanan Bawah</button>
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Preset Posisi</label>
+            <div class="grid grid-cols-3 gap-1.5">
+              <button onclick="setPresetPos('top-left')" class="bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-300 text-[11px] py-1.5 rounded transition">Kiri Atas</button>
+              <button onclick="setPresetPos('top-center')" class="bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-300 text-[11px] py-1.5 rounded transition">Tengah Atas</button>
+              <button onclick="setPresetPos('top-right')" class="bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-300 text-[11px] py-1.5 rounded transition">Kanan Atas</button>
+              <button onclick="setPresetPos('bottom-left')" class="bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-300 text-[11px] py-1.5 rounded transition">Kiri Bawah</button>
+              <button onclick="setPresetPos('bottom-center')" class="bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-300 text-[11px] py-1.5 rounded transition">Tengah Bawah</button>
+              <button onclick="setPresetPos('bottom-right')" class="bg-inputBg hover:bg-cardBorder border border-cardBorder text-gray-300 text-[11px] py-1.5 rounded transition">Kanan Bawah</button>
             </div>
           </div>
 
@@ -200,34 +267,41 @@
 
       </div>
 
-      <!-- RIGHT PANEL (CANVAS PREVIEW) -->
-      <div class="lg:col-span-7 bg-cardBg border border-cardBorder rounded-xl p-4 shadow-xl flex flex-col justify-between">
+      <!-- RIGHT PANEL (CANVAS PREVIEW MONITOR KE-2) -->
+      <div class="lg:col-span-8 bg-cardBg border border-cardBorder rounded-xl p-4 shadow-xl flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between mb-2">
-            <h2 class="text-xs font-bold text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-desktop mr-1 text-indigo-400"></i> Simulator Tampilan Canvas (1920x1080)</h2>
-            <span class="text-[10px] text-gray-400 bg-inputBg px-2 py-0.5 rounded border border-cardBorder">Scale Live Preview</span>
+            <h2 class="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-desktop text-indigo-400"></i> Frame Monitor Ke-2 
+              <span id="resLabelBadge" class="text-[10px] text-indigo-300 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800">1920 x 1080</span>
+            </h2>
+            <span class="text-[10px] text-gray-400 italic">*Geser / Drag elemen di bawah secara langsung</span>
           </div>
 
-          <div id="canvasViewport" class="canvas-container rounded-lg border border-cardBorder overflow-hidden">
-            <div id="canvasContent" class="canvas-content" style="font-family: 'Poppins', sans-serif;">
-              
+          <!-- MONITOR VIEWPORT CONTAINER -->
+          <div id="monitorViewport" class="monitor-viewport rounded-lg border border-cardBorder">
+            
+            <!-- MONITOR FRAME (GARIS PINGGIR LAYAR) -->
+            <div id="monitorFrame" class="monitor-frame">
+              <div class="monitor-screen-label" id="screenLabelText">MONITOR 2 - 1920x1080</div>
+
               <!-- DUMMY LOWERTHIRD -->
-              <div id="preview-lowerthird" class="absolute flex items-stretch transition-all duration-75" style="left: 64px; top: 920px;">
+              <div id="preview-lowerthird" onclick="selectModuleFromCanvas('lowerthird')" class="overlay-item flex items-stretch" style="left: 64px; top: 920px;">
                 <div class="w-2.5 bg-indigo-600 rounded-l-xl"></div>
                 <div class="bg-slate-900/90 border border-white/10 px-8 py-4 rounded-r-xl min-w-[380px] flex items-center gap-4 shadow-2xl backdrop-blur-md">
-                  <div class="w-14 h-14 bg-indigo-900/50 rounded-lg flex items-center justify-center text-indigo-400 border border-indigo-500/30">
-                    <i class="fa-solid fa-user text-2xl"></i>
+                  <div class="w-12 h-12 bg-indigo-900/50 rounded-lg flex items-center justify-center text-indigo-400 border border-indigo-500/30">
+                    <i class="fa-solid fa-user text-xl"></i>
                   </div>
                   <div>
-                    <h1 class="text-2xl font-extrabold text-white tracking-wide uppercase">Pembicara / Nama</h1>
-                    <p class="text-base font-medium text-indigo-400 mt-0.5">Keterangan Subtitle Lowerthird</p>
+                    <h1 class="text-xl font-extrabold text-white uppercase">Pembicara / Nama</h1>
+                    <p class="text-sm font-medium text-indigo-400">Subtitle Lowerthird</p>
                   </div>
                 </div>
               </div>
 
               <!-- DUMMY TICKER -->
-              <div id="preview-ticker" class="absolute left-0 right-0 h-12 bg-slate-900/95 border-t border-white/10 flex items-center overflow-hidden transition-all duration-75" style="top: 1032px;">
-                <div class="bg-indigo-600 text-white font-bold text-xs uppercase px-5 h-full flex items-center tracking-wider shrink-0 shadow-lg">
+              <div id="preview-ticker" onclick="selectModuleFromCanvas('ticker')" class="overlay-item left-0 right-0 h-12 bg-slate-900/95 border-t border-white/10 flex items-center overflow-hidden" style="top: 1032px; width: 100%;">
+                <div class="bg-indigo-600 text-white font-bold text-xs uppercase px-5 h-full flex items-center tracking-wider shrink-0">
                   <i class="fa-solid fa-bullhorn mr-2"></i> Warta
                 </div>
                 <div class="px-4 text-white font-semibold text-sm tracking-wide">
@@ -236,16 +310,16 @@
               </div>
 
               <!-- DUMMY SLIDE -->
-              <div id="preview-slide" class="absolute inset-0 flex items-center justify-center p-20 transition-all duration-75" style="top: 0px; left: 0px;">
-                <div class="bg-slate-900/95 border border-white/10 rounded-2xl max-w-4xl w-full p-8 text-center flex flex-col items-center justify-center shadow-2xl backdrop-blur-md">
-                  <h2 class="text-3xl font-bold text-white leading-relaxed">
+              <div id="preview-slide" onclick="selectModuleFromCanvas('slide')" class="overlay-item flex items-center justify-center p-10" style="top: 200px; left: 460px;">
+                <div class="bg-slate-900/95 border border-white/10 rounded-2xl max-w-3xl w-full p-8 text-center shadow-2xl backdrop-blur-md">
+                  <h2 class="text-2xl font-bold text-white leading-relaxed">
                     Contoh Teks Slide Presentasi & Carousel
                   </h2>
                 </div>
               </div>
 
               <!-- DUMMY INFO -->
-              <div id="preview-info" class="absolute bg-slate-900/95 border-l-4 border-l-amber-500 border border-white/10 rounded-xl p-5 max-w-md shadow-2xl backdrop-blur-md transition-all duration-75" style="top: 48px; left: 1420px;">
+              <div id="preview-info" onclick="selectModuleFromCanvas('info')" class="overlay-item bg-slate-900/95 border-l-4 border-l-amber-500 border border-white/10 rounded-xl p-5 max-w-md shadow-2xl backdrop-blur-md" style="top: 48px; left: 1420px;">
                 <div class="flex items-start gap-3">
                   <div class="text-amber-400 text-xl"><i class="fa-solid fa-circle-info"></i></div>
                   <div>
@@ -258,9 +332,9 @@
               </div>
 
               <!-- DUMMY COUNTDOWN -->
-              <div id="preview-countdown" class="absolute bg-slate-900/95 border border-indigo-500/30 rounded-2xl px-10 py-5 text-center shadow-2xl backdrop-blur-md transition-all duration-75" style="top: 64px; left: 810px;">
+              <div id="preview-countdown" onclick="selectModuleFromCanvas('countdown')" class="overlay-item bg-slate-900/95 border border-indigo-500/30 rounded-2xl px-10 py-5 text-center shadow-2xl backdrop-blur-md" style="top: 64px; left: 810px;">
                 <div class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Acara Dimulai Dalam</div>
-                <div class="text-5xl font-black text-white font-mono tracking-wider">00:05:00</div>
+                <div class="text-4xl font-black text-white font-mono tracking-wider">00:05:00</div>
               </div>
 
             </div>
@@ -268,7 +342,7 @@
         </div>
 
         <p class="text-[11px] text-gray-500 italic mt-3 text-center">
-          *Setiap perubahan akan diperbarui secara otomatis pada canvas di atas dan dapat langsung disimpan ke OBS Overlay.
+          *Garis magenta putus-putus mewakili batas fisik layar Monitor Ke-2 / Canvas OBS Anda.
         </p>
       </div>
 
@@ -279,14 +353,19 @@
   <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
 
   <footer class="mt-6 text-center text-[11px] text-gray-500 font-medium">
-    Pengaturan Layout OBS &copy; By <a href="https://www.buanamedia.my.id/" target="_blank" class="hover:underline hover:text-blue-500 transition-colors">Buana Media</a>
+    Pengaturan Layout Monitor OBS &copy; By <a href="https://www.buanamedia.my.id/" target="_blank" class="hover:underline hover:text-blue-500 transition-colors">Buana Media</a>
   </footer>
 
   <script>
+    let canvasWidth = 1920;
+    let canvasHeight = 1080;
+    let canvasScaleRatio = 1;
+    let isShowingAllModules = false;
+
     const defaultLayouts = {
       lowerthird: { posX: 64, posY: 920, scale: 1, opacity: 1, fontSize: 1, borderRadius: 12 },
       ticker: { posX: 0, posY: 1032, scale: 1, opacity: 1, fontSize: 1, borderRadius: 0 },
-      slide: { posX: 0, posY: 0, scale: 1, opacity: 1, fontSize: 1, borderRadius: 16 },
+      slide: { posX: 460, posY: 200, scale: 1, opacity: 1, fontSize: 1, borderRadius: 16 },
       info: { posX: 1420, posY: 48, scale: 1, opacity: 1, fontSize: 1, borderRadius: 12 },
       countdown: { posX: 810, posY: 64, scale: 1, opacity: 1, fontSize: 1, borderRadius: 16 }
     };
@@ -294,24 +373,82 @@
     let layoutState = JSON.parse(JSON.stringify(defaultLayouts));
     let activeModule = 'lowerthird';
 
-    function initCanvasScaler() {
-      const container = document.getElementById('canvasViewport');
-      const content = document.getElementById('canvasContent');
+    // FIT CANVAS MONITOR FRAME TO CONTAINER
+    function fitMonitorFrame() {
+      const container = document.getElementById('monitorViewport');
+      const frame = document.getElementById('monitorFrame');
+
+      const maxW = container.clientWidth - 40;
+      const maxH = 550;
+
+      const scaleX = maxW / canvasWidth;
+      const scaleY = maxH / canvasHeight;
+      canvasScaleRatio = Math.min(scaleX, scaleY);
+
+      frame.style.width = canvasWidth + 'px';
+      frame.style.height = canvasHeight + 'px';
+      frame.style.transform = `scale(${canvasScaleRatio})`;
+    }
+
+    function changeCanvasResolution(val) {
+      const customBox = document.getElementById('customResBox');
+      if (val === 'custom') {
+        customBox.classList.remove('hidden');
+        applyCustomRes();
+      } else {
+        customBox.classList.add('hidden');
+        const [w, h] = val.split('x').map(Number);
+        canvasWidth = w;
+        canvasHeight = h;
+        updateCanvasDimensionsUI();
+      }
+    }
+
+    function applyCustomRes() {
+      canvasWidth = parseInt(document.getElementById('customWidth').value) || 1920;
+      canvasHeight = parseInt(document.getElementById('customHeight').value) || 1080;
+      updateCanvasDimensionsUI();
+    }
+
+    function updateCanvasDimensionsUI() {
+      document.getElementById('resLabelBadge').innerText = `${canvasWidth} x ${canvasHeight}`;
+      document.getElementById('screenLabelText').innerText = `MONITOR 2 - ${canvasWidth}x${canvasHeight}`;
       
-      function resize() {
-        const containerWidth = container.clientWidth;
-        const scale = containerWidth / 1920;
-        content.style.transform = `scale(${scale})`;
+      document.getElementById('posX').max = canvasWidth;
+      document.getElementById('posY').max = canvasHeight;
+
+      fitMonitorFrame();
+    }
+
+    function toggleShowAllModules() {
+      isShowingAllModules = !isShowingAllModules;
+
+      const btnText = document.getElementById('toggleShowAllText');
+      const btnIcon = document.getElementById('toggleShowAllIcon');
+      const btn = document.getElementById('toggleShowAllBtn');
+
+      if (isShowingAllModules) {
+        btnText.innerText = 'Sembunyikan Modul Lain';
+        btnIcon.className = 'fa-solid fa-eye-slash';
+        btn.className = 'w-full bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/80 text-emerald-300 font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2 shadow';
+      } else {
+        btnText.innerText = 'Tampilkan Semua Modul';
+        btnIcon.className = 'fa-solid fa-eye';
+        btn.className = 'w-full bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-300 font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2 shadow';
       }
 
-      window.addEventListener('resize', resize);
-      resize();
+      highlightActiveModule();
     }
 
     function onModuleChange(mod) {
       activeModule = mod;
       loadModuleSettingsToForm();
-      highlightActiveModuleInCanvas();
+      highlightActiveModule();
+    }
+
+    function selectModuleFromCanvas(mod) {
+      document.getElementById('moduleSelect').value = mod;
+      onModuleChange(mod);
     }
 
     function loadModuleSettingsToForm() {
@@ -336,7 +473,7 @@
       document.getElementById('borderRadiusVal').innerText = data.borderRadius + 'px';
     }
 
-    function updateLayoutPreview() {
+    function updateFromSliders() {
       const posX = parseInt(document.getElementById('posX').value);
       const posY = parseInt(document.getElementById('posY').value);
       const scale = parseFloat(document.getElementById('scale').value);
@@ -352,11 +489,10 @@
       document.getElementById('borderRadiusVal').innerText = borderRadius + 'px';
 
       layoutState[activeModule] = { posX, posY, scale, opacity, fontSize, borderRadius };
-
-      applyLayoutToDummyCanvas(activeModule);
+      applyLayoutToPreview(activeModule);
     }
 
-    function applyLayoutToDummyCanvas(mod) {
+    function applyLayoutToPreview(mod) {
       const el = document.getElementById('preview-' + mod);
       if (!el) return;
 
@@ -368,23 +504,27 @@
       el.style.opacity = data.opacity;
       el.style.fontSize = data.fontSize + 'em';
       
-      const cardContainer = el.querySelector('.bg-slate-900\\/90, .bg-slate-900\\/95') || el;
-      if (cardContainer) {
-        cardContainer.style.borderRadius = data.borderRadius + 'px';
+      const card = el.querySelector('.bg-slate-900\\/90, .bg-slate-900\\/95') || el;
+      if (card) {
+        card.style.borderRadius = data.borderRadius + 'px';
       }
     }
 
-    function highlightActiveModuleInCanvas() {
+    function highlightActiveModule() {
       ['lowerthird', 'ticker', 'slide', 'info', 'countdown'].forEach(m => {
         const el = document.getElementById('preview-' + m);
         if (!el) return;
+
         if (m === activeModule) {
-          el.style.outline = '3px solid #6366f1';
-          el.style.outlineOffset = '4px';
-          el.style.zIndex = '30';
+          el.classList.add('selected');
+          el.classList.remove('hidden-preview');
         } else {
-          el.style.outline = 'none';
-          el.style.zIndex = '10';
+          el.classList.remove('selected');
+          if (isShowingAllModules) {
+            el.classList.remove('hidden-preview');
+          } else {
+            el.classList.add('hidden-preview');
+          }
         }
       });
     }
@@ -394,13 +534,66 @@
       const posYInput = document.getElementById('posY');
 
       if (pos === 'top-left') { posXInput.value = 64; posYInput.value = 64; }
-      else if (pos === 'top-center') { posXInput.value = 810; posYInput.value = 64; }
-      else if (pos === 'top-right') { posXInput.value = 1420; posYInput.value = 64; }
-      else if (pos === 'bottom-left') { posXInput.value = 64; posYInput.value = 920; }
-      else if (pos === 'bottom-center') { posXInput.value = 810; posYInput.value = 920; }
-      else if (pos === 'bottom-right') { posXInput.value = 1420; posYInput.value = 920; }
+      else if (pos === 'top-center') { posXInput.value = Math.round(canvasWidth / 2 - 200); posYInput.value = 64; }
+      else if (pos === 'top-right') { posXInput.value = canvasWidth - 450; posYInput.value = 64; }
+      else if (pos === 'bottom-left') { posXInput.value = 64; posYInput.value = canvasHeight - 160; }
+      else if (pos === 'bottom-center') { posXInput.value = Math.round(canvasWidth / 2 - 200); posYInput.value = canvasHeight - 160; }
+      else if (pos === 'bottom-right') { posXInput.value = canvasWidth - 450; posYInput.value = canvasHeight - 160; }
 
-      updateLayoutPreview();
+      updateFromSliders();
+    }
+
+    // INTERACTIVE DRAG & DROP ON CANVAS
+    function setupDragAndDrop() {
+      let isDragging = false;
+      let startX, startY, origX, origY;
+      let draggedMod = null;
+
+      ['lowerthird', 'ticker', 'slide', 'info', 'countdown'].forEach(m => {
+        const el = document.getElementById('preview-' + m);
+        if (!el) return;
+
+        el.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          draggedMod = m;
+          selectModuleFromCanvas(m);
+
+          startX = e.clientX;
+          startY = e.clientY;
+          origX = layoutState[m].posX;
+          origY = layoutState[m].posY;
+
+          e.preventDefault();
+        });
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging || !draggedMod) return;
+
+        const dx = (e.clientX - startX) / canvasScaleRatio;
+        const dy = (e.clientY - startY) / canvasScaleRatio;
+
+        let newX = Math.round(origX + dx);
+        let newY = Math.round(origY + dy);
+
+        newX = Math.max(0, Math.min(canvasWidth - 50, newX));
+        newY = Math.max(0, Math.min(canvasHeight - 50, newY));
+
+        layoutState[draggedMod].posX = newX;
+        layoutState[draggedMod].posY = newY;
+
+        document.getElementById('posX').value = newX;
+        document.getElementById('posY').value = newY;
+        document.getElementById('posXVal').innerText = newX + 'px';
+        document.getElementById('posYVal').innerText = newY + 'px';
+
+        applyLayoutToPreview(draggedMod);
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+        draggedMod = null;
+      });
     }
 
     function saveLayoutSettings() {
@@ -410,15 +603,15 @@
       }
 
       database.ref('overlayLayout').set(layoutState)
-        .then(() => showToast('Tata letak layout overlay berhasil disimpan!'))
+        .then(() => showToast('Tata letak layout Monitor Ke-2 berhasil disimpan!'))
         .catch(err => console.error('Gagal menyimpan layout:', err));
     }
 
     function resetLayoutSettings() {
-      if (confirm('Apakah Anda yakin ingin mengembalikan semua layout ke posisi default?')) {
+      if (confirm('Atur ulang tata letak ke posisi standar?')) {
         layoutState = JSON.parse(JSON.stringify(defaultLayouts));
         loadModuleSettingsToForm();
-        ['lowerthird', 'ticker', 'slide', 'info', 'countdown'].forEach(m => applyLayoutToDummyCanvas(m));
+        ['lowerthird', 'ticker', 'slide', 'info', 'countdown'].forEach(m => applyLayoutToPreview(m));
         saveLayoutSettings();
       }
     }
@@ -431,7 +624,7 @@
         if (data) {
           layoutState = Object.assign({}, defaultLayouts, data);
           loadModuleSettingsToForm();
-          ['lowerthird', 'ticker', 'slide', 'info', 'countdown'].forEach(m => applyLayoutToDummyCanvas(m));
+          ['lowerthird', 'ticker', 'slide', 'info', 'countdown'].forEach(m => applyLayoutToPreview(m));
         }
       });
     }
@@ -451,10 +644,13 @@
     }
 
     window.onload = function() {
-      initCanvasScaler();
+      fitMonitorFrame();
+      window.addEventListener('resize', fitMonitorFrame);
+
       loadModuleSettingsToForm();
-      ['lowerthird', 'ticker', 'slide', 'info', 'countdown'].forEach(m => applyLayoutToDummyCanvas(m));
-      highlightActiveModuleInCanvas();
+      ['lowerthird', 'ticker', 'slide', 'info', 'countdown'].forEach(m => applyLayoutToPreview(m));
+      highlightActiveModule();
+      setupDragAndDrop();
       listenToFirebaseLayout();
     };
   </script>
