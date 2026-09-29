@@ -8,7 +8,7 @@
   <!-- Google Font Inter & Poppins -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -71,7 +71,7 @@
 <body class="relative w-[1920px] h-[1080px]">
 
   <!-- 1. LOWERTHIRD DISPLAY -->
-  <div id="overlay-lowerthird" class="fade-slide-up absolute flex items-stretch" style="left: 64px; top: 920px;">
+  <div id="overlay-lowerthird" class="fade-slide-up absolute flex items-stretch">
     <div class="w-2.5 bg-gradient-to-b from-indigo-500 to-indigo-700 rounded-l-xl"></div>
     <div class="glass-card px-8 py-4 rounded-r-xl border-l-0 min-w-[380px] flex items-center gap-4">
       <img id="lt-logo-display" src="" class="w-14 h-14 rounded-lg object-cover hidden border border-white/20 shadow-md shrink-0" alt="Logo">
@@ -83,7 +83,7 @@
   </div>
 
   <!-- 2. TICKER DISPLAY -->
-  <div id="overlay-ticker" class="fade-slide-up absolute glass-card border-x-0 border-b-0 h-12 flex items-center overflow-hidden" style="left: 0px; top: 1032px; width: 100%;">
+  <div id="overlay-ticker" class="fade-slide-up absolute glass-card border-x-0 border-b-0 h-12 flex items-center overflow-hidden" style="width: 100%;">
     <div class="bg-indigo-600 text-white font-bold text-xs uppercase px-5 h-full flex items-center tracking-wider shrink-0 z-10 shadow-lg">
       <i class="fa-solid fa-bullhorn mr-2"></i> Warta
     </div>
@@ -95,7 +95,7 @@
   </div>
 
   <!-- 3. PRESENTASI / CAROUSEL DISPLAY -->
-  <div id="overlay-slide" class="fade-slide-up absolute flex items-center justify-center p-10" style="left: 460px; top: 200px;">
+  <div id="overlay-slide" class="fade-slide-up absolute flex items-center justify-center p-10">
     <div class="glass-card rounded-2xl max-w-4xl w-full p-8 text-center flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
       <img id="slide-img-display" src="" class="max-h-[500px] w-auto object-contain rounded-lg mb-4 hidden shadow-md" alt="Slide Image">
       <h2 id="slide-text-display" class="text-3xl font-bold text-white leading-relaxed drop-shadow-md">
@@ -105,7 +105,7 @@
   </div>
 
   <!-- 4. INFO BANNER -->
-  <div id="overlay-info" class="fade-slide-up absolute glass-card rounded-xl p-5 max-w-md border-l-4 border-l-amber-500 shadow-2xl" style="left: 1420px; top: 48px;">
+  <div id="overlay-info" class="fade-slide-up absolute glass-card rounded-xl p-5 max-w-md border-l-4 border-l-amber-500 shadow-2xl">
     <div class="flex items-start gap-3">
       <div class="text-amber-400 text-xl pt-0.5"><i class="fa-solid fa-circle-info"></i></div>
       <div>
@@ -118,7 +118,7 @@
   </div>
 
   <!-- 5. COUNTDOWN DISPLAY -->
-  <div id="overlay-countdown" class="fade-slide-up absolute glass-card rounded-2xl px-10 py-5 text-center shadow-2xl border border-indigo-500/30" style="left: 810px; top: 64px;">
+  <div id="overlay-countdown" class="fade-slide-up absolute glass-card rounded-2xl px-10 py-5 text-center shadow-2xl border border-indigo-500/30">
     <div id="cd-title-display" class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Acara Akan Dimulai</div>
     <div id="cd-timer-display" class="text-5xl font-black text-white font-mono tracking-wider drop-shadow-lg">
       00:05:00
@@ -129,6 +129,8 @@
     let cdInterval = null;
     let carouselInterval = null;
     let autoHideTimeout = null;
+
+    let currentLayoutState = null;
 
     function getCurrentTarget() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -158,42 +160,44 @@
       return true;
     }
 
+    function applyElementLayout(elementId, config) {
+      const el = document.getElementById(elementId);
+      if (!el || !config) return;
+
+      el.style.setProperty('position', 'absolute', 'important');
+      el.style.setProperty('left', config.posX + 'px', 'important');
+      el.style.setProperty('top', config.posY + 'px', 'important');
+      el.style.setProperty('transform', `scale(${config.scale})`, 'important');
+      el.style.setProperty('transform-origin', 'top left', 'important');
+      el.style.setProperty('font-size', config.fontSize + 'em');
+
+      const card = el.querySelector('.glass-card') || el;
+      if (card) {
+        card.style.setProperty('border-radius', config.borderRadius + 'px');
+      }
+    }
+
+    function refreshAllLayouts() {
+      if (!currentLayoutState) return;
+      applyElementLayout('overlay-lowerthird', currentLayoutState.lowerthird);
+      applyElementLayout('overlay-ticker', currentLayoutState.ticker);
+      applyElementLayout('overlay-slide', currentLayoutState.slide);
+      applyElementLayout('overlay-info', currentLayoutState.info);
+      applyElementLayout('overlay-countdown', currentLayoutState.countdown);
+    }
+
     if (typeof database !== 'undefined') {
       
-      // 1. REALTIME LISTENER UNTUK MEMPERBARUI POSISI DAN UKURAN LAYOUT
+      // 1. LISTEN LAYOUT REALTIME
       database.ref('overlayLayout').on('value', (snapshot) => {
         const layout = snapshot.val();
         if (!layout) return;
 
-        const moduleMap = {
-          lowerthird: 'overlay-lowerthird',
-          ticker: 'overlay-ticker',
-          slide: 'overlay-slide',
-          info: 'overlay-info',
-          countdown: 'overlay-countdown'
-        };
-
-        Object.keys(moduleMap).forEach(key => {
-          const el = document.getElementById(moduleMap[key]);
-          const config = layout[key];
-          if (el && config) {
-            el.style.position = 'absolute';
-            el.style.left = config.posX + 'px';
-            el.style.top = config.posY + 'px';
-            el.style.transform = `scale(${config.scale})`;
-            el.style.transformOrigin = 'top left';
-            el.style.opacity = config.opacity;
-            el.style.fontSize = config.fontSize + 'em';
-
-            const card = el.querySelector('.glass-card') || el;
-            if (card) {
-              card.style.borderRadius = config.borderRadius + 'px';
-            }
-          }
-        });
+        currentLayoutState = layout;
+        refreshAllLayouts();
       });
 
-      // 2. REALTIME LISTENER UNTUK MENAMPILKAN ISI KONTEN OVERLAY
+      // 2. LISTEN ACTIVE OVERLAY DISPLAY
       database.ref('activeOverlay').on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
@@ -207,6 +211,9 @@
           hideAll();
           return;
         }
+
+        // Paksa terapkan layout setiap kali ada tampilan baru
+        refreshAllLayouts();
 
         if (data.type === 'lowerthird') {
           hideAll();
