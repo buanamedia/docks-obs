@@ -57,21 +57,22 @@
       border-radius: 3px;
     }
     
-    /* SIMULATOR MONITOR KE-2 CONTAINER */
+    /* SIMULATOR MONITOR KE-2 CONTAINER (LOCKED LANDSCAPE 16:9) */
     .monitor-viewport {
       position: relative;
       width: 100%;
+      aspect-ratio: 16 / 9; /* Mengunci rasio ke 16:9 Landscape */
       background: #000;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 10px;
       overflow: hidden;
     }
 
     /* BORDER FRAME MONITOR KE-2 */
     .monitor-frame {
-      position: relative;
+      position: absolute;
       background: #050811;
       border: 3px dashed #6366f1; /* Garis Pinggir Penanda Monitor Ke-2 */
       box-shadow: 0 0 25px rgba(99, 102, 241, 0.25);
@@ -373,16 +374,18 @@
     let layoutState = JSON.parse(JSON.stringify(defaultLayouts));
     let activeModule = 'lowerthird';
 
-    // FIT CANVAS MONITOR FRAME TO CONTAINER
+    // FIT CANVAS MONITOR FRAME TO CONTAINER (SELALU LANDSCAPE PROPORSI)
     function fitMonitorFrame() {
       const container = document.getElementById('monitorViewport');
       const frame = document.getElementById('monitorFrame');
 
-      const maxW = container.clientWidth - 40;
-      const maxH = 550;
+      if (!container || !frame) return;
 
-      const scaleX = maxW / canvasWidth;
-      const scaleY = maxH / canvasHeight;
+      const containerWidth = container.clientWidth - 20;
+      const containerHeight = container.clientHeight - 20;
+
+      const scaleX = containerWidth / canvasWidth;
+      const scaleY = containerHeight / canvasHeight;
       canvasScaleRatio = Math.min(scaleX, scaleY);
 
       frame.style.width = canvasWidth + 'px';
