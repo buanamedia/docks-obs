@@ -37,7 +37,7 @@
 
     /* ANIMASI LOWERTHIRD & INFO */
     .fade-slide-up {
-      transition: opacity 0.4s ease, filter 0.4s ease;
+      transition: opacity 0.3s ease;
       opacity: 0;
       pointer-events: none;
       visibility: hidden;
@@ -71,7 +71,7 @@
 <body class="relative w-[1920px] h-[1080px]">
 
   <!-- 1. LOWERTHIRD DISPLAY -->
-  <div id="overlay-lowerthird" class="fade-slide-up absolute top-[920px] left-[64px] flex items-stretch">
+  <div id="overlay-lowerthird" class="fade-slide-up absolute flex items-stretch" style="left: 64px; top: 920px;">
     <div class="w-2.5 bg-gradient-to-b from-indigo-500 to-indigo-700 rounded-l-xl"></div>
     <div class="glass-card px-8 py-4 rounded-r-xl border-l-0 min-w-[380px] flex items-center gap-4">
       <img id="lt-logo-display" src="" class="w-14 h-14 rounded-lg object-cover hidden border border-white/20 shadow-md shrink-0" alt="Logo">
@@ -83,7 +83,7 @@
   </div>
 
   <!-- 2. TICKER DISPLAY -->
-  <div id="overlay-ticker" class="fade-slide-up absolute top-[1032px] left-0 right-0 glass-card border-x-0 border-b-0 h-12 flex items-center overflow-hidden">
+  <div id="overlay-ticker" class="fade-slide-up absolute glass-card border-x-0 border-b-0 h-12 flex items-center overflow-hidden" style="left: 0px; top: 1032px; width: 100%;">
     <div class="bg-indigo-600 text-white font-bold text-xs uppercase px-5 h-full flex items-center tracking-wider shrink-0 z-10 shadow-lg">
       <i class="fa-solid fa-bullhorn mr-2"></i> Warta
     </div>
@@ -95,7 +95,7 @@
   </div>
 
   <!-- 3. PRESENTASI / CAROUSEL DISPLAY -->
-  <div id="overlay-slide" class="fade-slide-up absolute top-[200px] left-[460px] flex items-center justify-center p-10">
+  <div id="overlay-slide" class="fade-slide-up absolute flex items-center justify-center p-10" style="left: 460px; top: 200px;">
     <div class="glass-card rounded-2xl max-w-4xl w-full p-8 text-center flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
       <img id="slide-img-display" src="" class="max-h-[500px] w-auto object-contain rounded-lg mb-4 hidden shadow-md" alt="Slide Image">
       <h2 id="slide-text-display" class="text-3xl font-bold text-white leading-relaxed drop-shadow-md">
@@ -105,7 +105,7 @@
   </div>
 
   <!-- 4. INFO BANNER -->
-  <div id="overlay-info" class="fade-slide-up absolute top-[48px] left-[1420px] glass-card rounded-xl p-5 max-w-md border-l-4 border-l-amber-500 shadow-2xl">
+  <div id="overlay-info" class="fade-slide-up absolute glass-card rounded-xl p-5 max-w-md border-l-4 border-l-amber-500 shadow-2xl" style="left: 1420px; top: 48px;">
     <div class="flex items-start gap-3">
       <div class="text-amber-400 text-xl pt-0.5"><i class="fa-solid fa-circle-info"></i></div>
       <div>
@@ -118,7 +118,7 @@
   </div>
 
   <!-- 5. COUNTDOWN DISPLAY -->
-  <div id="overlay-countdown" class="fade-slide-up absolute top-[64px] left-[810px] glass-card rounded-2xl px-10 py-5 text-center shadow-2xl border border-indigo-500/30">
+  <div id="overlay-countdown" class="fade-slide-up absolute glass-card rounded-2xl px-10 py-5 text-center shadow-2xl border border-indigo-500/30" style="left: 810px; top: 64px;">
     <div id="cd-title-display" class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Acara Akan Dimulai</div>
     <div id="cd-timer-display" class="text-5xl font-black text-white font-mono tracking-wider drop-shadow-lg">
       00:05:00
@@ -130,7 +130,6 @@
     let carouselInterval = null;
     let autoHideTimeout = null;
 
-    // Evaluasi Target Layar
     function getCurrentTarget() {
       const urlParams = new URLSearchParams(window.location.search);
       const queryTarget = urlParams.get('target');
@@ -161,7 +160,7 @@
 
     if (typeof database !== 'undefined') {
       
-      // 1. LISTENER REALTIME POSISI & UKURAN LAYOUT DARI FIREBASE
+      // 1. REALTIME LISTENER UNTUK MEMPERBARUI POSISI DAN UKURAN LAYOUT
       database.ref('overlayLayout').on('value', (snapshot) => {
         const layout = snapshot.val();
         if (!layout) return;
@@ -194,7 +193,7 @@
         });
       });
 
-      // 2. LISTENER KONTROL DISPLAY OVERLAY
+      // 2. REALTIME LISTENER UNTUK MENAMPILKAN ISI KONTEN OVERLAY
       database.ref('activeOverlay').on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
@@ -209,7 +208,6 @@
           return;
         }
 
-        // --- LOWERTHIRD ---
         if (data.type === 'lowerthird') {
           hideAll();
           document.getElementById('lt-title-display').innerText = data.name || '';
@@ -232,7 +230,6 @@
           }
         }
 
-        // --- TICKER ---
         if (data.type === 'ticker') {
           hideAll();
           document.getElementById('ticker-text-display').innerHTML = data.content || '';
@@ -245,7 +242,6 @@
           }
         }
 
-        // --- PRESENTASI ---
         if (data.type === 'presentasi' && data.slide) {
           hideAll();
           const imgEl = document.getElementById('slide-img-display');
@@ -262,7 +258,6 @@
           document.getElementById('overlay-slide').classList.add('active');
         }
 
-        // --- CAROUSEL ---
         if (data.type === 'carousel' && data.slides && data.slides.length > 0) {
           hideAll();
           let currentIndex = 0;
@@ -292,7 +287,6 @@
           }, intervalTime);
         }
 
-        // --- INFO ---
         if (data.type === 'info') {
           hideAll();
           document.getElementById('info-title-display').innerText = data.title || 'INFO';
@@ -306,7 +300,6 @@
           }
         }
 
-        // --- COUNTDOWN ---
         if (data.type === 'countdown') {
           hideAll();
           document.getElementById('cd-title-display').innerText = data.title || 'COUNTDOWN';
