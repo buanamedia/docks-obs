@@ -1,4 +1,4 @@
-// Konfigurasi Firebase dari Firebase Console
+// Konfigurasi Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyC9r6c7zccoOtWaCctVUzebr1AsHlDSnrE",
   authDomain: "obs-docks-control.firebaseapp.com",
@@ -13,6 +13,11 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
+
+// Autentikasi Anonim Otomatis
+firebase.auth().signInAnonymously().catch((error) => {
+  console.error("Gagal login anonim ke Firebase:", error.code, error.message);
+});
 
 // Global database reference untuk digunakan di dock.html & overlay.html
 const database = firebase.database();
