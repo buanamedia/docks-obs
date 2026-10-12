@@ -36,8 +36,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  <!-- File Konfigurasi Firebase External -->
+  <!-- External Configurations & Auth Helper -->
   <script src="js/firebase-config.js"></script>
+  <script src="js/auth-check.js"></script>
 
   <style>
     body {
@@ -115,13 +116,17 @@
     .overlay-item.hidden-preview {
       display: none !important;
     }
+    .modal-backdrop {
+      background-color: rgba(3, 7, 18, 0.85);
+      backdrop-filter: blur(4px);
+    }
   </style>
 </head>
 <body class="min-h-screen p-3 md:p-5 flex flex-col justify-between">
 
   <div class="max-w-7xl mx-auto w-full space-y-4">
     
-    <!-- HEADER -->
+    <!-- HEADER NAVIGASI -->
     <div class="bg-cardBg border border-cardBorder rounded-xl p-4 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg flex items-center justify-center shrink-0">
@@ -134,14 +139,20 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <a href="dock.html" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5">
-          <i class="fa-solid fa-arrow-left"></i> Dock
+        <a href="dock.html" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-gray-700">
+          <i class="fa-solid fa-sliders text-indigo-400"></i> Dock
+        </a>
+        <a id="adminNavBtn" href="admin.html" class="hidden bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-300 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+          <i class="fa-solid fa-users-gear"></i> Kelola User
         </a>
         <button onclick="resetLayoutSettings()" class="bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-400 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5">
           <i class="fa-solid fa-rotate-left"></i> Reset
         </button>
         <button onclick="saveLayoutSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow-lg flex items-center gap-1.5">
           <i class="fa-solid fa-floppy-disk"></i> Simpan Layout
+        </button>
+        <button onclick="handleLogout()" class="bg-red-950/70 hover:bg-red-900 border border-red-800/80 text-red-400 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+          <i class="fa-solid fa-right-from-bracket"></i>
         </button>
       </div>
     </div>
@@ -350,6 +361,34 @@
 
     </div>
 
+  </div>
+
+  <!-- MODAL LOGIN TERPUSAT -->
+  <div id="loginModal" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-cardBg border border-cardBorder p-6 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl">
+      <div class="text-center">
+        <h3 class="text-base font-bold text-white uppercase"><i class="fa-solid fa-lock text-indigo-400 mr-2"></i>Login Operator</h3>
+        <p class="text-xs text-gray-400 mt-1">Satu kali login untuk semua halaman panel kontrol</p>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-1">EMAIL</label>
+          <input type="email" id="loginEmail" placeholder="admin@buanamedia.id" class="w-full bg-inputBg border border-cardBorder text-xs text-white p-2.5 rounded-lg outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-1">PASSWORD</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" class="w-full bg-inputBg border border-cardBorder text-xs text-white p-2.5 rounded-lg outline-none focus:border-indigo-500">
+        </div>
+      </div>
+      <div class="space-y-2 pt-2">
+        <button onclick="handleLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 rounded-lg transition shadow-lg">
+          Login Sekarang
+        </button>
+        <button onclick="continueAsGuest()" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs py-2 rounded-lg transition">
+          Lanjut Tanpa Login (Mode Tamu)
+        </button>
+      </div>
+    </div>
   </div>
 
   <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
@@ -655,6 +694,15 @@
       }, 2500);
     }
 
+    // TERHUBUNG DENGAN AUTH-CHECK.JS
+    function onUserLoggedIn(user) {
+      listenToFirebaseLayout();
+    }
+
+    function onUserGuest() {
+      listenToFirebaseLayout();
+    }
+
     window.onload = function() {
       fitMonitorFrame();
       window.addEventListener('resize', fitMonitorFrame);
@@ -663,7 +711,6 @@
       ['lowerthird', 'ticker', 'slide', 'info', 'countdown'].forEach(m => applyLayoutToPreview(m));
       highlightActiveModule();
       setupDragAndDrop();
-      listenToFirebaseLayout();
     };
   </script>
 </body>
