@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Operator - Buana Media Control Panel</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            panelBg: '#090d16',
+            cardBg: '#111827',
+            cardBorder: '#1f293d',
+            inputBg: '#0b1120'
+          },
+          fontFamily: {
+            sans: ['Inter', 'Segoe UI', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Font Inter & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Firebase SDK (Compat Version) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- External Configurations & Auth Check -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth-check.js"></script>
+
+  <style>
+    body {
+      background-color: #090d16;
+      color: #f3f4f6;
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4">
+
+  <div class="flex-1 flex items-center justify-center">
+    <div class="w-full max-w-md bg-cardBg border border-cardBorder rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
+      
+      <!-- LOGO & BRANDING -->
+      <div class="text-center space-y-2">
+        <div class="w-14 h-14 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+          <i class="fa-solid fa-sliders text-2xl"></i>
+        </div>
+        <h1 class="text-lg font-extrabold text-white tracking-wider uppercase">OBS Control Panel</h1>
+        <p class="text-xs text-gray-400">Masuk untuk mengontrol Tampilan Overlay OBS & Multi-Display</p>
+      </div>
+
+      <!-- NOTIFIKASI ERROR/PESAN -->
+      <div id="loginAlert" class="hidden bg-red-950/80 border border-red-800 text-red-300 text-xs p-3 rounded-xl flex items-center gap-2">
+        <i class="fa-solid fa-circle-exclamation text-sm shrink-0"></i>
+        <span id="loginAlertText">Email atau password salah!</span>
+      </div>
+
+      <!-- FORM LOGIN -->
+      <form onsubmit="submitStandaloneLogin(event)" class="space-y-4">
+        <div>
+          <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Email Operator</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+            <input type="email" id="pageEmail" required placeholder="admin@buanamedia.id" class="w-full bg-inputBg border border-cardBorder text-xs text-white pl-9 pr-3 py-3 rounded-xl outline-none focus:border-indigo-500 transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Password</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+            <input type="password" id="pagePassword" required placeholder="••••••••" class="w-full bg-inputBg border border-cardBorder text-xs text-white pl-9 pr-3 py-3 rounded-xl outline-none focus:border-indigo-500 transition">
+          </div>
+        </div>
+
+        <div class="pt-2 space-y-2">
+          <button type="submit" id="btnSubmitLogin" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+            <i class="fa-solid fa-right-to-bracket"></i> Masuk Sekarang
+          </button>
+          
+          <button type="button" onclick="continueAsGuestMode()" class="w-full bg-gray-800/80 hover:bg-gray-800 text-gray-300 font-semibold text-xs py-2.5 rounded-xl transition border border-gray-700/60">
+            Masuk Mode Tamu (Lihat-Lihat Saja)
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <footer class="text-center text-[11px] text-gray-500 font-medium py-2">
+    Panel Kontrol OBS &copy; By <a href="https://www.buanamedia.my.id/" target="_blank" class="hover:underline hover:text-blue-500 transition-colors">Buana Media</a>
+  </footer>
+
+  <script>
+    // Buka akses jika sudah login
+    function onUserLoggedIn(user) {
+      window.location.href = 'dock.html';
+    }
+
+    function submitStandaloneLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('pageEmail').value.trim();
+      const password = document.getElementById('pagePassword').value;
+      const alertBox = document.getElementById('loginAlert');
+      const alertText = document.getElementById('loginAlertText');
+      const btn = document.getElementById('btnSubmitLogin');
+
+      if (!email || !password) return;
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Memproses...';
+      alertBox.classList.add('hidden');
+
+      if (typeof auth !== 'undefined') {
+        auth.signInWithEmailAndPassword(email, password)
+          .then(() => {
+            window.location.href = 'dock.html';
+          })
+          .catch((err) => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Masuk Sekarang';
+            alertText.innerText = err.message || 'Login gagal. Periksa email & password Anda.';
+            alertBox.classList.remove('hidden');
+          });
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Masuk Sekarang';
+        alertText.innerText = 'Firebase Auth belum siap atau terkonfigurasi.';
+        alertBox.classList.remove('hidden');
+      }
+    }
+
+    function continueAsGuestMode() {
+      sessionStorage.setItem('obs_guest_mode', 'true');
+      window.location.href = 'dock.html';
+    }
+  </script>
+</body>
+</html>
