@@ -21,7 +21,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  <!-- File Konfigurasi Firebase External -->
+  <!-- External Configurations -->
   <script src="js/firebase-config.js"></script>
 
   <style>
@@ -30,7 +30,7 @@
       padding: 0;
       overflow: hidden;
       font-family: 'Poppins', 'Inter', sans-serif;
-      background: transparent;
+      background: transparent !important;
       width: 1920px;
       height: 1080px;
       user-select: none;
@@ -38,7 +38,7 @@
 
     /* ANIMASI LOWERTHIRD & INFO */
     .fade-slide-up {
-      transition: opacity 0.3s ease;
+      transition: opacity 0.3s ease, transform 0.3s ease;
       opacity: 0;
       pointer-events: none;
       visibility: hidden;
@@ -213,7 +213,7 @@
           return;
         }
 
-        // Paksa terapkan layout setiap kali ada tampilan baru
+        // Terapkan tata letak terbaru
         refreshAllLayouts();
 
         if (data.type === 'lowerthird') {
