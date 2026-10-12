@@ -47,6 +47,10 @@
       font-family: 'Inter', sans-serif;
       user-select: none;
     }
+    .modal-backdrop {
+      background-color: rgba(3, 7, 18, 0.85);
+      backdrop-filter: blur(4px);
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4">
@@ -80,10 +84,19 @@
         </div>
 
         <div>
-          <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Password</label>
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Password</label>
+            <!-- TOMBOL LUPA PASSWORD -->
+            <button type="button" onclick="openResetPasswordModal()" class="text-[11px] text-indigo-400 hover:text-indigo-300 transition">Lupa Password?</button>
+          </div>
           <div class="relative">
             <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-            <input type="password" id="pagePassword" required placeholder="••••••••" class="w-full bg-inputBg border border-cardBorder text-xs text-white pl-9 pr-3 py-3 rounded-xl outline-none focus:border-indigo-500 transition">
+            <input type="password" id="pagePassword" required placeholder="••••••••" class="w-full bg-inputBg border border-cardBorder text-xs text-white pl-9 pr-10 py-3 rounded-xl outline-none focus:border-indigo-500 transition">
+            
+            <!-- IKON MATA TOGGLE PASSWORD -->
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition focus:outline-none">
+              <i id="togglePasswordIcon" class="fa-solid fa-eye text-xs"></i>
+            </button>
           </div>
         </div>
 
@@ -101,12 +114,122 @@
     </div>
   </div>
 
+  <!-- MODAL RESET PASSWORD -->
+  <div id="resetPasswordModal" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-cardBg border border-cardBorder w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-cardBorder pb-3">
+        <h3 class="text-sm font-bold text-white uppercase"><i class="fa-solid fa-key text-indigo-400 mr-2"></i>Reset Password</h3>
+        <button onclick="closeResetPasswordModal()" class="text-gray-400 hover:text-white text-xs font-bold">✕</button>
+      </div>
+      
+      <p class="text-xs text-gray-300 leading-relaxed">
+        Masukkan email akun Anda. Kami akan mengirimkan instruksi dan tautan untuk mereset password ke email tersebut.
+      </p>
+
+      <div id="resetAlert" class="hidden text-xs p-3 rounded-xl flex items-center gap-2">
+        <i id="resetAlertIcon" class="fa-solid text-sm shrink-0"></i>
+        <span id="resetAlertText"></span>
+      </div>
+
+      <div>
+        <label class="text-[10px] font-bold text-gray-400 block mb-1">EMAIL TERDAFTAR</label>
+        <input type="email" id="resetEmailInput" placeholder="admin@buanamedia.id" class="w-full bg-inputBg border border-cardBorder text-xs text-white p-2.5 rounded-lg outline-none focus:border-indigo-500">
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeResetPasswordModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 font-semibold rounded-lg transition">Batal</button>
+        <button onclick="handleSendPasswordReset()" id="btnSendReset" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition shadow-md">
+          Kirim Email
+        </button>
+      </div>
+    </div>
+  </div>
+
   <footer class="text-center text-[11px] text-gray-500 font-medium py-2">
     Panel Kontrol OBS &copy; By <a href="https://www.buanamedia.my.id/" target="_blank" class="hover:underline hover:text-blue-500 transition-colors">Buana Media</a>
   </footer>
 
   <script>
-    // Buka akses otomatis jika sesi login terdeteksi
+    // 1. TOGGLE MATA LIHAT PASSWORD
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('pagePassword');
+      const toggleIcon = document.getElementById('togglePasswordIcon');
+
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+      }
+    }
+
+    // 2. BUKA / TUTUP MODAL RESET PASSWORD
+    function openResetPasswordModal() {
+      const emailVal = document.getElementById('pageEmail').value.trim();
+      if (emailVal) {
+        document.getElementById('resetEmailInput').value = emailVal;
+      }
+      document.getElementById('resetAlert').classList.add('hidden');
+      document.getElementById('resetPasswordModal').classList.remove('hidden');
+    }
+
+    function closeResetPasswordModal() {
+      document.getElementById('resetPasswordModal').classList.add('hidden');
+    }
+
+    // 3. PROSES KIRIM EMAIL RESET PASSWORD VIA FIREBASE
+    function handleSendPasswordReset() {
+      const email = document.getElementById('resetEmailInput').value.trim();
+      const alertBox = document.getElementById('resetAlert');
+      const alertText = document.getElementById('resetAlertText');
+      const alertIcon = document.getElementById('resetAlertIcon');
+      const btn = document.getElementById('btnSendReset');
+
+      if (!email) {
+        alertBox.className = 'bg-red-950/80 border border-red-800 text-red-300 text-xs p-3 rounded-xl flex items-center gap-2';
+        alertIcon.className = 'fa-solid fa-circle-exclamation text-sm shrink-0';
+        alertText.innerText = 'Harap isi alamat email Anda!';
+        alertBox.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = 'Mengirim...';
+
+      const authInstance = window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
+
+      if (authInstance) {
+        authInstance.sendPasswordResetEmail(email)
+          .then(() => {
+            btn.disabled = false;
+            btn.innerText = 'Kirim Email';
+            alertBox.className = 'bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-xs p-3 rounded-xl flex items-center gap-2';
+            alertIcon.className = 'fa-solid fa-circle-check text-sm shrink-0';
+            alertText.innerText = 'Email reset password telah dikirim! Periksa kotak masuk/spam email Anda.';
+            alertBox.classList.remove('hidden');
+          })
+          .catch((err) => {
+            btn.disabled = false;
+            btn.innerText = 'Kirim Email';
+            alertBox.className = 'bg-red-950/80 border border-red-800 text-red-300 text-xs p-3 rounded-xl flex items-center gap-2';
+            alertIcon.className = 'fa-solid fa-circle-exclamation text-sm shrink-0';
+            
+            let message = 'Gagal mengirim email reset password.';
+            if (err.code === 'auth/user-not-found') {
+              message = 'Email tidak terdaftar di sistem!';
+            } else if (err.code === 'auth/invalid-email') {
+              message = 'Format email tidak valid!';
+            }
+            alertText.innerText = message;
+            alertBox.classList.remove('hidden');
+          });
+      }
+    }
+
+    // 4. AUTENTIKASI UTAMA
     function onUserLoggedIn(user) {
       if (user && !user.isAnonymous) {
         window.location.href = 'dock.html';
@@ -127,7 +250,6 @@
       btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Memproses...';
       alertBox.classList.add('hidden');
 
-      // Memastikan instans Firebase Auth tersedia
       const authInstance = window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
 
       if (authInstance) {
