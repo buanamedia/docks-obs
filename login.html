@@ -217,14 +217,10 @@
             alertBox.className = 'bg-red-950/80 border border-red-800 text-red-300 text-xs p-3 rounded-xl flex items-center gap-2';
             alertIcon.className = 'fa-solid fa-circle-exclamation text-sm shrink-0';
             
-            let message = 'Gagal mengirim email reset password.';
-            if (err.code === 'auth/user-not-found') {
-              message = 'Email tidak terdaftar di sistem!';
-            } else if (err.code === 'auth/invalid-email') {
-              message = 'Format email tidak valid!';
-            }
-            alertText.innerText = message;
+            // Menampilkan kode error teknis asli Firebase
+            alertText.innerText = `[${err.code}] ${err.message}`;
             alertBox.classList.remove('hidden');
+            console.error("Firebase Reset Password Error:", err);
           });
       }
     }
@@ -262,17 +258,10 @@
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Masuk Sekarang';
             
-            let message = 'Login gagal. Periksa email & password Anda.';
-            if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-              message = 'Email atau password salah!';
-            } else if (err.code === 'auth/invalid-email') {
-              message = 'Format email tidak valid.';
-            } else if (err.code === 'auth/too-many-requests') {
-              message = 'Terlalu banyak percobaan. Coba beberapa saat lagi.';
-            }
-            
-            alertText.innerText = message;
+            // Menampilkan kode error teknis asli Firebase
+            alertText.innerText = `[${err.code}] ${err.message}`;
             alertBox.classList.remove('hidden');
+            console.error("Firebase Login Error:", err);
           });
       } else {
         btn.disabled = false;
