@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manajemen User - OBS Docks</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth-check.js"></script>
+</head>
+<body class="bg-[#090d16] text-gray-100 min-h-screen p-5 font-sans">
+
+  <div class="max-w-4xl mx-auto space-y-5">
+    
+    <!-- HEADER -->
+    <div class="bg-[#111827] border border-[#1f293d] p-4 rounded-xl flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg flex items-center justify-center">
+          <i class="fa-solid fa-users-gear text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-sm font-bold uppercase tracking-wider">Manajemen User Operator</h1>
+          <p class="text-xs text-gray-400">Tambah akun operator & atur hak akses</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="dock.html" class="bg-gray-800 hover:bg-gray-700 text-xs px-3 py-2 rounded-lg font-semibold transition">
+          <i class="fa-solid fa-arrow-left mr-1"></i> Ke Dock
+        </a>
+        <button onclick="handleLogout()" class="bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-400 text-xs px-3 py-2 rounded-lg font-semibold transition">
+          <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- FORM TAMBAH USER BARU -->
+    <div class="bg-[#111827] border border-[#1f293d] p-5 rounded-xl space-y-4">
+      <h2 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Registrasi User / Operator Baru</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="text-[10px] text-gray-400 block mb-1">EMAIL OPERATOR</label>
+          <input type="email" id="newUserEmail" placeholder="operator@buanamedia.id" class="w-full bg-[#0b1120] border border-[#1f293d] text-xs p-2.5 rounded-lg outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="text-[10px] text-gray-400 block mb-1">PASSWORD</label>
+          <input type="password" id="newUserPassword" placeholder="••••••••" class="w-full bg-[#0b1120] border border-[#1f293d] text-xs p-2.5 rounded-lg outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="text-[10px] text-gray-400 block mb-1">ROLE / HAK AKSES</label>
+          <select id="newUserRole" class="w-full bg-[#0b1120] border border-[#1f293d] text-xs p-2.5 rounded-lg outline-none focus:border-indigo-500">
+            <option value="operator">Operator (Hanya Kontrol Dock)</option>
+            <option value="admin">Admin (Akses Penuh + Kelola User)</option>
+          </select>
+        </div>
+      </div>
+      <button onclick="createNewUser()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition shadow-lg flex items-center gap-2">
+        <i class="fa-solid fa-user-plus"></i> Buat Akun Baru
+      </button>
+    </div>
+
+    <!-- DAFTAR USER -->
+    <div class="bg-[#111827] border border-[#1f293d] p-5 rounded-xl space-y-3">
+      <h2 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Daftar Pengguna Terdaftar</h2>
+      <div id="userListTable" class="space-y-2">
+        <!-- List User Rendered Here -->
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function onUserLoggedIn(user) {
+      loadUserList();
+    }
+
+    function createNewUser() {
+      const email = document.getElementById('newUserEmail').value;
+      const password = document.getElementById('newUserPassword').value;
+      const role = document.getElementById('newUserRole').value;
+
+      if (!email || !password) {
+        alert('Email & Password wajib diisi!');
+        return;
+      }
+
+      // Menggunakan Secondary Auth agar sesi Admin yang sedang login tidak terputus
+      const secondaryApp = firebase.initializeApp(firebase.app().options, "Secondary");
+      secondaryApp.auth().createUserWithEmailAndPassword(email, password)
+        .then((cred) => {
+          database.ref('users/' + cred.user.uid).set({
+            email: email,
+            role: role,
+            createdAt: Date.now()
+          }).then(() => {
+            alert('User baru berhasil didaftarkan!');
+            document.getElementById('newUserEmail').value = '';
+            document.getElementById('newUserPassword').value = '';
+            secondaryApp.auth().signOut();
+            secondaryApp.delete();
+            loadUserList();
+          });
+        })
+        .catch(err => alert('Gagal membuat user: ' + err.message));
+    }
+
+    function loadUserList() {
+      database.ref('users').on('value', (snapshot) => {
+        const users = snapshot.val();
+        const container = document.getElementById('userListTable');
+        if (!users) {
+          container.innerHTML = '<p class="text-xs text-gray-500 italic">Belum ada user terdaftar.</p>';
+          return;
+        }
+
+        container.innerHTML = Object.keys(users).map(uid => {
+          const u = users[uid];
+          return `
+            <div class="bg-[#0b1120] border border-[#1f293d] p-3 rounded-lg flex items-center justify-between">
+              <div>
+                <div class="text-xs font-bold text-white">${u.email || 'Tanpa Email'}</div>
+                <div class="text-[10px] text-gray-400">UID: ${uid}</div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${u.role === 'admin' ? 'bg-indigo-950 text-indigo-400 border-indigo-800' : 'bg-gray-800 text-gray-300 border-gray-700'} uppercase">${u.role || 'operator'}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      });
+    }
+  </script>
+</body>
+</html>
