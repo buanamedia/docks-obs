@@ -45,8 +45,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   
-  <!-- File Konfigurasi External -->
+  <!-- File Konfigurasi External & Auth Helper -->
   <script src="js/firebase-config.js"></script>
+  <script src="js/auth-check.js"></script>
 
   <style>
     body {
@@ -78,6 +79,31 @@
 <body class="min-h-screen p-3 md:p-5 text-gray-100 flex flex-col justify-between">
 
   <div class="max-w-xl mx-auto w-full space-y-4">
+
+    <!-- HEADER NAVIGASI PANEL -->
+    <div class="bg-cardBg border border-cardBorder rounded-xl p-3 shadow-lg flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-person-chalkboard text-sm"></i>
+        </div>
+        <div>
+          <h1 class="text-xs font-bold uppercase tracking-wider text-white">Kontrol Presentasi</h1>
+          <p class="text-[11px] text-gray-400">Manajemen Slide Khotbah & Presentasi</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <a href="dock.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition border border-gray-700 flex items-center gap-1">
+          <i class="fa-solid fa-sliders text-indigo-400"></i> Dock
+        </a>
+        <a id="adminNavBtn" href="admin.html" class="hidden bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-300 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition flex items-center gap-1">
+          <i class="fa-solid fa-users-gear"></i> User
+        </a>
+        <button onclick="handleLogout()" class="bg-red-950/70 hover:bg-red-900 border border-red-800/80 text-red-400 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition flex items-center gap-1">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
 
     <!-- MAIN DISPLAY CONTROL PANEL (PRESENTASI ONLY) -->
     <div class="bg-cardBg border border-cardBorder rounded-xl p-4 shadow-xl">
@@ -126,7 +152,7 @@
             </div>
           </div>
 
-          <!-- 4 TOMBOL KONTROL UTAMA (DENGAN POSISI TAMPILKAN DAN SEMBUNYIKAN YANG DITUKAR) -->
+          <!-- 4 TOMBOL KONTROL UTAMA -->
           <div class="grid grid-cols-2 gap-2">
             <button onclick="navSlide('prev')" class="bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-semibold py-2.5 rounded-lg transition">
               &lt; Balik
@@ -157,6 +183,34 @@
   </div>
 
   <!-- MODALS SECTION -->
+
+  <!-- MODAL LOGIN TERPUSAT -->
+  <div id="loginModal" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-cardBg border border-cardBorder p-6 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl">
+      <div class="text-center">
+        <h3 class="text-base font-bold text-white uppercase"><i class="fa-solid fa-lock text-indigo-400 mr-2"></i>Login Operator</h3>
+        <p class="text-xs text-gray-400 mt-1">Satu kali login untuk semua halaman panel kontrol</p>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-1">EMAIL</label>
+          <input type="email" id="loginEmail" placeholder="admin@buanamedia.id" class="w-full bg-inputBg border border-cardBorder text-xs text-white p-2.5 rounded-lg outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-1">PASSWORD</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" class="w-full bg-inputBg border border-cardBorder text-xs text-white p-2.5 rounded-lg outline-none focus:border-indigo-500">
+        </div>
+      </div>
+      <div class="space-y-2 pt-2">
+        <button onclick="handleLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 rounded-lg transition shadow-lg">
+          Login Sekarang
+        </button>
+        <button onclick="continueAsGuest()" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs py-2 rounded-lg transition">
+          Lanjut Tanpa Login (Mode Tamu)
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL BUAT PRESENTASI -->
   <div id="modalCreatePresentation" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
@@ -324,10 +378,15 @@
       }, 2500);
     }
 
-    window.onload = function() {
+    // INTERAKSI DENGAN AUTH-CHECK.JS
+    function onUserLoggedIn(user) {
       initSupabase();
       listenToFirebaseRealtime();
-    };
+    }
+
+    function onUserGuest() {
+      initSupabase();
+    }
 
     // --- PRESENTASI CONTROLLER ---
     function renderPresList(filter = '') {
