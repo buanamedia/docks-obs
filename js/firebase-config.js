@@ -14,10 +14,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-// Autentikasi Anonim Otomatis
-firebase.auth().signInAnonymously().catch((error) => {
-  console.error("Gagal login anonim ke Firebase:", error.code, error.message);
-});
-
-// Global database reference untuk digunakan di dock.html & overlay.html
-const database = firebase.database();
+// Inisialisasi Auth & Database Global untuk digunakan di semua file HTML
+window.auth = firebase.auth();
+window.database = firebase.database();
+const database = window.database;
