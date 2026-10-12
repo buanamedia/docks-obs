@@ -1,6 +1,6 @@
 // Konfigurasi Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyC9r6c7zccoOtWaCctVUzebr1AsHlDSnrE",
+  apiKey: "AIzaSyCcb3yV4wWTF-G1_5weDpBFrdgBIE3JDYs",
   authDomain: "obs-docks-control.firebaseapp.com",
   databaseURL: "https://obs-docks-control-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "obs-docks-control",
@@ -14,7 +14,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-// Inisialisasi Auth & Database Global untuk digunakan di semua file HTML
+// Inisialisasi Auth & Database Global
 window.auth = firebase.auth();
 window.database = firebase.database();
 const database = window.database;
