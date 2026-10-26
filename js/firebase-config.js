@@ -17,4 +17,4 @@ if (!firebase.apps.length) {
 // Inisialisasi Auth & Database Global
 window.auth = firebase.auth();
 window.database = firebase.database();
-const database = window.database;
+var database = window.database;
