@@ -47,6 +47,7 @@
   
   <!-- File Konfigurasi Firebase External -->
   <script src="js/firebase-config.js"></script>
+  <script src="js/auth-check.js"></script>
 
   <style>
     body {
@@ -686,17 +687,18 @@
     };
 
     function syncStateToFirebase() {
-      if (typeof database === 'undefined') return;
+      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      if (!db) return;
 
       const profileSelect = document.getElementById('profileSelect');
-      const profiles = Array.from(profileSelect.options).map(o => o.value);
+      const profiles = profileSelect ? Array.from(profileSelect.options).map(o => o.value) : ['DEFAULT'];
 
       const eventSelect = document.getElementById('eventSelect');
-      const events = Array.from(eventSelect.options)
+      const events = eventSelect ? Array.from(eventSelect.options)
         .map(o => o.value)
-        .filter(val => val !== 'ACARA_BARU');
+        .filter(val => val !== 'ACARA_BARU') : [];
 
-      database.ref('obsState').set({
+      db.ref('obsState').set({
         infoItems: state.infoItems,
         tickerItems: state.tickerItems,
         ltItems: state.ltItems,
@@ -712,9 +714,10 @@
     }
 
     function listenToFirebaseRealtime() {
-      if (typeof database === 'undefined') return;
+      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      if (!db) return;
 
-      database.ref('obsState').on('value', (snapshot) => {
+      db.ref('obsState').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
           state.infoItems = data.infoItems || [];
@@ -857,14 +860,10 @@
       if (activePanel) activePanel.classList.remove('hidden');
     }
 
-    window.onload = function() {
-      initSupabase();
-      listenToFirebaseRealtime();
-    };
-
     // --- INFO CONTROLLER ---
     function renderInfoList(filter = '') {
       const container = document.getElementById('infoList');
+      if (!container) return;
       const filtered = state.infoItems.filter(item => 
         item.title.toLowerCase().includes(filter.toLowerCase()) || 
         item.content.toLowerCase().includes(filter.toLowerCase())
@@ -927,6 +926,7 @@
     // --- TICKER CONTROLLER ---
     function renderTickerList(filter = '') {
       const container = document.getElementById('tickerList');
+      if (!container) return;
       const filtered = state.tickerItems.filter(item => 
         item.title.toLowerCase().includes(filter.toLowerCase()) || 
         item.content.toLowerCase().includes(filter.toLowerCase())
@@ -983,6 +983,7 @@
     // --- LOWERTHIRD CONTROLLER ---
     function renderLtList(filter = '') {
       const container = document.getElementById('ltList');
+      if (!container) return;
       const filtered = state.ltItems.filter(item => 
         item.name.toLowerCase().includes(filter.toLowerCase()) || 
         item.subtitle.toLowerCase().includes(filter.toLowerCase())
@@ -1109,6 +1110,7 @@
     // --- PRESENTASI CONTROLLER ---
     function renderPresList(filter = '') {
       const container = document.getElementById('presList');
+      if (!container) return;
       const filtered = state.presentations.filter(item => 
         item.title.toLowerCase().includes(filter.toLowerCase()) || 
         item.speaker.toLowerCase().includes(filter.toLowerCase())
@@ -1203,6 +1205,7 @@
     // --- CAROUSEL CONTROLLER ---
     function renderCarouselList(filter = '') {
       const container = document.getElementById('carouselList');
+      if (!container) return;
       const filtered = state.carousels.filter(item => 
         item.title.toLowerCase().includes(filter.toLowerCase()) || 
         item.admin.toLowerCase().includes(filter.toLowerCase())
@@ -1290,6 +1293,7 @@
     // --- COUNTDOWN CONTROLLER ---
     function renderCdList(filter = '') {
       const container = document.getElementById('cdList');
+      if (!container) return;
       const filtered = state.countdowns.filter(item => 
         item.title.toLowerCase().includes(filter.toLowerCase())
       );
@@ -1618,14 +1622,16 @@
     }
 
     function hideOverlay() {
-      if (typeof database === 'undefined') return;
-      database.ref('activeOverlay').set({ action: 'hide', timestamp: Date.now() })
+      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      if (!db) return;
+      db.ref('activeOverlay').set({ action: 'hide', timestamp: Date.now() })
         .then(() => showToast('Overlay Disembunyikan'))
         .catch(err => console.error(err));
     }
 
     function triggerDisplay(type) {
-      if (typeof database === 'undefined') {
+      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      if (!db) {
         alert("Firebase belum terhubung.");
         return;
       }
@@ -1697,7 +1703,7 @@
         };
       }
 
-      database.ref('activeOverlay').set(payload)
+      db.ref('activeOverlay').set(payload)
         .then(() => showToast(`Tampilan ${type.toUpperCase()} Dikirim`))
         .catch(err => console.error("Firebase write error:", err));
     }
@@ -1712,6 +1718,11 @@
       renderPresDetail();
       triggerDisplay('presentasi');
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initSupabase();
+      listenToFirebaseRealtime();
+    });
   </script>
 </body>
 </html>
