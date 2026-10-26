@@ -150,6 +150,9 @@
   </footer>
 
   <script>
+    // CLEAR GUEST FLAG SAAT MASUK KE HALAMAN LOGIN
+    sessionStorage.removeItem('obs_guest_mode');
+
     // 1. TOGGLE MATA LIHAT PASSWORD
     function togglePasswordVisibility() {
       const passwordInput = document.getElementById('pagePassword');
@@ -216,12 +219,17 @@
             btn.innerText = 'Kirim Email';
             alertBox.className = 'bg-red-950/80 border border-red-800 text-red-300 text-xs p-3 rounded-xl flex items-center gap-2';
             alertIcon.className = 'fa-solid fa-circle-exclamation text-sm shrink-0';
-            
-            // Menampilkan kode error teknis asli Firebase
             alertText.innerText = `[${err.code}] ${err.message}`;
             alertBox.classList.remove('hidden');
             console.error("Firebase Reset Password Error:", err);
           });
+      } else {
+        btn.disabled = false;
+        btn.innerText = 'Kirim Email';
+        alertBox.className = 'bg-red-950/80 border border-red-800 text-red-300 text-xs p-3 rounded-xl flex items-center gap-2';
+        alertIcon.className = 'fa-solid fa-circle-exclamation text-sm shrink-0';
+        alertText.innerText = 'Firebase Auth belum siap.';
+        alertBox.classList.remove('hidden');
       }
     }
 
@@ -257,8 +265,6 @@
           .catch((err) => {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Masuk Sekarang';
-            
-            // Menampilkan kode error teknis asli Firebase
             alertText.innerText = `[${err.code}] ${err.message}`;
             alertBox.classList.remove('hidden');
             console.error("Firebase Login Error:", err);
