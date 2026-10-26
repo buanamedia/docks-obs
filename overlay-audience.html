@@ -42,11 +42,11 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
       box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.6);
     }
-    #overlay-lowerthird { bottom: 80px; left: 80px; }
-    #overlay-ticker { bottom: 0; left: 0; }
-    #overlay-slide { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-    #overlay-info { top: 60px; right: 60px; }
-    #overlay-countdown { top: 60px; left: 60px; }
+    #overlay-lowerthird { top: 920px; left: 64px; }
+    #overlay-ticker { top: 1032px; left: 0px; }
+    #overlay-slide { top: 200px; left: 460px; }
+    #overlay-info { top: 48px; left: 1420px; }
+    #overlay-countdown { top: 64px; left: 810px; }
   </style>
 </head>
 <body class="relative w-[1920px] h-[1080px]">
@@ -94,7 +94,7 @@
   </div>
 
   <script>
-    const TARGET_NAME = 'audience'; // Target khusus Monitor Audiens
+    const TARGET_NAME = 'audience';
     let cdInterval = null, carouselInterval = null, autoHideTimeout = null, currentLayoutState = null;
 
     function hideAll() {
@@ -112,15 +112,23 @@
     function applyElementLayout(elementId, config) {
       const el = document.getElementById(elementId);
       if (!el || !config) return;
+
       if (typeof config.posX !== 'undefined') el.style.left = config.posX + 'px';
       if (typeof config.posY !== 'undefined') el.style.top = config.posY + 'px';
-      if (typeof config.scale !== 'undefined') {
-        el.style.transform = `scale(${config.scale})`;
-        el.style.transformOrigin = 'top left';
-      }
+      
+      const scale = typeof config.scale !== 'undefined' ? config.scale : 1;
+      const opacity = typeof config.opacity !== 'undefined' ? config.opacity : 1;
+      
+      el.style.transform = `scale(${scale})`;
+      el.style.transformOrigin = 'top left';
+      el.style.opacity = opacity;
+
       if (config.fontSize) el.style.fontSize = config.fontSize + 'em';
+      
       const card = el.querySelector('.glass-card') || el;
-      if (card && typeof config.borderRadius !== 'undefined') card.style.borderRadius = config.borderRadius + 'px';
+      if (card && typeof config.borderRadius !== 'undefined') {
+        card.style.borderRadius = config.borderRadius + 'px';
+      }
     }
 
     function refreshAllLayouts() {
