@@ -19,14 +19,14 @@
   <div class="max-w-4xl mx-auto space-y-5">
     
     <!-- HEADER -->
-    <div class="bg-[#111827] border border-[#1f293d] p-4 rounded-xl flex justify-between items-center">
+    <div class="bg-[#111827] border border-[#1f293d] p-4 rounded-xl flex justify-between items-center shadow-lg">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg flex items-center justify-center">
           <i class="fa-solid fa-users-gear text-lg"></i>
         </div>
         <div>
           <h1 class="text-sm font-bold uppercase tracking-wider">Manajemen User Operator</h1>
-          <p class="text-xs text-gray-400">Tambah akun operator & atur hak akses</p>
+          <p class="text-xs text-gray-400">Tambah akun operator, atur hak akses, & reset password</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -70,7 +70,7 @@
     <!-- DAFTAR USER -->
     <div class="bg-[#111827] border border-[#1f293d] p-5 rounded-xl space-y-3 shadow-xl">
       <h2 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Daftar Pengguna Terdaftar</h2>
-      <div id="userListTable" class="space-y-2">
+      <div id="userListTable" class="space-y-2.5">
         <!-- List User Rendered Here -->
       </div>
     </div>
@@ -80,8 +80,9 @@
   <script>
     // VERIFIKASI HAK AKSES ADMIN
     function onUserLoggedIn(user) {
-      if (typeof database !== 'undefined') {
-        database.ref('users/' + user.uid).once('value').then(snapshot => {
+      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      if (db) {
+        db.ref('users/' + user.uid).once('value').then(snapshot => {
           const userData = snapshot.val();
           if (!userData || userData.role !== 'admin') {
             alert('Akses ditolak: Anda bukan Admin!');
@@ -101,6 +102,7 @@
       const email = document.getElementById('newUserEmail').value.trim();
       const password = document.getElementById('newUserPassword').value.trim();
       const role = document.getElementById('newUserRole').value;
+      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
 
       if (!email || !password) {
         alert('Email & Password wajib diisi!');
@@ -112,7 +114,7 @@
         return;
       }
 
-      // Menggunakan Secondary Auth agar sesi Admin yang sedang login tidak terputus
+      // Secondary Auth agar sesi Admin utama tidak terputus
       let secondaryApp;
       try {
         secondaryApp = firebase.initializeApp(firebase.app().options, "Secondary");
@@ -122,26 +124,29 @@
 
       secondaryApp.auth().createUserWithEmailAndPassword(email, password)
         .then((cred) => {
-          database.ref('users/' + cred.user.uid).set({
-            email: email,
-            role: role,
-            createdAt: Date.now()
-          }).then(() => {
-            alert('User baru berhasil didaftarkan!');
-            document.getElementById('newUserEmail').value = '';
-            document.getElementById('newUserPassword').value = '';
-            secondaryApp.auth().signOut();
-            secondaryApp.delete();
-            loadUserList();
-          });
+          if (db) {
+            db.ref('users/' + cred.user.uid).set({
+              email: email,
+              role: role,
+              createdAt: Date.now()
+            }).then(() => {
+              alert('User baru berhasil didaftarkan!');
+              document.getElementById('newUserEmail').value = '';
+              document.getElementById('newUserPassword').value = '';
+              secondaryApp.auth().signOut();
+              secondaryApp.delete();
+              loadUserList();
+            });
+          }
         })
         .catch(err => alert('Gagal membuat user: ' + err.message));
     }
 
     function loadUserList() {
-      if (typeof database === 'undefined') return;
+      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      if (!db) return;
 
-      database.ref('users').on('value', (snapshot) => {
+      db.ref('users').on('value', (snapshot) => {
         const users = snapshot.val();
         const container = document.getElementById('userListTable');
         if (!users) {
@@ -151,15 +156,31 @@
 
         container.innerHTML = Object.keys(users).map(uid => {
           const u = users[uid];
+          const currentRole = u.role || 'operator';
+
           return `
-            <div class="bg-[#0b1120] border border-[#1f293d] p-3 rounded-lg flex items-center justify-between">
+            <div class="bg-[#0b1120] border border-[#1f293d] p-3 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-3">
               <div>
-                <div class="text-xs font-bold text-white">${u.email || 'Tanpa Email'}</div>
-                <div class="text-[10px] text-gray-400 font-mono">UID: ${uid}</div>
+                <div class="text-xs font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-user-gear text-indigo-400"></i> ${u.email || 'Tanpa Email'}
+                </div>
+                <div class="text-[10px] text-gray-500 font-mono mt-0.5">UID: ${uid}</div>
               </div>
-              <div class="flex items-center gap-3">
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${u.role === 'admin' ? 'bg-indigo-950 text-indigo-400 border-indigo-800' : 'bg-gray-800 text-gray-300 border-gray-700'} uppercase">${u.role || 'operator'}</span>
-                <button onclick="deleteUserData('${uid}', '${u.email}')" class="bg-red-950/60 hover:bg-red-900 border border-red-800/80 text-red-400 text-[11px] px-2.5 py-1 rounded transition">
+
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- SELEKSI EDIT HAK AKSES / ROLE -->
+                <select onchange="updateUserRole('${uid}', this.value)" class="bg-[#111827] border border-[#1f293d] text-xs text-indigo-300 font-semibold rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-500">
+                  <option value="operator" ${currentRole === 'operator' ? 'selected' : ''}>Role: Operator</option>
+                  <option value="admin" ${currentRole === 'admin' ? 'selected' : ''}>Role: Admin</option>
+                </select>
+
+                <!-- TOMBOL KIRIM RESET PASSWORD -->
+                <button onclick="sendUserPasswordReset('${u.email}')" class="bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-300 text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                  <i class="fa-solid fa-key text-xs"></i> Reset Password
+                </button>
+
+                <!-- TOMBOL HAPUS DATA USER -->
+                <button onclick="deleteUserData('${uid}', '${u.email}')" class="bg-red-950/60 hover:bg-red-900 border border-red-800/80 text-red-400 text-xs px-2.5 py-1.5 rounded-lg transition" title="Hapus User">
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </div>
@@ -169,11 +190,44 @@
       });
     }
 
+    // FUNGSI EDIT HAK AKSES (ROLE)
+    function updateUserRole(uid, newRole) {
+      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      if (!db) return;
+
+      db.ref('users/' + uid).update({
+        role: newRole
+      }).then(() => {
+        alert(`Hak akses user berhasil diubah menjadi "${newRole.toUpperCase()}".`);
+      }).catch(err => {
+        alert('Gagal memperbarui hak akses: ' + err.message);
+      });
+    }
+
+    // FUNGSI SEND RESET PASSWORD EMAIL
+    function sendUserPasswordReset(email) {
+      if (!email) {
+        alert('User tidak memiliki alamat email valid!');
+        return;
+      }
+      if (confirm(`Kirim email tautan reset password ke "${email}"?`)) {
+        const auth = window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
+        if (auth) {
+          auth.sendPasswordResetEmail(email)
+            .then(() => alert(`Email instruksi reset password telah dikirim ke ${email}`))
+            .catch(err => alert('Gagal mengirim email reset: ' + err.message));
+        }
+      }
+    }
+
     function deleteUserData(uid, email) {
       if (confirm(`Hapus data pendaftaran user "${email}" dari database?`)) {
-        database.ref('users/' + uid).remove()
-          .then(() => alert('Data user berhasil dihapus dari Realtime Database.'))
-          .catch(err => alert('Gagal menghapus: ' + err.message));
+        const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+        if (db) {
+          db.ref('users/' + uid).remove()
+            .then(() => alert('Data user berhasil dihapus dari Realtime Database.'))
+            .catch(err => alert('Gagal menghapus: ' + err.message));
+        }
       }
     }
   </script>
