@@ -42,15 +42,16 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
       box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.6);
     }
-    #overlay-lowerthird { bottom: 80px; left: 80px; }
-    #overlay-ticker { bottom: 0; left: 0; }
-    #overlay-slide { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-    #overlay-info { top: 60px; right: 60px; }
-    #overlay-countdown { top: 60px; left: 60px; }
+    #overlay-lowerthird { top: 920px; left: 64px; }
+    #overlay-ticker { top: 1032px; left: 0px; }
+    #overlay-slide { top: 200px; left: 460px; }
+    #overlay-info { top: 48px; left: 1420px; }
+    #overlay-countdown { top: 64px; left: 810px; }
   </style>
 </head>
 <body class="relative w-[1920px] h-[1080px]">
 
+  <!-- 1. LOWERTHIRD -->
   <div id="overlay-lowerthird" class="fade-slide-up absolute flex items-stretch z-20">
     <div class="w-2.5 bg-gradient-to-b from-indigo-500 to-indigo-700 rounded-l-xl"></div>
     <div class="glass-card px-8 py-4 rounded-r-xl border-l-0 min-w-[380px] flex items-center gap-4">
@@ -62,6 +63,7 @@
     </div>
   </div>
 
+  <!-- 2. TICKER -->
   <div id="overlay-ticker" class="fade-slide-up absolute glass-card border-x-0 border-b-0 h-12 flex items-center overflow-hidden z-30" style="width: 100%;">
     <div class="bg-indigo-600 text-white font-bold text-xs uppercase px-5 h-full flex items-center tracking-wider shrink-0 z-10 shadow-lg">
       <i class="fa-solid fa-bullhorn mr-2"></i> Warta
@@ -71,6 +73,7 @@
     </div>
   </div>
 
+  <!-- 3. SLIDE PRESENTASI & CAROUSEL -->
   <div id="overlay-slide" class="fade-slide-up absolute flex items-center justify-center p-10 z-10">
     <div class="glass-card rounded-2xl max-w-4xl w-full p-8 text-center flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
       <img id="slide-img-display" src="" class="max-h-[500px] w-auto object-contain rounded-lg mb-4 hidden shadow-md" alt="Slide Image">
@@ -78,6 +81,7 @@
     </div>
   </div>
 
+  <!-- 4. INFO BANNER -->
   <div id="overlay-info" class="fade-slide-up absolute glass-card rounded-xl p-5 max-w-md border-l-4 border-l-amber-500 shadow-2xl z-20">
     <div class="flex items-start gap-3">
       <div class="text-amber-400 text-xl pt-0.5"><i class="fa-solid fa-circle-info"></i></div>
@@ -88,13 +92,14 @@
     </div>
   </div>
 
+  <!-- 5. COUNTDOWN -->
   <div id="overlay-countdown" class="fade-slide-up absolute glass-card rounded-2xl px-10 py-5 text-center shadow-2xl border border-indigo-500/30 z-20">
     <div id="cd-title-display" class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Acara Akan Dimulai</div>
     <div id="cd-timer-display" class="text-5xl font-black text-white font-mono tracking-wider drop-shadow-lg">00:00</div>
   </div>
 
   <script>
-    const TARGET_NAME = 'stream'; // Target khusus Live Stream
+    const TARGET_NAME = 'stream';
     let cdInterval = null, carouselInterval = null, autoHideTimeout = null, currentLayoutState = null;
 
     function hideAll() {
@@ -112,15 +117,23 @@
     function applyElementLayout(elementId, config) {
       const el = document.getElementById(elementId);
       if (!el || !config) return;
+
       if (typeof config.posX !== 'undefined') el.style.left = config.posX + 'px';
       if (typeof config.posY !== 'undefined') el.style.top = config.posY + 'px';
-      if (typeof config.scale !== 'undefined') {
-        el.style.transform = `scale(${config.scale})`;
-        el.style.transformOrigin = 'top left';
-      }
+      
+      const scale = typeof config.scale !== 'undefined' ? config.scale : 1;
+      const opacity = typeof config.opacity !== 'undefined' ? config.opacity : 1;
+      
+      el.style.transform = `scale(${scale})`;
+      el.style.transformOrigin = 'top left';
+      el.style.opacity = opacity;
+
       if (config.fontSize) el.style.fontSize = config.fontSize + 'em';
+      
       const card = el.querySelector('.glass-card') || el;
-      if (card && typeof config.borderRadius !== 'undefined') card.style.borderRadius = config.borderRadius + 'px';
+      if (card && typeof config.borderRadius !== 'undefined') {
+        card.style.borderRadius = config.borderRadius + 'px';
+      }
     }
 
     function refreshAllLayouts() {
