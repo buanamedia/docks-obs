@@ -312,17 +312,23 @@
       uploadedFilePath: null
     };
 
-    function syncStateToFirebase() {
-      if (typeof database === 'undefined') return;
+    function getDbInstance() {
+      return window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+    }
 
-      database.ref('obsState/presentations').set(state.presentations);
-      database.ref('obsState/updatedAt').set(Date.now());
+    function syncStateToFirebase() {
+      const db = getDbInstance();
+      if (!db) return;
+
+      db.ref('obsState/presentations').set(state.presentations);
+      db.ref('obsState/updatedAt').set(Date.now());
     }
 
     function listenToFirebaseRealtime() {
-      if (typeof database === 'undefined') return;
+      const db = getDbInstance();
+      if (!db) return;
 
-      database.ref('obsState').on('value', (snapshot) => {
+      db.ref('obsState').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
           state.presentations = data.presentations || [];
@@ -381,17 +387,32 @@
 
     // INTERAKSI DENGAN AUTH-CHECK.JS
     function onUserLoggedIn(user) {
+      if (user && user.uid) {
+        const db = getDbInstance();
+        if (db) {
+          db.ref('users/' + user.uid).once('value').then(snapshot => {
+            const userData = snapshot.val();
+            if (userData && userData.role === 'admin') {
+              const btn = document.getElementById('adminNavBtn');
+              if (btn) btn.classList.remove('hidden');
+            }
+          });
+        }
+      }
       initSupabase();
       listenToFirebaseRealtime();
     }
 
     function onUserGuest() {
       initSupabase();
+      listenToFirebaseRealtime();
     }
 
     // --- PRESENTASI CONTROLLER ---
     function renderPresList(filter = '') {
       const container = document.getElementById('presList');
+      if (!container) return;
+
       const filtered = state.presentations.filter(item => 
         item.title.toLowerCase().includes(filter.toLowerCase()) || 
         item.speaker.toLowerCase().includes(filter.toLowerCase())
@@ -660,14 +681,16 @@
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
     function hideOverlay() {
-      if (typeof database === 'undefined') return;
-      database.ref('activeOverlay').set({ action: 'hide', timestamp: Date.now() })
+      const db = getDbInstance();
+      if (!db) return;
+      db.ref('activeOverlay').set({ action: 'hide', timestamp: Date.now() })
         .then(() => showToast('Overlay Disembunyikan'))
         .catch(err => console.error(err));
     }
 
     function triggerDisplay() {
-      if (typeof database === 'undefined') {
+      const db = getDbInstance();
+      if (!db) {
         alert("Firebase belum terhubung.");
         return;
       }
@@ -689,7 +712,7 @@
           }
         };
 
-        database.ref('activeOverlay').set(payload)
+        db.ref('activeOverlay').set(payload)
           .then(() => showToast('Tampilan PRESENTASI Dikirim'))
           .catch(err => console.error("Firebase write error:", err));
       }
@@ -705,6 +728,11 @@
       renderPresDetail();
       triggerDisplay();
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initSupabase();
+      listenToFirebaseRealtime();
+    });
   </script>
 </body>
 </html>
