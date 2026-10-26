@@ -36,7 +36,7 @@
         <a href="layout.html" class="bg-gray-800 hover:bg-gray-700 text-xs px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 border border-gray-700">
           <i class="fa-solid fa-display text-indigo-400"></i> Ke Layout
         </a>
-        <button onclick="handleLogout()" class="bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-400 text-xs px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1.5">
+        <button onclick="handleLogoutAdmin()" class="bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-400 text-xs px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1.5">
           <i class="fa-solid fa-right-from-bracket"></i> Logout
         </button>
       </div>
@@ -71,31 +71,37 @@
     <div class="bg-[#111827] border border-[#1f293d] p-5 rounded-xl space-y-3 shadow-xl">
       <h2 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Daftar Pengguna Terdaftar</h2>
       <div id="userListTable" class="space-y-2.5">
-        <!-- List User Rendered Here -->
+        <div class="text-xs text-gray-500 italic p-2"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Memuat daftar pengguna...</div>
       </div>
     </div>
 
   </div>
 
   <script>
-    // VERIFIKASI HAK AKSES ADMIN
-    function onUserLoggedIn(user) {
-      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
-      if (db) {
-        db.ref('users/' + user.uid).once('value').then(snapshot => {
-          const userData = snapshot.val();
-          if (!userData || userData.role !== 'admin') {
-            alert('Akses ditolak: Anda bukan Admin!');
-            window.location.href = 'dock.html';
-            return;
-          }
-          loadUserList();
-        }).catch(() => {
-          loadUserList();
-        });
-      } else {
-        loadUserList();
+    // FUNGSI LOGOUT MANDIRI KHUSUS PAGE ADMIN
+    function handleLogoutAdmin() {
+      if (confirm('Apakah Anda yakin ingin keluar?')) {
+        sessionStorage.removeItem('obs_guest_mode');
+        const authInstance = window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
+        if (authInstance) {
+          authInstance.signOut().then(() => {
+            window.location.href = 'login.html';
+          }).catch(() => {
+            window.location.href = 'login.html';
+          });
+        } else {
+          window.location.href = 'login.html';
+        }
       }
+    }
+
+    // PEMERIKSAAN USER & LOAD DAFTAR USER
+    function onUserLoggedIn(user) {
+      loadUserList();
+    }
+
+    function onUserGuest() {
+      loadUserList();
     }
 
     function createNewUser() {
@@ -114,7 +120,6 @@
         return;
       }
 
-      // Secondary Auth agar sesi Admin utama tidak terputus
       let secondaryApp;
       try {
         secondaryApp = firebase.initializeApp(firebase.app().options, "Secondary");
@@ -144,11 +149,11 @@
 
     function loadUserList() {
       const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
-      if (!db) return;
+      const container = document.getElementById('userListTable');
+      if (!db || !container) return;
 
       db.ref('users').on('value', (snapshot) => {
         const users = snapshot.val();
-        const container = document.getElementById('userListTable');
         if (!users) {
           container.innerHTML = '<p class="text-xs text-gray-500 italic">Belum ada user terdaftar.</p>';
           return;
@@ -168,18 +173,15 @@
               </div>
 
               <div class="flex flex-wrap items-center gap-2">
-                <!-- SELEKSI EDIT HAK AKSES / ROLE -->
                 <select onchange="updateUserRole('${uid}', this.value)" class="bg-[#111827] border border-[#1f293d] text-xs text-indigo-300 font-semibold rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-500">
                   <option value="operator" ${currentRole === 'operator' ? 'selected' : ''}>Role: Operator</option>
                   <option value="admin" ${currentRole === 'admin' ? 'selected' : ''}>Role: Admin</option>
                 </select>
 
-                <!-- TOMBOL KIRIM RESET PASSWORD -->
                 <button onclick="sendUserPasswordReset('${u.email}')" class="bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-300 text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
                   <i class="fa-solid fa-key text-xs"></i> Reset Password
                 </button>
 
-                <!-- TOMBOL HAPUS DATA USER -->
                 <button onclick="deleteUserData('${uid}', '${u.email}')" class="bg-red-950/60 hover:bg-red-900 border border-red-800/80 text-red-400 text-xs px-2.5 py-1.5 rounded-lg transition" title="Hapus User">
                   <i class="fa-solid fa-trash"></i>
                 </button>
@@ -187,10 +189,12 @@
             </div>
           `;
         }).join('');
+      }, (err) => {
+        console.error("Firebase read users error:", err);
+        container.innerHTML = `<p class="text-xs text-red-400 italic">Gagal memuat data: ${err.message}. Periksa Firebase Security Rules Anda.</p>`;
       });
     }
 
-    // FUNGSI EDIT HAK AKSES (ROLE)
     function updateUserRole(uid, newRole) {
       const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
       if (!db) return;
@@ -204,7 +208,6 @@
       });
     }
 
-    // FUNGSI SEND RESET PASSWORD EMAIL
     function sendUserPasswordReset(email) {
       if (!email) {
         alert('User tidak memiliki alamat email valid!');
@@ -230,6 +233,10 @@
         }
       }
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadUserList();
+    });
   </script>
 </body>
 </html>
