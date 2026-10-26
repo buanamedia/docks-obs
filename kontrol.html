@@ -96,6 +96,9 @@
         <a href="dock.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition border border-gray-700 flex items-center gap-1">
           <i class="fa-solid fa-sliders text-indigo-400"></i> Dock
         </a>
+        <a href="layout.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition border border-gray-700 flex items-center gap-1">
+          <i class="fa-solid fa-display text-indigo-400"></i> Layout
+        </a>
         <a id="adminNavBtn" href="admin.html" class="hidden bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-300 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition flex items-center gap-1">
           <i class="fa-solid fa-users-gear"></i> User
         </a>
@@ -118,10 +121,10 @@
         <div class="md:col-span-5 space-y-2.5 border-r border-cardBorder/60 pr-0 md:pr-3">
           <div class="flex items-center gap-2">
             <input type="text" id="presSearch" onkeyup="filterPresList()" placeholder="Cari Presentasi..." class="w-full bg-inputBg border border-cardBorder text-xs text-gray-200 rounded-lg p-2.5 outline-none focus:border-indigo-500">
+            <button onclick="openCreatePresentationModal()" class="w-9 h-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center transition shrink-0 shadow" title="Buat Presentasi Baru">
+              <i class="fa-solid fa-plus text-xs"></i>
+            </button>
           </div>
-          <button onclick="openCreatePresentationModal()" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center justify-center transition mb-2" title="Buat Presentasi Baru">
-            <i class="fa-solid fa-plus text-xs"></i>
-          </button>
           <div id="presList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1"></div>
         </div>
 
@@ -157,11 +160,9 @@
             <button onclick="navSlide('prev')" class="bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-semibold py-2.5 rounded-lg transition">
               &lt; Balik
             </button>
-            <!-- TAMPILKAN SEKARANG DI ATAS KANAN -->
             <button onclick="triggerDisplay()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2.5 rounded-lg transition shadow-lg flex items-center justify-center gap-1.5">
               <i class="fa-solid fa-eye"></i> Tampilkan
             </button>
-            <!-- SEMBUNYIKAN SEKARANG DI BAWAH KIRI -->
             <button onclick="hideOverlay()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-2.5 rounded-lg transition shadow-lg flex items-center justify-center gap-1.5">
               <i class="fa-solid fa-eye-slash"></i> Sembunyikan
             </button>
@@ -616,7 +617,7 @@
       } else {
         const newSlideNum = pres.slides.length + 1;
         pres.slides.push({
-          id: 's' + Date.now(),
+          id: 's' + Date.now() + '_' + Math.floor(Math.random() * 1000),
           label: 'Slide ' + newSlideNum,
           text: textVal,
           img: state.uploadedImgUrl,
