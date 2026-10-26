@@ -153,10 +153,10 @@
       }
 
       // 1. LISTEN OVERLAY LAYOUT REALTIME
-      db.ref('overlayLayout').on('value', (snapshot) => {
-        currentLayoutState = snapshot.val();
-        refreshAllLayouts();
-      });
+      db.ref('overlayLayout/audience').on('value', (snapshot) => {
+  currentLayoutState = snapshot.val();
+  refreshAllLayouts();
+});
 
       // 2. LISTEN ACTIVE OVERLAY REALTIME
       db.ref('activeOverlay').on('value', (snapshot) => {
