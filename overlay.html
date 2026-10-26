@@ -16,7 +16,7 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Firebase SDK (Compat) -->
+  <!-- Firebase SDK (Compat Version) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -36,7 +36,7 @@
       user-select: none;
     }
 
-    /* ANIMASI LOWERTHIRD & INFO */
+    /* ANIMASI OVERLAY */
     .fade-slide-up {
       transition: opacity 0.3s ease, transform 0.3s ease;
       opacity: 0;
@@ -44,9 +44,9 @@
       visibility: hidden;
     }
     .fade-slide-up.active {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
     }
 
     /* TICKER MARQUEE ANIMATION */
@@ -68,10 +68,10 @@
       box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.6);
     }
 
-    /* POSISI DEFAULT JIKA LAYOUT FIREBASE BELUM DIATUR */
+    /* POSISI DEFAULT KETIKA FIREBASE LAYOUT BELUM DIESEKUSI */
     #overlay-lowerthird { bottom: 80px; left: 80px; }
     #overlay-ticker { bottom: 0; left: 0; }
-    #overlay-slide { inset: 0; margin: auto; }
+    #overlay-slide { top: 50%; left: 50%; transform: translate(-50%, -50%); }
     #overlay-info { top: 60px; right: 60px; }
     #overlay-countdown { top: 60px; left: 60px; }
   </style>
@@ -137,7 +137,6 @@
     let cdInterval = null;
     let carouselInterval = null;
     let autoHideTimeout = null;
-
     let currentLayoutState = null;
 
     function getCurrentTarget() {
@@ -160,10 +159,11 @@
       if (autoHideTimeout) clearTimeout(autoHideTimeout);
     }
 
+    // PENGECEKAN TARGET AMAN
     function isAllowedForThisTarget(targets) {
-      if (!targets) return true;
+      if (!targets) return true; // Jika target kosong, izinkan tampil
       if (typeof targets[currentTarget] !== 'undefined') {
-        return targets[currentTarget] === true;
+        return Boolean(targets[currentTarget]);
       }
       return true;
     }
@@ -172,15 +172,175 @@
       const el = document.getElementById(elementId);
       if (!el || !config) return;
 
-      const scale = config.scale !== undefined ? config.scale : 1;
-      const posX = config.posX !== undefined ? config.posX + 'px' : '';
-      const posY = config.posY !== undefined ? config.posY + 'px' : '';
+      if (typeof config.posX !== 'undefined') el.style.left = config.posX + 'px';
+      if (typeof config.posY !== 'undefined') el.style.top = config.posY + 'px';
 
-      if (posX) el.style.setProperty('left', posX, 'important');
-      if (posY) el.style.setProperty('top', posY, 'important');
+      if (typeof config.scale !== 'undefined') {
+        el.style.transform = `scale(${config.scale})`;
+        el.style.transformOrigin = 'top left';
+      }
+
+      if (config.fontSize) {
+        el.style.fontSize = config.fontSize + 'em';
+      }
+
+      const card = el.querySelector('.glass-card') || el;
+      if (card && typeof config.borderRadius !== 'undefined') {
+        card.style.borderRadius = config.borderRadius + 'px';
+      }
+    }
+
+    function refreshAllLayouts() {
+      if (!currentLayoutState) return;
+      applyElementLayout('overlay-lowerthird', currentLayoutState.lowerthird);
+      applyElementLayout('overlay-ticker', currentLayoutState.ticker);
+      applyElementLayout('overlay-slide', currentLayoutState.slide);
+      applyElementLayout('overlay-info', currentLayoutState.info);
+      applyElementLayout('overlay-countdown', currentLayoutState.countdown);
+    }
+
+    if (typeof database !== 'undefined') {
       
-      el.style.setProperty('position', 'absolute', 'important');
-      el.style.setProperty('transform', `scale(${scale})`, 'important'); el.style.setProperty('transform-origin', 'top left', 'important');  if (config.fontSize) { el.style.setProperty('font-size', config.fontSize + 'em'); }  const card = el.querySelector('.glass-card') \vert{}\vert{} el; if (card && config.borderRadius !== undefined) { card.style.setProperty('border-radius', config.borderRadius + 'px'); } }  function refreshAllLayouts() { if (!currentLayoutState) return; applyElementLayout('overlay-lowerthird', currentLayoutState.lowerthird); applyElementLayout('overlay-ticker', currentLayoutState.ticker); applyElementLayout('overlay-slide', currentLayoutState.slide); applyElementLayout('overlay-info', currentLayoutState.info); applyElementLayout('overlay-countdown', currentLayoutState.countdown); }  if (typeof database !== 'undefined') {  // 1. LISTEN LAYOUT REALTIME database.ref('overlayLayout').on('value', (snapshot) => { const layout = snapshot.val(); if (!layout) return;  currentLayoutState = layout; refreshAllLayouts(); });  // 2. LISTEN ACTIVE OVERLAY DISPLAY database.ref('activeOverlay').on('value', (snapshot) => { const data = snapshot.val(); if (!data) return;  if (data.action === 'hide') { hideAll(); return; }  if (!isAllowedForThisTarget(data.targets)) { hideAll(); return; }  // Terapkan tata letak terbaru jika ada refreshAllLayouts();  if (data.type === 'lowerthird') { hideAll(); document.getElementById('lt-title-display').innerText = data.name \vert{}\vert{} ''; document.getElementById('lt-sub-display').innerText = data.subtitle \vert{}\vert{} '';  const logoEl = document.getElementById('lt-logo-display'); if (data.logo) { logoEl.src = data.logo; logoEl.classList.remove('hidden'); } else { logoEl.classList.add('hidden'); }  document.getElementById('overlay-lowerthird').classList.add('active');  if (data.duration > 0) { autoHideTimeout = setTimeout(() => { document.getElementById('overlay-lowerthird').classList.remove('active'); }, data.duration * 1000); } }  if (data.type === 'ticker') { hideAll(); document.getElementById('ticker-text-display').innerHTML = data.content \vert{}\vert{} ''; document.getElementById('overlay-ticker').classList.add('active');  if (data.duration > 0) { autoHideTimeout = setTimeout(() => { document.getElementById('overlay-ticker').classList.remove('active'); }, data.duration * 1000); } }  if (data.type === 'presentasi' && data.slide) { hideAll(); const imgEl = document.getElementById('slide-img-display'); const textEl = document.getElementById('slide-text-display');  if (data.slide.img) { imgEl.src = data.slide.img; imgEl.classList.remove('hidden'); } else { imgEl.classList.add('hidden'); }  textEl.innerText = data.slide.text \vert{}\vert{} ''; document.getElementById('overlay-slide').classList.add('active'); }  if (data.type === 'carousel' && data.slides && data.slides.length > 0) { hideAll(); let currentIndex = 0; const imgEl = document.getElementById('slide-img-display'); const textEl = document.getElementById('slide-text-display');  function renderCarouselSlide(index) { const slide = data.slides[index]; if (!slide) return;  if (slide.img) { imgEl.src = slide.img; imgEl.classList.remove('hidden'); } else { imgEl.classList.add('hidden'); } textEl.innerText = slide.text \vert{}\vert{} ''; document.getElementById('overlay-slide').classList.add('active'); }  renderCarouselSlide(currentIndex);  const intervalTime = (data.interval \vert{}\vert{} 10) * 1000; carouselInterval = setInterval(() => { currentIndex = (currentIndex + 1) \% data.slides.length; renderCarouselSlide(currentIndex); }, intervalTime); }  if (data.type === 'info') { hideAll(); document.getElementById('info-title-display').innerText = data.title \vert{}\vert{} 'INFO'; document.getElementById('info-content-display').innerText = data.content \vert{}\vert{} ''; document.getElementById('overlay-info').classList.add('active');  if (data.duration > 0) { autoHideTimeout = setTimeout(() => { document.getElementById('overlay-info').classList.remove('active'); }, data.duration * 1000); } }  if (data.type === 'countdown') { hideAll(); document.getElementById('cd-title-display').innerText = data.title \vert{}\vert{} 'COUNTDOWN';  let totalSeconds = (parseInt(data.hours) \vert{}\vert{} 0) * 3600 + (parseInt(data.minutes) \vert{}\vert{} 0) * 60 + (parseInt(data.seconds) \vert{}\vert{} 0);  function updateTimerText() { const hours = Math.floor(totalSeconds / 3600); const minutes = Math.floor((totalSeconds \% 3600) / 60); const seconds = totalSeconds \% 60;  const pad = (n) => String(n).padStart(2, '0');  if (hours > 0) { document.getElementById('cd-timer-display').innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      // 1. LISTEN LAYOUT REALTIME
+      database.ref('overlayLayout').on('value', (snapshot) => {
+        const layout = snapshot.val();
+        if (!layout) return;
+
+        currentLayoutState = layout;
+        refreshAllLayouts();
+      });
+
+      // 2. LISTEN ACTIVE OVERLAY DISPLAY
+      database.ref('activeOverlay').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        if (data.action === 'hide') {
+          hideAll();
+          return;
+        }
+
+        // Cek izin target
+        if (!isAllowedForThisTarget(data.targets)) {
+          hideAll();
+          return;
+        }
+
+        refreshAllLayouts();
+
+        // DISPLAY LOWERTHIRD
+        if (data.type === 'lowerthird') {
+          hideAll();
+          document.getElementById('lt-title-display').innerText = data.name || '';
+          document.getElementById('lt-sub-display').innerText = data.subtitle || '';
+
+          const logoEl = document.getElementById('lt-logo-display');
+          if (data.logo) {
+            logoEl.src = data.logo;
+            logoEl.classList.remove('hidden');
+          } else {
+            logoEl.classList.add('hidden');
+          }
+
+          document.getElementById('overlay-lowerthird').classList.add('active');
+
+          if (data.duration > 0) {
+            autoHideTimeout = setTimeout(() => {
+              document.getElementById('overlay-lowerthird').classList.remove('active');
+            }, data.duration * 1000);
+          }
+        }
+
+        // DISPLAY TICKER
+        if (data.type === 'ticker') {
+          hideAll();
+          document.getElementById('ticker-text-display').innerHTML = data.content || '';
+          document.getElementById('overlay-ticker').classList.add('active');
+
+          if (data.duration > 0) {
+            autoHideTimeout = setTimeout(() => {
+              document.getElementById('overlay-ticker').classList.remove('active');
+            }, data.duration * 1000);
+          }
+        }
+
+        // DISPLAY PRESENTASI
+        if (data.type === 'presentasi' && data.slide) {
+          hideAll();
+          const imgEl = document.getElementById('slide-img-display');
+          const textEl = document.getElementById('slide-text-display');
+
+          if (data.slide.img) {
+            imgEl.src = data.slide.img;
+            imgEl.classList.remove('hidden');
+          } else {
+            imgEl.classList.add('hidden');
+          }
+
+          textEl.innerText = data.slide.text || '';
+          document.getElementById('overlay-slide').classList.add('active');
+        }
+
+        // DISPLAY CAROUSEL
+        if (data.type === 'carousel' && data.slides && data.slides.length > 0) {
+          hideAll();
+          let currentIndex = 0;
+          const imgEl = document.getElementById('slide-img-display');
+          const textEl = document.getElementById('slide-text-display');
+
+          function renderCarouselSlide(index) {
+            const slide = data.slides[index];
+            if (!slide) return;
+
+            if (slide.img) {
+              imgEl.src = slide.img;
+              imgEl.classList.remove('hidden');
+            } else {
+              imgEl.classList.add('hidden');
+            }
+            textEl.innerText = slide.text || '';
+            document.getElementById('overlay-slide').classList.add('active');
+          }
+
+          renderCarouselSlide(currentIndex);
+
+          const intervalTime = (data.interval || 10) * 1000;
+          carouselInterval = setInterval(() => {
+            currentIndex = (currentIndex + 1) % data.slides.length;
+            renderCarouselSlide(currentIndex);
+          }, intervalTime);
+        }
+
+        // DISPLAY INFO
+        if (data.type === 'info') {
+          hideAll();
+          document.getElementById('info-title-display').innerText = data.title || 'INFO';
+          document.getElementById('info-content-display').innerText = data.content || '';
+          document.getElementById('overlay-info').classList.add('active');
+
+          if (data.duration > 0) {
+            autoHideTimeout = setTimeout(() => {
+              document.getElementById('overlay-info').classList.remove('active');
+            }, data.duration * 1000);
+          }
+        }
+
+        // DISPLAY COUNTDOWN
+        if (data.type === 'countdown') {
+          hideAll();
+          document.getElementById('cd-title-display').innerText = data.title || 'COUNTDOWN';
+          
+          let totalSeconds = (parseInt(data.hours) || 0) * 3600 + (parseInt(data.minutes) || 0) * 60 + (parseInt(data.seconds) || 0);
+          
+          function updateTimerText() {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const pad = (n) => String(n).padStart(2, '0');
+            
+            if (hours > 0) {
+              document.getElementById('cd-timer-display').innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
             } else {
               document.getElementById('cd-timer-display').innerText = `${pad(minutes)}:${pad(seconds)}`;
             }
