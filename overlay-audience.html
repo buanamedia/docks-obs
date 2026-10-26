@@ -145,13 +145,21 @@
       applyElementLayout('overlay-countdown', currentLayoutState.countdown);
     }
 
-    if (typeof database !== 'undefined') {
-      database.ref('overlayLayout').on('value', (snapshot) => {
+    function initOverlayListeners() {
+      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      if (!db) {
+        console.error("Firebase Database tidak ditemukan!");
+        return;
+      }
+
+      // 1. LISTEN OVERLAY LAYOUT REALTIME
+      db.ref('overlayLayout').on('value', (snapshot) => {
         currentLayoutState = snapshot.val();
         refreshAllLayouts();
       });
 
-      database.ref('activeOverlay').on('value', (snapshot) => {
+      // 2. LISTEN ACTIVE OVERLAY REALTIME
+      db.ref('activeOverlay').on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data || data.action === 'hide' || !isAllowed(data.targets)) {
           hideAll();
@@ -234,6 +242,8 @@
         }
       });
     }
+
+    window.addEventListener('DOMContentLoaded', initOverlayListeners);
   </script>
 </body>
 </html>
