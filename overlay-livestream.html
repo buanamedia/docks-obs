@@ -104,9 +104,9 @@
 
     function hideAll() {
       document.querySelectorAll('.fade-slide-up').forEach(el => el.classList.remove('active'));
-      if (cdInterval) clearInterval(cdInterval);
-      if (carouselInterval) clearInterval(carouselInterval);
-      if (autoHideTimeout) clearTimeout(autoHideTimeout);
+      if (cdInterval) { clearInterval(cdInterval); cdInterval = null; }
+      if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = null; }
+      if (autoHideTimeout) { clearTimeout(autoHideTimeout); autoHideTimeout = null; }
     }
 
     function isAllowed(targets) {
@@ -146,15 +146,18 @@
     }
 
     if (typeof database !== 'undefined') {
+      // 1. LISTEN OVERLAY LAYOUT REALTIME
       database.ref('overlayLayout').on('value', (snapshot) => {
         currentLayoutState = snapshot.val();
         refreshAllLayouts();
       });
 
+      // 2. LISTEN ACTIVE OVERLAY REALTIME
       database.ref('activeOverlay').on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data || data.action === 'hide' || !isAllowed(data.targets)) {
-          hideAll(); return;
+          hideAll();
+          return;
         }
 
         refreshAllLayouts();
@@ -221,7 +224,10 @@
             const hours = Math.floor(totalSeconds / 3600), minutes = Math.floor((totalSeconds % 3600) / 60), seconds = totalSeconds % 60;
             const pad = (n) => String(n).padStart(2, '0');
             document.getElementById('cd-timer-display').innerText = hours > 0 ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}` : `${pad(minutes)}:${pad(seconds)}`;
-            if (totalSeconds <= 0) clearInterval(cdInterval);
+            if (totalSeconds <= 0) {
+              clearInterval(cdInterval);
+              cdInterval = null;
+            }
             totalSeconds--;
           }
           updateTimerText();
