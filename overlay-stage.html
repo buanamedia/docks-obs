@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Stage - By Buana Media</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase SDK Compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <style>
+    body {
+      margin: 0; padding: 0; overflow: hidden;
+      font-family: 'Poppins', 'Inter', sans-serif;
+      background: transparent !important;
+      width: 1920px; height: 1080px; user-select: none;
+    }
+    .fade-slide-up {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      opacity: 0; pointer-events: none; visibility: hidden;
+    }
+    .fade-slide-up.active {
+      opacity: 1 !important; visibility: visible !important; pointer-events: auto !important;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .animate-marquee { display: inline-block; white-space: nowrap; animation: marquee 20s linear infinite; }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.6);
+    }
+    #overlay-lowerthird { bottom: 80px; left: 80px; }
+    #overlay-ticker { bottom: 0; left: 0; }
+    #overlay-slide { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    #overlay-info { top: 60px; right: 60px; }
+    #overlay-countdown { top: 60px; left: 60px; }
+  </style>
+</head>
+<body class="relative w-[1920px] h-[1080px]">
+
+  <div id="overlay-lowerthird" class="fade-slide-up absolute flex items-stretch z-20">
+    <div class="w-2.5 bg-gradient-to-b from-indigo-500 to-indigo-700 rounded-l-xl"></div>
+    <div class="glass-card px-8 py-4 rounded-r-xl border-l-0 min-w-[380px] flex items-center gap-4">
+      <img id="lt-logo-display" src="" class="w-14 h-14 rounded-lg object-cover hidden border border-white/20 shadow-md shrink-0" alt="Logo">
+      <div>
+        <h1 id="lt-title-display" class="text-2xl font-extrabold text-white tracking-wide uppercase">-</h1>
+        <p id="lt-sub-display" class="text-base font-medium text-indigo-400 mt-0.5">-</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay-ticker" class="fade-slide-up absolute glass-card border-x-0 border-b-0 h-12 flex items-center overflow-hidden z-30" style="width: 100%;">
+    <div class="bg-indigo-600 text-white font-bold text-xs uppercase px-5 h-full flex items-center tracking-wider shrink-0 z-10 shadow-lg">
+      <i class="fa-solid fa-bullhorn mr-2"></i> Warta
+    </div>
+    <div class="flex-1 overflow-hidden relative h-full flex items-center">
+      <div id="ticker-text-display" class="animate-marquee text-white font-semibold text-sm tracking-wide"></div>
+    </div>
+  </div>
+
+  <div id="overlay-slide" class="fade-slide-up absolute flex items-center justify-center p-10 z-10">
+    <div class="glass-card rounded-2xl max-w-4xl w-full p-8 text-center flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
+      <img id="slide-img-display" src="" class="max-h-[500px] w-auto object-contain rounded-lg mb-4 hidden shadow-md" alt="Slide Image">
+      <h2 id="slide-text-display" class="text-3xl font-bold text-white leading-relaxed drop-shadow-md"></h2>
+    </div>
+  </div>
+
+  <div id="overlay-info" class="fade-slide-up absolute glass-card rounded-xl p-5 max-w-md border-l-4 border-l-amber-500 shadow-2xl z-20">
+    <div class="flex items-start gap-3">
+      <div class="text-amber-400 text-xl pt-0.5"><i class="fa-solid fa-circle-info"></i></div>
+      <div>
+        <h3 id="info-title-display" class="text-sm font-bold text-amber-300 uppercase tracking-wider">Pengumuman</h3>
+        <p id="info-content-display" class="text-xs text-gray-200 mt-1 font-medium leading-relaxed"></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay-countdown" class="fade-slide-up absolute glass-card rounded-2xl px-10 py-5 text-center shadow-2xl border border-indigo-500/30 z-20">
+    <div id="cd-title-display" class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Acara Akan Dimulai</div>
+    <div id="cd-timer-display" class="text-5xl font-black text-white font-mono tracking-wider drop-shadow-lg">00:00</div>
+  </div>
+
+  <script>
+    const TARGET_NAME = 'stage'; // Target khusus Stage Monitor
+    let cdInterval = null, carouselInterval = null, autoHideTimeout = null, currentLayoutState = null;
+
+    function hideAll() {
+      document.querySelectorAll('.fade-slide-up').forEach(el => el.classList.remove('active'));
+      if (cdInterval) clearInterval(cdInterval);
+      if (carouselInterval) clearInterval(carouselInterval);
+      if (autoHideTimeout) clearTimeout(autoHideTimeout);
+    }
+
+    function isAllowed(targets) {
+      if (!targets) return true;
+      return targets[TARGET_NAME] !== false;
+    }
+
+    function applyElementLayout(elementId, config) {
+      const el = document.getElementById(elementId);
+      if (!el || !config) return;
+      if (typeof config.posX !== 'undefined') el.style.left = config.posX + 'px';
+      if (typeof config.posY !== 'undefined') el.style.top = config.posY + 'px';
+      if (typeof config.scale !== 'undefined') {
+        el.style.transform = `scale(${config.scale})`;
+        el.style.transformOrigin = 'top left';
+      }
+      if (config.fontSize) el.style.fontSize = config.fontSize + 'em';
+      const card = el.querySelector('.glass-card') || el;
+      if (card && typeof config.borderRadius !== 'undefined') card.style.borderRadius = config.borderRadius + 'px';
+    }
+
+    function refreshAllLayouts() {
+      if (!currentLayoutState) return;
+      applyElementLayout('overlay-lowerthird', currentLayoutState.lowerthird);
+      applyElementLayout('overlay-ticker', currentLayoutState.ticker);
+      applyElementLayout('overlay-slide', currentLayoutState.slide);
+      applyElementLayout('overlay-info', currentLayoutState.info);
+      applyElementLayout('overlay-countdown', currentLayoutState.countdown);
+    }
+
+    if (typeof database !== 'undefined') {
+      database.ref('overlayLayout').on('value', (snapshot) => {
+        currentLayoutState = snapshot.val();
+        refreshAllLayouts();
+      });
+
+      database.ref('activeOverlay').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data || data.action === 'hide' || !isAllowed(data.targets)) {
+          hideAll(); return;
+        }
+
+        refreshAllLayouts();
+
+        if (data.type === 'lowerthird') {
+          hideAll();
+          document.getElementById('lt-title-display').innerText = data.name || '';
+          document.getElementById('lt-sub-display').innerText = data.subtitle || '';
+          const logoEl = document.getElementById('lt-logo-display');
+          if (data.logo) { logoEl.src = data.logo; logoEl.classList.remove('hidden'); }
+          else { logoEl.classList.add('hidden'); }
+          document.getElementById('overlay-lowerthird').classList.add('active');
+          if (data.duration > 0) autoHideTimeout = setTimeout(() => hideAll(), data.duration * 1000);
+        }
+
+        if (data.type === 'ticker') {
+          hideAll();
+          document.getElementById('ticker-text-display').innerHTML = data.content || '';
+          document.getElementById('overlay-ticker').classList.add('active');
+          if (data.duration > 0) autoHideTimeout = setTimeout(() => hideAll(), data.duration * 1000);
+        }
+
+        if (data.type === 'presentasi' && data.slide) {
+          hideAll();
+          const imgEl = document.getElementById('slide-img-display');
+          if (data.slide.img) { imgEl.src = data.slide.img; imgEl.classList.remove('hidden'); }
+          else { imgEl.classList.add('hidden'); }
+          document.getElementById('slide-text-display').innerText = data.slide.text || '';
+          document.getElementById('overlay-slide').classList.add('active');
+        }
+
+        if (data.type === 'carousel' && data.slides && data.slides.length > 0) {
+          hideAll();
+          let currentIndex = 0;
+          const imgEl = document.getElementById('slide-img-display');
+          function renderCarouselSlide(idx) {
+            const slide = data.slides[idx];
+            if (!slide) return;
+            if (slide.img) { imgEl.src = slide.img; imgEl.classList.remove('hidden'); }
+            else { imgEl.classList.add('hidden'); }
+            document.getElementById('slide-text-display').innerText = slide.text || '';
+            document.getElementById('overlay-slide').classList.add('active');
+          }
+          renderCarouselSlide(currentIndex);
+          carouselInterval = setInterval(() => {
+            currentIndex = (currentIndex + 1) % data.slides.length;
+            renderCarouselSlide(currentIndex);
+          }, (data.interval || 10) * 1000);
+        }
+
+        if (data.type === 'info') {
+          hideAll();
+          document.getElementById('info-title-display').innerText = data.title || 'INFO';
+          document.getElementById('info-content-display').innerText = data.content || '';
+          document.getElementById('overlay-info').classList.add('active');
+          if (data.duration > 0) autoHideTimeout = setTimeout(() => hideAll(), data.duration * 1000);
+        }
+
+        if (data.type === 'countdown') {
+          hideAll();
+          document.getElementById('cd-title-display').innerText = data.title || 'COUNTDOWN';
+          let totalSeconds = (parseInt(data.hours) || 0) * 3600 + (parseInt(data.minutes) || 0) * 60 + (parseInt(data.seconds) || 0);
+          function updateTimerText() {
+            const hours = Math.floor(totalSeconds / 3600), minutes = Math.floor((totalSeconds % 3600) / 60), seconds = totalSeconds % 60;
+            const pad = (n) => String(n).padStart(2, '0');
+            document.getElementById('cd-timer-display').innerText = hours > 0 ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}` : `${pad(minutes)}:${pad(seconds)}`;
+            if (totalSeconds <= 0) clearInterval(cdInterval);
+            totalSeconds--;
+          }
+          updateTimerText();
+          cdInterval = setInterval(updateTimerText, 1000);
+          document.getElementById('overlay-countdown').classList.add('active');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
