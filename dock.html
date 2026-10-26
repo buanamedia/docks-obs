@@ -1172,9 +1172,13 @@
     }
 
     function saveNewPresentation() {
-      const title = document.getElementById('newPresTitle').value || 'Presentasi Baru';
-      const speaker = document.getElementById('newPresSpeaker').value || '-';
+      const titleInput = document.getElementById('newPresTitle');
+      const speakerInput = document.getElementById('newPresSpeaker');
+      
+      const title = titleInput.value.trim() || 'Presentasi Baru';
+      const speaker = speakerInput.value.trim() || '-';
       const newId = 'p' + Date.now();
+      
       state.presentations.push({ id: newId, title, speaker, slides: [] });
       selectPresCard(newId);
       syncStateToFirebase();
@@ -1255,9 +1259,13 @@
     }
 
     function saveNewCarousel() {
-      const title = document.getElementById('newCarouselTitle').value || 'Carousel Baru';
-      const admin = document.getElementById('newCarouselAdmin').value || '-';
+      const titleInput = document.getElementById('newCarouselTitle');
+      const adminInput = document.getElementById('newCarouselAdmin');
+
+      const title = titleInput.value.trim() || 'Carousel Baru';
+      const admin = adminInput.value.trim() || '-';
       const newId = 'c' + Date.now();
+      
       state.carousels.push({ id: newId, title, admin, slides: [] });
       selectCarouselCard(newId);
       syncStateToFirebase();
