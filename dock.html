@@ -45,7 +45,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   
-  <!-- File Konfigurasi Firebase External -->
+  <!-- File Konfigurasi Firebase External & Auth Helper -->
   <script src="js/firebase-config.js"></script>
   <script src="js/auth-check.js"></script>
 
@@ -80,23 +80,30 @@
 
   <div class="max-w-7xl mx-auto w-full space-y-4">
     
-    <!-- ADMIN NAVIGATION PANEL (KHUSUS ADMIN) -->
-    <div id="adminNavigationPanel" class="hidden bg-indigo-950/60 border border-indigo-700/60 rounded-xl p-3 shadow-xl flex flex-col md:flex-row items-center justify-between gap-3">
-      <div class="flex items-center gap-2.5">
-        <span class="bg-indigo-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded tracking-wider uppercase">ADMIN</span>
-        <span class="text-xs font-bold text-indigo-200">Panel Akses Manajemen OBS:</span>
+    <!-- HEADER NAVIGASI OBS DOCK PANEL -->
+    <div class="bg-cardBg border border-cardBorder rounded-xl p-3 shadow-lg flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-sliders text-sm"></i>
+        </div>
+        <div>
+          <h1 class="text-xs font-bold uppercase tracking-wider text-white">OBS DOCK PANEL</h1>
+          <p class="text-[11px] text-gray-400">Pusat Navigasi & Kontrol Tampilan OBS</p>
+        </div>
       </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <a href="https://obs.buanamedia.my.id/admin.html" target="_blank" class="bg-indigo-900/80 hover:bg-indigo-800 text-indigo-200 border border-indigo-600/80 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
-          <i class="fa-solid fa-users-gear"></i> Kelola User (Admin)
+
+      <!-- NAVIGASI LINKS -->
+      <div class="flex items-center flex-wrap gap-2">
+        <a id="adminNavBtn" href="https://obs.buanamedia.my.id/admin.html" class="hidden bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-300 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5">
+          <i class="fa-solid fa-users-gear text-indigo-400"></i> Kelola User
         </a>
-        <a href="https://obs.buanamedia.my.id/kontrol.html" target="_blank" class="bg-indigo-900/80 hover:bg-indigo-800 text-indigo-200 border border-indigo-600/80 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
-          <i class="fa-solid fa-gamepad"></i> Panel Kontrol
+        <a href="https://obs.buanamedia.my.id/kontrol.html" class="bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-300 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5">
+          <i class="fa-solid fa-gamepad text-indigo-400"></i> Kontrol Presentasi
         </a>
-        <a href="https://obs.buanamedia.my.id/layout.html" target="_blank" class="bg-indigo-900/80 hover:bg-indigo-800 text-indigo-200 border border-indigo-600/80 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
-          <i class="fa-solid fa-display"></i> Simulasi Layout
+        <a href="https://obs.buanamedia.my.id/layout.html" class="bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-300 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5">
+          <i class="fa-solid fa-display text-indigo-400"></i> Layout
         </a>
-        <button onclick="handleLogout()" class="bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-300 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+        <button onclick="handleLogout()" class="bg-red-950/70 hover:bg-red-900 border border-red-800/80 text-red-400 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition flex items-center gap-1">
           <i class="fa-solid fa-right-from-bracket"></i> Logout
         </button>
       </div>
@@ -719,9 +726,9 @@
 
       db.ref('users/' + user.uid).once('value').then(snapshot => {
         const userData = snapshot.val();
-        if (userData && userData.role === 'admin') {
-          const panel = document.getElementById('adminNavigationPanel');
-          if (panel) panel.classList.remove('hidden');
+        if (userData && userData.role && userData.role.toLowerCase() === 'admin') {
+          const navBtn = document.getElementById('adminNavBtn');
+          if (navBtn) navBtn.classList.remove('hidden');
         }
       }).catch(err => console.warn("Error checking admin role:", err));
     }
@@ -1775,7 +1782,6 @@
       initSupabase();
       listenToFirebaseRealtime();
       
-      // PERBAIKAN: Direct Fallback auth check jika user sudah terautentikasi oleh Firebase SDK
       if (typeof firebase !== 'undefined' && firebase.auth) {
         firebase.auth().onAuthStateChanged((user) => {
           if (user) {
