@@ -67,12 +67,19 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
       box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.6);
     }
+
+    /* POSISI DEFAULT JIKA LAYOUT FIREBASE BELUM DIATUR */
+    #overlay-lowerthird { bottom: 80px; left: 80px; }
+    #overlay-ticker { bottom: 0; left: 0; }
+    #overlay-slide { inset: 0; margin: auto; }
+    #overlay-info { top: 60px; right: 60px; }
+    #overlay-countdown { top: 60px; left: 60px; }
   </style>
 </head>
 <body class="relative w-[1920px] h-[1080px]">
 
   <!-- 1. LOWERTHIRD DISPLAY -->
-  <div id="overlay-lowerthird" class="fade-slide-up absolute flex items-stretch">
+  <div id="overlay-lowerthird" class="fade-slide-up absolute flex items-stretch z-20">
     <div class="w-2.5 bg-gradient-to-b from-indigo-500 to-indigo-700 rounded-l-xl"></div>
     <div class="glass-card px-8 py-4 rounded-r-xl border-l-0 min-w-[380px] flex items-center gap-4">
       <img id="lt-logo-display" src="" class="w-14 h-14 rounded-lg object-cover hidden border border-white/20 shadow-md shrink-0" alt="Logo">
@@ -84,7 +91,7 @@
   </div>
 
   <!-- 2. TICKER DISPLAY -->
-  <div id="overlay-ticker" class="fade-slide-up absolute glass-card border-x-0 border-b-0 h-12 flex items-center overflow-hidden" style="width: 100%;">
+  <div id="overlay-ticker" class="fade-slide-up absolute glass-card border-x-0 border-b-0 h-12 flex items-center overflow-hidden z-30" style="width: 100%;">
     <div class="bg-indigo-600 text-white font-bold text-xs uppercase px-5 h-full flex items-center tracking-wider shrink-0 z-10 shadow-lg">
       <i class="fa-solid fa-bullhorn mr-2"></i> Warta
     </div>
@@ -96,7 +103,7 @@
   </div>
 
   <!-- 3. PRESENTASI / CAROUSEL DISPLAY -->
-  <div id="overlay-slide" class="fade-slide-up absolute flex items-center justify-center p-10">
+  <div id="overlay-slide" class="fade-slide-up absolute flex items-center justify-center p-10 z-10">
     <div class="glass-card rounded-2xl max-w-4xl w-full p-8 text-center flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
       <img id="slide-img-display" src="" class="max-h-[500px] w-auto object-contain rounded-lg mb-4 hidden shadow-md" alt="Slide Image">
       <h2 id="slide-text-display" class="text-3xl font-bold text-white leading-relaxed drop-shadow-md">
@@ -106,7 +113,7 @@
   </div>
 
   <!-- 4. INFO BANNER -->
-  <div id="overlay-info" class="fade-slide-up absolute glass-card rounded-xl p-5 max-w-md border-l-4 border-l-amber-500 shadow-2xl">
+  <div id="overlay-info" class="fade-slide-up absolute glass-card rounded-xl p-5 max-w-md border-l-4 border-l-amber-500 shadow-2xl z-20">
     <div class="flex items-start gap-3">
       <div class="text-amber-400 text-xl pt-0.5"><i class="fa-solid fa-circle-info"></i></div>
       <div>
@@ -119,7 +126,7 @@
   </div>
 
   <!-- 5. COUNTDOWN DISPLAY -->
-  <div id="overlay-countdown" class="fade-slide-up absolute glass-card rounded-2xl px-10 py-5 text-center shadow-2xl border border-indigo-500/30">
+  <div id="overlay-countdown" class="fade-slide-up absolute glass-card rounded-2xl px-10 py-5 text-center shadow-2xl border border-indigo-500/30 z-20">
     <div id="cd-title-display" class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Acara Akan Dimulai</div>
     <div id="cd-timer-display" class="text-5xl font-black text-white font-mono tracking-wider drop-shadow-lg">
       00:05:00
@@ -136,9 +143,9 @@
     function getCurrentTarget() {
       const urlParams = new URLSearchParams(window.location.search);
       const queryTarget = urlParams.get('target');
-      if (queryTarget) return queryTarget.trim();
+      if (queryTarget) return queryTarget.trim().toLowerCase();
 
-      const hash = window.location.hash.replace('#', '').trim();
+      const hash = window.location.hash.replace('#', '').trim().toLowerCase();
       if (hash) return hash;
 
       return 'stream';
@@ -165,164 +172,15 @@
       const el = document.getElementById(elementId);
       if (!el || !config) return;
 
-      el.style.setProperty('position', 'absolute', 'important');
-      el.style.setProperty('left', config.posX + 'px', 'important');
-      el.style.setProperty('top', config.posY + 'px', 'important');
-      el.style.setProperty('transform', `scale(${config.scale})`, 'important');
-      el.style.setProperty('transform-origin', 'top left', 'important');
-      el.style.setProperty('font-size', config.fontSize + 'em');
+      const scale = config.scale !== undefined ? config.scale : 1;
+      const posX = config.posX !== undefined ? config.posX + 'px' : '';
+      const posY = config.posY !== undefined ? config.posY + 'px' : '';
 
-      const card = el.querySelector('.glass-card') || el;
-      if (card) {
-        card.style.setProperty('border-radius', config.borderRadius + 'px');
-      }
-    }
-
-    function refreshAllLayouts() {
-      if (!currentLayoutState) return;
-      applyElementLayout('overlay-lowerthird', currentLayoutState.lowerthird);
-      applyElementLayout('overlay-ticker', currentLayoutState.ticker);
-      applyElementLayout('overlay-slide', currentLayoutState.slide);
-      applyElementLayout('overlay-info', currentLayoutState.info);
-      applyElementLayout('overlay-countdown', currentLayoutState.countdown);
-    }
-
-    if (typeof database !== 'undefined') {
+      if (posX) el.style.setProperty('left', posX, 'important');
+      if (posY) el.style.setProperty('top', posY, 'important');
       
-      // 1. LISTEN LAYOUT REALTIME
-      database.ref('overlayLayout').on('value', (snapshot) => {
-        const layout = snapshot.val();
-        if (!layout) return;
-
-        currentLayoutState = layout;
-        refreshAllLayouts();
-      });
-
-      // 2. LISTEN ACTIVE OVERLAY DISPLAY
-      database.ref('activeOverlay').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return;
-
-        if (data.action === 'hide') {
-          hideAll();
-          return;
-        }
-
-        if (!isAllowedForThisTarget(data.targets)) {
-          hideAll();
-          return;
-        }
-
-        // Terapkan tata letak terbaru
-        refreshAllLayouts();
-
-        if (data.type === 'lowerthird') {
-          hideAll();
-          document.getElementById('lt-title-display').innerText = data.name || '';
-          document.getElementById('lt-sub-display').innerText = data.subtitle || '';
-
-          const logoEl = document.getElementById('lt-logo-display');
-          if (data.logo) {
-            logoEl.src = data.logo;
-            logoEl.classList.remove('hidden');
-          } else {
-            logoEl.classList.add('hidden');
-          }
-
-          document.getElementById('overlay-lowerthird').classList.add('active');
-
-          if (data.duration > 0) {
-            autoHideTimeout = setTimeout(() => {
-              document.getElementById('overlay-lowerthird').classList.remove('active');
-            }, data.duration * 1000);
-          }
-        }
-
-        if (data.type === 'ticker') {
-          hideAll();
-          document.getElementById('ticker-text-display').innerHTML = data.content || '';
-          document.getElementById('overlay-ticker').classList.add('active');
-
-          if (data.duration > 0) {
-            autoHideTimeout = setTimeout(() => {
-              document.getElementById('overlay-ticker').classList.remove('active');
-            }, data.duration * 1000);
-          }
-        }
-
-        if (data.type === 'presentasi' && data.slide) {
-          hideAll();
-          const imgEl = document.getElementById('slide-img-display');
-          const textEl = document.getElementById('slide-text-display');
-
-          if (data.slide.img) {
-            imgEl.src = data.slide.img;
-            imgEl.classList.remove('hidden');
-          } else {
-            imgEl.classList.add('hidden');
-          }
-
-          textEl.innerText = data.slide.text || '';
-          document.getElementById('overlay-slide').classList.add('active');
-        }
-
-        if (data.type === 'carousel' && data.slides && data.slides.length > 0) {
-          hideAll();
-          let currentIndex = 0;
-          const imgEl = document.getElementById('slide-img-display');
-          const textEl = document.getElementById('slide-text-display');
-
-          function renderCarouselSlide(index) {
-            const slide = data.slides[index];
-            if (!slide) return;
-
-            if (slide.img) {
-              imgEl.src = slide.img;
-              imgEl.classList.remove('hidden');
-            } else {
-              imgEl.classList.add('hidden');
-            }
-            textEl.innerText = slide.text || '';
-            document.getElementById('overlay-slide').classList.add('active');
-          }
-
-          renderCarouselSlide(currentIndex);
-
-          const intervalTime = (data.interval || 10) * 1000;
-          carouselInterval = setInterval(() => {
-            currentIndex = (currentIndex + 1) % data.slides.length;
-            renderCarouselSlide(currentIndex);
-          }, intervalTime);
-        }
-
-        if (data.type === 'info') {
-          hideAll();
-          document.getElementById('info-title-display').innerText = data.title || 'INFO';
-          document.getElementById('info-content-display').innerText = data.content || '';
-          document.getElementById('overlay-info').classList.add('active');
-
-          if (data.duration > 0) {
-            autoHideTimeout = setTimeout(() => {
-              document.getElementById('overlay-info').classList.remove('active');
-            }, data.duration * 1000);
-          }
-        }
-
-        if (data.type === 'countdown') {
-          hideAll();
-          document.getElementById('cd-title-display').innerText = data.title || 'COUNTDOWN';
-          
-          let totalSeconds = (parseInt(data.hours) || 0) * 3600 + (parseInt(data.minutes) || 0) * 60 + (parseInt(data.seconds) || 0);
-          
-          function updateTimerText() {
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-
-            const pad = (n) => String(n).padStart(2, '0');
-            
-            if (hours > 0) {
-              document.getElementById('cd-timer-display').innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      el.style.setProperty('position', 'absolute', 'important');
+      el.style.setProperty('transform', `scale(${scale})`, 'important'); el.style.setProperty('transform-origin', 'top left', 'important');  if (config.fontSize) { el.style.setProperty('font-size', config.fontSize + 'em'); }  const card = el.querySelector('.glass-card') \vert{}\vert{} el; if (card && config.borderRadius !== undefined) { card.style.setProperty('border-radius', config.borderRadius + 'px'); } }  function refreshAllLayouts() { if (!currentLayoutState) return; applyElementLayout('overlay-lowerthird', currentLayoutState.lowerthird); applyElementLayout('overlay-ticker', currentLayoutState.ticker); applyElementLayout('overlay-slide', currentLayoutState.slide); applyElementLayout('overlay-info', currentLayoutState.info); applyElementLayout('overlay-countdown', currentLayoutState.countdown); }  if (typeof database !== 'undefined') {  // 1. LISTEN LAYOUT REALTIME database.ref('overlayLayout').on('value', (snapshot) => { const layout = snapshot.val(); if (!layout) return;  currentLayoutState = layout; refreshAllLayouts(); });  // 2. LISTEN ACTIVE OVERLAY DISPLAY database.ref('activeOverlay').on('value', (snapshot) => { const data = snapshot.val(); if (!data) return;  if (data.action === 'hide') { hideAll(); return; }  if (!isAllowedForThisTarget(data.targets)) { hideAll(); return; }  // Terapkan tata letak terbaru jika ada refreshAllLayouts();  if (data.type === 'lowerthird') { hideAll(); document.getElementById('lt-title-display').innerText = data.name \vert{}\vert{} ''; document.getElementById('lt-sub-display').innerText = data.subtitle \vert{}\vert{} '';  const logoEl = document.getElementById('lt-logo-display'); if (data.logo) { logoEl.src = data.logo; logoEl.classList.remove('hidden'); } else { logoEl.classList.add('hidden'); }  document.getElementById('overlay-lowerthird').classList.add('active');  if (data.duration > 0) { autoHideTimeout = setTimeout(() => { document.getElementById('overlay-lowerthird').classList.remove('active'); }, data.duration * 1000); } }  if (data.type === 'ticker') { hideAll(); document.getElementById('ticker-text-display').innerHTML = data.content \vert{}\vert{} ''; document.getElementById('overlay-ticker').classList.add('active');  if (data.duration > 0) { autoHideTimeout = setTimeout(() => { document.getElementById('overlay-ticker').classList.remove('active'); }, data.duration * 1000); } }  if (data.type === 'presentasi' && data.slide) { hideAll(); const imgEl = document.getElementById('slide-img-display'); const textEl = document.getElementById('slide-text-display');  if (data.slide.img) { imgEl.src = data.slide.img; imgEl.classList.remove('hidden'); } else { imgEl.classList.add('hidden'); }  textEl.innerText = data.slide.text \vert{}\vert{} ''; document.getElementById('overlay-slide').classList.add('active'); }  if (data.type === 'carousel' && data.slides && data.slides.length > 0) { hideAll(); let currentIndex = 0; const imgEl = document.getElementById('slide-img-display'); const textEl = document.getElementById('slide-text-display');  function renderCarouselSlide(index) { const slide = data.slides[index]; if (!slide) return;  if (slide.img) { imgEl.src = slide.img; imgEl.classList.remove('hidden'); } else { imgEl.classList.add('hidden'); } textEl.innerText = slide.text \vert{}\vert{} ''; document.getElementById('overlay-slide').classList.add('active'); }  renderCarouselSlide(currentIndex);  const intervalTime = (data.interval \vert{}\vert{} 10) * 1000; carouselInterval = setInterval(() => { currentIndex = (currentIndex + 1) \% data.slides.length; renderCarouselSlide(currentIndex); }, intervalTime); }  if (data.type === 'info') { hideAll(); document.getElementById('info-title-display').innerText = data.title \vert{}\vert{} 'INFO'; document.getElementById('info-content-display').innerText = data.content \vert{}\vert{} ''; document.getElementById('overlay-info').classList.add('active');  if (data.duration > 0) { autoHideTimeout = setTimeout(() => { document.getElementById('overlay-info').classList.remove('active'); }, data.duration * 1000); } }  if (data.type === 'countdown') { hideAll(); document.getElementById('cd-title-display').innerText = data.title \vert{}\vert{} 'COUNTDOWN';  let totalSeconds = (parseInt(data.hours) \vert{}\vert{} 0) * 3600 + (parseInt(data.minutes) \vert{}\vert{} 0) * 60 + (parseInt(data.seconds) \vert{}\vert{} 0);  function updateTimerText() { const hours = Math.floor(totalSeconds / 3600); const minutes = Math.floor((totalSeconds \% 3600) / 60); const seconds = totalSeconds \% 60;  const pad = (n) => String(n).padStart(2, '0');  if (hours > 0) { document.getElementById('cd-timer-display').innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
             } else {
               document.getElementById('cd-timer-display').innerText = `${pad(minutes)}:${pad(seconds)}`;
             }
