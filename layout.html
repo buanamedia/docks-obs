@@ -63,7 +63,7 @@
     .monitor-viewport {
       position: relative;
       width: 100%;
-      aspect-ratio: 16 / 9; /* Mengunci rasio ke 16:9 Landscape */
+      aspect-ratio: 16 / 9;
       background: #000;
       display: flex;
       align-items: center;
@@ -76,7 +76,7 @@
     .monitor-frame {
       position: absolute;
       background: #050811;
-      border: 3px dashed #6366f1; /* Garis Pinggir Penanda Monitor Ke-2 */
+      border: 3px dashed #6366f1;
       box-shadow: 0 0 25px rgba(99, 102, 241, 0.25);
       transform-origin: center center;
       overflow: hidden;
@@ -162,6 +162,19 @@
       <!-- LEFT CONTROL PANEL -->
       <div class="lg:col-span-4 bg-cardBg border border-cardBorder rounded-xl p-4 shadow-xl space-y-4">
         
+        <!-- PEMILIH TARGET DISPLAY LAYOUT -->
+        <div>
+          <label class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider block mb-1">Target Display Layout</label>
+          <select id="targetLayoutSelect" onchange="changeTargetLayout(this.value)" class="w-full bg-emerald-950/40 border border-emerald-600/60 text-emerald-300 font-bold text-xs rounded-lg p-2.5 outline-none focus:border-emerald-500 mb-1">
+            <option value="stream" selected>🔴 Live Streaming (overlay-livestream.html)</option>
+            <option value="audience">👥 Monitor Audiens (overlay-audience.html)</option>
+            <option value="stage">🎤 Monitor Stage / Panggung (overlay-stage.html)</option>
+          </select>
+          <p class="text-[10px] text-gray-400 italic">Pilih target layar yang ingin disetting posisi layout-nya.</p>
+        </div>
+
+        <hr class="border-cardBorder">
+
         <!-- UKURAN MONITOR / CANVAS RESOLUTION -->
         <div>
           <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Ukuran Monitor / Canvas</label>
@@ -296,7 +309,7 @@
             
             <!-- MONITOR FRAME (GARIS PINGGIR LAYAR) -->
             <div id="monitorFrame" class="monitor-frame">
-              <div class="monitor-screen-label" id="screenLabelText">MONITOR 2 - 1920x1080</div>
+              <div class="monitor-screen-label" id="screenLabelText">MONITOR 2 - STREAM (1920x1080)</div>
 
               <!-- DUMMY LOWERTHIRD -->
               <div id="preview-lowerthird" onclick="selectModuleFromCanvas('lowerthird')" class="overlay-item flex items-stretch" style="left: 64px; top: 920px;">
@@ -402,6 +415,7 @@
     let canvasHeight = 1080;
     let canvasScaleRatio = 1;
     let isShowingAllModules = false;
+    let currentTarget = 'stream'; // Default: 'stream', 'audience', atau 'stage'
 
     const defaultLayouts = {
       lowerthird: { posX: 64, posY: 920, scale: 1, opacity: 1, fontSize: 1, borderRadius: 12 },
@@ -411,10 +425,15 @@
       countdown: { posX: 810, posY: 64, scale: 1, opacity: 1, fontSize: 1, borderRadius: 16 }
     };
 
-    let layoutState = JSON.parse(JSON.stringify(defaultLayouts));
+    let allLayoutsState = {
+      stream: JSON.parse(JSON.stringify(defaultLayouts)),
+      audience: JSON.parse(JSON.stringify(defaultLayouts)),
+      stage: JSON.parse(JSON.stringify(defaultLayouts))
+    };
+
     let activeModule = 'lowerthird';
 
-    // FIT CANVAS MONITOR FRAME TO CONTAINER (SELALU LANDSCAPE PROPORSI)
+    // FIT CANVAS MONITOR FRAME TO CONTAINER
     function fitMonitorFrame() {
       const container = document.getElementById('monitorViewport');
       const frame = document.getElementById('monitorFrame');
@@ -431,6 +450,15 @@
       frame.style.width = canvasWidth + 'px';
       frame.style.height = canvasHeight + 'px';
       frame.style.transform = `scale(${canvasScaleRatio})`;
+    }
+
+    function changeTargetLayout(target) {
+      currentTarget = target;
+      loadModuleSettingsToForm();
+      updateCanvasDimensionsUI();
+      ['lowerthird', 'ticker', 'slide', 'info', 'countdown'].forEach(m => applyLayoutToPreview(m));
+      highlightActiveModule();
+      showToast('Mengedit Layout: ' + target.toUpperCase());
     }
 
     function changeCanvasResolution(val) {
@@ -455,7 +483,7 @@
 
     function updateCanvasDimensionsUI() {
       document.getElementById('resLabelBadge').innerText = `${canvasWidth} x ${canvasHeight}`;
-      document.getElementById('screenLabelText').innerText = `MONITOR 2 - ${canvasWidth}x${canvasHeight}`;
+      document.getElementById('screenLabelText').innerText = `MONITOR 2 - ${currentTarget.toUpperCase()} (${canvasWidth}x${canvasHeight})`;
       
       document.getElementById('posX').max = canvasWidth;
       document.getElementById('posY').max = canvasHeight;
@@ -495,7 +523,8 @@
     }
 
     function loadModuleSettingsToForm() {
-      const data = layoutState[activeModule] || defaultLayouts[activeModule];
+      const currentTargetData = allLayoutsState[currentTarget] || defaultLayouts;
+      const data = currentTargetData[activeModule] || defaultLayouts[activeModule];
       
       document.getElementById('posX').value = data.posX;
       document.getElementById('posXVal').innerText = data.posX + 'px';
@@ -531,7 +560,10 @@
       document.getElementById('fontSizeVal').innerText = fontSize + 'em';
       document.getElementById('borderRadiusVal').innerText = borderRadius + 'px';
 
-      layoutState[activeModule] = { posX, posY, scale, opacity, fontSize, borderRadius };
+      if (!allLayoutsState[currentTarget]) {
+        allLayoutsState[currentTarget] = JSON.parse(JSON.stringify(defaultLayouts));
+      }
+      allLayoutsState[currentTarget][activeModule] = { posX, posY, scale, opacity, fontSize, borderRadius };
       applyLayoutToPreview(activeModule);
     }
 
@@ -539,7 +571,9 @@
       const el = document.getElementById('preview-' + mod);
       if (!el) return;
 
-      const data = layoutState[mod];
+      const currentTargetData = allLayoutsState[currentTarget] || defaultLayouts;
+      const data = currentTargetData[mod] || defaultLayouts[mod];
+
       el.style.left = data.posX + 'px';
       el.style.top = data.posY + 'px';
       el.style.transform = `scale(${data.scale})`;
@@ -601,10 +635,11 @@
           draggedMod = m;
           selectModuleFromCanvas(m);
 
+          const currentTargetData = allLayoutsState[currentTarget] || defaultLayouts;
           startX = e.clientX;
           startY = e.clientY;
-          origX = layoutState[m].posX;
-          origY = layoutState[m].posY;
+          origX = currentTargetData[m].posX;
+          origY = currentTargetData[m].posY;
 
           e.preventDefault();
         });
@@ -622,8 +657,11 @@
         newX = Math.max(0, Math.min(canvasWidth - 50, newX));
         newY = Math.max(0, Math.min(canvasHeight - 50, newY));
 
-        layoutState[draggedMod].posX = newX;
-        layoutState[draggedMod].posY = newY;
+        if (!allLayoutsState[currentTarget]) {
+          allLayoutsState[currentTarget] = JSON.parse(JSON.stringify(defaultLayouts));
+        }
+        allLayoutsState[currentTarget][draggedMod].posX = newX;
+        allLayoutsState[currentTarget][draggedMod].posY = newY;
 
         document.getElementById('posX').value = newX;
         document.getElementById('posY').value = newY;
@@ -640,17 +678,18 @@
     }
 
     function saveLayoutSettings() {
-      if (typeof database === 'undefined') {
+      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      if (!db) {
         alert('Firebase belum terhubung.');
         return;
       }
 
-      // Salin data secara bersih
-      const cleanData = JSON.parse(JSON.stringify(layoutState));
+      const cleanData = JSON.parse(JSON.stringify(allLayoutsState));
 
-      database.ref('overlayLayout').set(cleanData)
+      // Simpan seluruh target layout atau per-target ke Firebase
+      db.ref('overlayLayout').set(cleanData)
         .then(() => {
-          showToast('Tata letak layout Monitor Ke-2 berhasil disimpan!');
+          showToast(`Layout ${currentTarget.toUpperCase()} berhasil disimpan!`);
         })
         .catch(err => {
           console.error('Gagal menyimpan layout:', err);
@@ -659,8 +698,8 @@
     }
 
     function resetLayoutSettings() {
-      if (confirm('Atur ulang tata letak ke posisi standar?')) {
-        layoutState = JSON.parse(JSON.stringify(defaultLayouts));
+      if (confirm(`Atur ulang tata letak ${currentTarget.toUpperCase()} ke posisi standar?`)) {
+        allLayoutsState[currentTarget] = JSON.parse(JSON.stringify(defaultLayouts));
         loadModuleSettingsToForm();
         ['lowerthird', 'ticker', 'slide', 'info', 'countdown'].forEach(m => applyLayoutToPreview(m));
         saveLayoutSettings();
@@ -668,12 +707,24 @@
     }
 
     function listenToFirebaseLayout() {
-      if (typeof database === 'undefined') return;
+      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      if (!db) return;
 
-      database.ref('overlayLayout').on('value', (snapshot) => {
+      db.ref('overlayLayout').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          layoutState = Object.assign({}, defaultLayouts, data);
+          // Kompatibilitas jika data lama belum memilik pemisahan target
+          if (data.stream || data.audience || data.stage) {
+            allLayoutsState = Object.assign({
+              stream: JSON.parse(JSON.stringify(defaultLayouts)),
+              audience: JSON.parse(JSON.stringify(defaultLayouts)),
+              stage: JSON.parse(JSON.stringify(defaultLayouts))
+            }, data);
+          } else {
+            // Migrasi otomatis data tunggal lama ke stream
+            allLayoutsState.stream = Object.assign({}, defaultLayouts, data);
+          }
+
           loadModuleSettingsToForm();
           ['lowerthird', 'ticker', 'slide', 'info', 'countdown'].forEach(m => applyLayoutToPreview(m));
         }
