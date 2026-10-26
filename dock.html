@@ -708,24 +708,38 @@
       uploadedFilePath: null
     };
 
-    // VERIFIKASI HAK AKSES ADMIN UNTUK MENAMPILKAN NAVIGATION PANEL
-    function onUserLoggedIn(user) {
-      if (user && user.uid) {
-        const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
-        if (db) {
-          db.ref('users/' + user.uid).once('value').then(snapshot => {
-            const userData = snapshot.val();
-            if (userData && userData.role === 'admin') {
-              const panel = document.getElementById('adminNavigationPanel');
-              if (panel) panel.classList.remove('hidden');
-            }
-          }).catch(err => console.warn("Error checking admin role:", err));
+    function getDbInstance() {
+      return window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+    }
+
+    function checkAdminRole(user) {
+      if (!user || !user.uid) return;
+      const db = getDbInstance();
+      if (!db) return;
+
+      db.ref('users/' + user.uid).once('value').then(snapshot => {
+        const userData = snapshot.val();
+        if (userData && userData.role === 'admin') {
+          const panel = document.getElementById('adminNavigationPanel');
+          if (panel) panel.classList.remove('hidden');
         }
-      }
+      }).catch(err => console.warn("Error checking admin role:", err));
+    }
+
+    // LISTENER DARI AUTH-CHECK.JS
+    function onUserLoggedIn(user) {
+      checkAdminRole(user);
+      initSupabase();
+      listenToFirebaseRealtime();
+    }
+
+    function onUserGuest() {
+      initSupabase();
+      listenToFirebaseRealtime();
     }
 
     function syncStateToFirebase() {
-      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      const db = getDbInstance();
       if (!db) return;
 
       const profileSelect = document.getElementById('profileSelect');
@@ -752,7 +766,7 @@
     }
 
     function listenToFirebaseRealtime() {
-      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      const db = getDbInstance();
       if (!db) return;
 
       db.ref('obsState').on('value', (snapshot) => {
@@ -1660,7 +1674,7 @@
     }
 
     function hideOverlay() {
-      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      const db = getDbInstance();
       if (!db) return;
       db.ref('activeOverlay').set({ action: 'hide', timestamp: Date.now() })
         .then(() => showToast('Overlay Disembunyikan'))
@@ -1668,7 +1682,7 @@
     }
 
     function triggerDisplay(type) {
-      const db = window.database || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+      const db = getDbInstance();
       if (!db) {
         alert("Firebase belum terhubung.");
         return;
@@ -1760,6 +1774,15 @@
     window.addEventListener('DOMContentLoaded', () => {
       initSupabase();
       listenToFirebaseRealtime();
+      
+      // PERBAIKAN: Direct Fallback auth check jika user sudah terautentikasi oleh Firebase SDK
+      if (typeof firebase !== 'undefined' && firebase.auth) {
+        firebase.auth().onAuthStateChanged((user) => {
+          if (user) {
+            checkAdminRole(user);
+          }
+        });
+      }
     });
   </script>
 </body>
