@@ -233,10 +233,10 @@
       }
     }
 
-    // 4. AUTENTIKASI UTAMA
+    // 4. AUTENTIKASI UTAMA (MENGARAHKAN KE ADMIN.HTML)
     function onUserLoggedIn(user) {
       if (user && !user.isAnonymous) {
-        window.location.href = 'dock.html';
+        window.location.href = 'admin.html';
       }
     }
 
@@ -260,7 +260,7 @@
         authInstance.signInWithEmailAndPassword(email, password)
           .then(() => {
             sessionStorage.removeItem('obs_guest_mode');
-            window.location.href = 'dock.html';
+            window.location.href = 'admin.html';
           })
           .catch((err) => {
             btn.disabled = false;
@@ -283,10 +283,10 @@
       
       if (authInstance) {
         authInstance.signInAnonymously()
-          .then(() => { window.location.href = 'dock.html'; })
-          .catch(() => { window.location.href = 'dock.html'; });
+          .then(() => { window.location.href = 'admin.html'; })
+          .catch(() => { window.location.href = 'admin.html'; });
       } else {
-        window.location.href = 'dock.html';
+        window.location.href = 'admin.html';
       }
     }
   </script>
